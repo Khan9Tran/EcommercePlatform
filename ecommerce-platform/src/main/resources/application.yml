@@ -1,0 +1,14 @@
+server:
+  port: ${PORT}
+  servlet:
+    context-path: /api/v1
+spring:
+  datasource:
+    url: "jdbc:postgresql://localhost:${HOST}/${POSTGRES_DB}"
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
