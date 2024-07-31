@@ -1,2 +1,4 @@
-package com.hkteam.ecommerce_platform.exception;public class GlobalExceptionHandler {
+package com.hkteam.ecommerce_platform.exception;
+
+public class GlobalExceptionHandler {
 }

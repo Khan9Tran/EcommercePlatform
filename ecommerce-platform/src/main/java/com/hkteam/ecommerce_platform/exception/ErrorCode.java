@@ -1,2 +1,4 @@
-package com.hkteam.ecommerce_platform.exception;public enum ErrorCode {
+package com.hkteam.ecommerce_platform.exception;
+
+public enum ErrorCode {
 }

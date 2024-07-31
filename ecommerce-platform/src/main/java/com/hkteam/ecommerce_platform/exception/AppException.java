@@ -1,2 +1,4 @@
-package com.hkteam.ecommerce_platform.exception;public class AppException {
+package com.hkteam.ecommerce_platform.exception;
+
+public class AppException extends  RuntimeException{
 }

@@ -1,2 +1,4 @@
-package com.hkteam.ecommerce_platform.mapper;public interface UserMapper {
+package com.hkteam.ecommerce_platform.mapper;
+
+public interface UserMapper {
 }
