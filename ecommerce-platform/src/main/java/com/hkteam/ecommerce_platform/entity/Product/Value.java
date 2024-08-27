@@ -1,0 +1,42 @@
+package com.hkteam.ecommerce_platform.entity.Product;
+
+import com.hkteam.ecommerce_platform.entity.User.User;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.*;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@SQLDelete(sql = "UPDATE value SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted=false")
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class Value {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @Column(nullable = false)
+    String value;
+
+
+    String otherValue;
+
+    @ManyToOne
+    User createdBy;
+
+    @CreationTimestamp(source = SourceType.DB)
+    private Instant createdAt;
+
+    @UpdateTimestamp(source = SourceType.DB)
+    private Instant lastUpdatedAt;
+
+    @Column(nullable = false)
+    boolean isDeleted = Boolean.FALSE;
+}

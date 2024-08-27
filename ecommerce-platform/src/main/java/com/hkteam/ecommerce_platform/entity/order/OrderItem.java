@@ -1,0 +1,48 @@
+package com.hkteam.ecommerce_platform.entity.order;
+
+import com.hkteam.ecommerce_platform.entity.Product.Product;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.*;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@SQLDelete(sql = "UPDATE item SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted=false")
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class OrderItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @ManyToOne
+    Product product;
+
+    @ManyToOne
+    Order order;
+
+    int quantity;
+
+    BigDecimal price;
+
+    BigDecimal discount;
+
+    @CreationTimestamp(source = SourceType.DB)
+    private Instant createdAt;
+
+    @UpdateTimestamp(source = SourceType.DB)
+    private Instant lastUpdatedAt;
+
+    @Column(nullable = false)
+    boolean isDeleted = Boolean.FALSE;
+
+
+}
