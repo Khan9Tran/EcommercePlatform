@@ -1,7 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.useractions;
 
-import com.hkteam.ecommerce_platform.entity.Product.Product;
-import com.hkteam.ecommerce_platform.entity.User.User;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.entity.image.ReviewImage;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;

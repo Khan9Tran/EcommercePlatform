@@ -1,4 +1,4 @@
-package com.hkteam.ecommerce_platform.entity.User;
+package com.hkteam.ecommerce_platform.entity.user;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,16 +13,31 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@SQLDelete(sql = "UPDATE external_auth SET is_deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE address SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted=false")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ExternalAuth {
+public class Address {
     @Id
-    @OneToOne
-    User user;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
 
-    @ManyToOne
-    ExternalProvider provider;
+    @Column(nullable = false)
+    String recipientName;
+
+    @Column(nullable = false)
+    String phone;
+
+    @Column(nullable = false)
+    String province;
+
+    @Column(nullable = false)
+    String district;
+
+    @Column(nullable = false)
+    String detailAddress;
+
+    String detailLocate;
+
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;
@@ -32,4 +47,6 @@ public class ExternalAuth {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
+
 }

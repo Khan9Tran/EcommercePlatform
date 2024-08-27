@@ -1,4 +1,4 @@
-package com.hkteam.ecommerce_platform.entity.Product;
+package com.hkteam.ecommerce_platform.entity.product;
 
 import com.hkteam.ecommerce_platform.entity.image.VariantImage;
 import jakarta.persistence.*;

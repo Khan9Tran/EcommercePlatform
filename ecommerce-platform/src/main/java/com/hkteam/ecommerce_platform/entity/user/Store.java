@@ -1,11 +1,13 @@
-package com.hkteam.ecommerce_platform.entity.User;
+package com.hkteam.ecommerce_platform.entity.user;
 
+import com.hkteam.ecommerce_platform.entity.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -13,31 +15,26 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@SQLDelete(sql = "UPDATE address SET is_deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE store SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted=false")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Address {
+public class Store {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
+
+    @Column(nullable = false, unique = true)
+    String slug;
 
     @Column(nullable = false)
-    String recipientName;
+    String name;
 
-    @Column(nullable = false)
-    String phone;
+    String bio;
 
-    @Column(nullable = false)
-    String province;
+    Float rating;
 
-    @Column(nullable = false)
-    String district;
-
-    @Column(nullable = false)
-    String detailAddress;
-
-    String detailLocate;
-
+    @OneToOne
+    Address address;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;
@@ -48,5 +45,6 @@ public class Address {
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
 
-
+    @OneToMany
+    Set<Product> products;
 }

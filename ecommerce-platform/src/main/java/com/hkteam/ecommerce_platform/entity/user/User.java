@@ -1,6 +1,6 @@
-package com.hkteam.ecommerce_platform.entity.User;
+package com.hkteam.ecommerce_platform.entity.user;
 
-import com.hkteam.ecommerce_platform.entity.Product.Product;
+import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.enums.Gender;
 import jakarta.persistence.*;

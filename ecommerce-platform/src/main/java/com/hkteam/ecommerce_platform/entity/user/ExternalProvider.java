@@ -1,7 +1,8 @@
-package com.hkteam.ecommerce_platform.entity.Product;
+package com.hkteam.ecommerce_platform.entity.user;
 
-import com.hkteam.ecommerce_platform.entity.User.User;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
@@ -14,19 +15,14 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@SQLDelete(sql = "UPDATE attribute SET is_deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE external_provider SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted=false")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Attribute {
+public class ExternalProvider {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
-    @Column(nullable = false)
     String name;
+    String webSocketEndPoint;
 
-    @ManyToOne
-    User createdBy;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

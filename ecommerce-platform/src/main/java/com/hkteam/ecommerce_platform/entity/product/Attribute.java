@@ -1,6 +1,6 @@
-package com.hkteam.ecommerce_platform.entity.Product;
+package com.hkteam.ecommerce_platform.entity.product;
 
-import com.hkteam.ecommerce_platform.entity.User.User;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,19 +14,16 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@SQLDelete(sql = "UPDATE value SET is_deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE attribute SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted=false")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Value {
+public class Attribute {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @Column(nullable = false)
-    String value;
-
-
-    String otherValue;
+    String name;
 
     @ManyToOne
     User createdBy;
@@ -39,4 +36,5 @@ public class Value {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
 }

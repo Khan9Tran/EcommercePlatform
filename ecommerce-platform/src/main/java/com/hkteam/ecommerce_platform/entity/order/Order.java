@@ -1,6 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.order;
 
-import com.hkteam.ecommerce_platform.entity.User.User;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

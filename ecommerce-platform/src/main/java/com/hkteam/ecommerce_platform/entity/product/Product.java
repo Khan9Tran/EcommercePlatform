@@ -1,6 +1,6 @@
-package com.hkteam.ecommerce_platform.entity.Product;
+package com.hkteam.ecommerce_platform.entity.product;
 
-import com.hkteam.ecommerce_platform.entity.User.Store;
+import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.image.ProductImage;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
 import jakarta.persistence.*;
