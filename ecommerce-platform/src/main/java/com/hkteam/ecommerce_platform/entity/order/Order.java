@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.order;
 
+import com.hkteam.ecommerce_platform.entity.payment.Transaction;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -50,4 +51,7 @@ public class Order {
 
     @OneToMany(mappedBy = "order")
     Set<OrderStatusHistory> orderStatusHistories;
+
+    @OneToOne(mappedBy = "order")
+    Transaction transaction;
 }

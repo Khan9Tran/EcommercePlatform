@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.order;
 
+import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -28,7 +29,7 @@ public class OrderStatusHistory {
     Order order;
 
     @ManyToOne
-    Status status;
+    OrderStatus orderStatus;
 
     String remarks;
 
