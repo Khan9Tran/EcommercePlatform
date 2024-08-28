@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
+import com.hkteam.ecommerce_platform.entity.cart.Cart;
 import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
@@ -77,6 +78,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     Set<Review> reviews;
+
+    @OneToMany(mappedBy = "user")
+    Set<Cart> carts;
 
     @ManyToMany
     @JoinTable(

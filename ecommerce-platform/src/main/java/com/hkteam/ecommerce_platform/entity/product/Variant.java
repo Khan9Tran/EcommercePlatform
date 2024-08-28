@@ -1,6 +1,8 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
+import com.hkteam.ecommerce_platform.entity.cart.CartItem;
 import com.hkteam.ecommerce_platform.entity.image.VariantImage;
+import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import lombok.*;
@@ -34,6 +36,9 @@ public class Variant {
     boolean isAvailable = Boolean.TRUE;
 
     int quantity;
+
+    @OneToMany(mappedBy = "variant")
+    Set<CartItem> cartItems;
 
     @ManyToMany
     Set<Value> values;

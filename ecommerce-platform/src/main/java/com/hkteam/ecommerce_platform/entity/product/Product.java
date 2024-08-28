@@ -1,10 +1,12 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
+import com.hkteam.ecommerce_platform.entity.cart.CartItem;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.image.ProductImage;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
@@ -76,6 +78,12 @@ public class Product {
 
     @OneToMany(mappedBy = "product")
     Set<OrderItem> orderItems;
+
+    @OneToMany(mappedBy =  "product")
+    Set<CartItem> cartItems;
+
+    @ManyToMany(mappedBy = "followingProducts")
+    Set<User> followers;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
+import com.hkteam.ecommerce_platform.entity.cart.Cart;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,6 +42,12 @@ public class Store {
 
     @OneToOne
     User user;
+
+    @ManyToMany(mappedBy = "followingStores")
+    Set<User> followers;
+
+    @OneToMany(mappedBy = "store")
+    Set<Cart> carts;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

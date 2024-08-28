@@ -35,7 +35,7 @@ public class Value {
     @ManyToOne
     Attribute attribute;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "values")
     Set<Variant> variants;
 
     @CreationTimestamp(source = SourceType.DB)

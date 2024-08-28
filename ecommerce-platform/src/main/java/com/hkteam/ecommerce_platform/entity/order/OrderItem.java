@@ -8,6 +8,8 @@ import org.hibernate.annotations.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -25,6 +27,8 @@ public class OrderItem {
 
     @ManyToOne
     Product product;
+
+    List<String> values;
 
     @ManyToOne
     Order order;

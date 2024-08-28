@@ -47,9 +47,7 @@ public class Order {
     BigDecimal grandTotal; // total - discount + shippingTotal
     BigDecimal promo; // discount + shippingDiscount
 
-    @ManyToOne
-    Status status;
 
     @OneToMany(mappedBy = "order")
-    Set<OrderItem> items;
+    Set<OrderStatusHistory> orderStatusHistories;
 }

@@ -1,9 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.order;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
@@ -25,13 +22,13 @@ public class Status {
     String name;
 
     @OneToMany(mappedBy = "status")
-    Set<Order> orders;
+    Set<OrderStatusHistory> orderStatusHistories;
 
     @CreationTimestamp(source = SourceType.DB)
-    private Instant createdAt;
+    Instant createdAt;
 
     @UpdateTimestamp(source = SourceType.DB)
-    private Instant lastUpdatedAt;
+    Instant lastUpdatedAt;
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
