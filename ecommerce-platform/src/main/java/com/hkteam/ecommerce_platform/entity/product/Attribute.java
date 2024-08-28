@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,6 +28,9 @@ public class Attribute {
 
     @ManyToOne
     User createdBy;
+
+    @OneToMany(mappedBy = "attribute")
+    Set<Value> values;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

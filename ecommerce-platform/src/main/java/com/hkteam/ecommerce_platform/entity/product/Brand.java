@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -26,6 +27,9 @@ public class Brand {
     String description;
     String logoUrl;
 
+    @OneToMany(mappedBy = "brand")
+    Set<Product> products;
+
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;
 
@@ -34,6 +38,5 @@ public class Brand {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
 
 }

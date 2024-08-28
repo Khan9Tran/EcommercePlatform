@@ -1,9 +1,12 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
+import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
+import com.hkteam.ecommerce_platform.entity.useractions.Review;
 import com.hkteam.ecommerce_platform.enums.Gender;
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -54,15 +57,26 @@ public class User {
     String imageUrl;
 
     @ManyToMany
-
     Set<Role> roles;
 
 
-    @OneToMany
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Address> addresses;
 
-    @OneToOne
-    Address defaultAddress;
+    @Column(name = "default_address_id")
+    Long defaultAddressId;
+
+    @OneToOne(mappedBy = "user")
+    Store store;
+
+    @OneToMany(mappedBy = "user")
+    Set<Order> orders;
+
+    @OneToMany(mappedBy = "user")
+    Set<ExternalAuth> externalAuth;
+
+    @OneToMany(mappedBy = "user")
+    Set<Review> reviews;
 
     @ManyToMany
     @JoinTable(

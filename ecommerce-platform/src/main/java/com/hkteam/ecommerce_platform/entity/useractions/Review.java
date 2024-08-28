@@ -26,10 +26,10 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @OneToOne
+    @ManyToOne
     User user;
 
-    @OneToOne
+    @ManyToOne
     Product product;
 
     float rating;
@@ -38,7 +38,7 @@ public class Review {
 
     String videoUrl;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
     Set<ReviewImage> images;
 
     @CreationTimestamp(source = SourceType.DB)

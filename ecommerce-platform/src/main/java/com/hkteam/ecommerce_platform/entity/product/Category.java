@@ -41,7 +41,7 @@ public class Category {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     Set<Category> children;
 
-    @OneToMany
+    @OneToMany(mappedBy = "category")
     Set<Product> products;
 
     @CreationTimestamp(source = SourceType.DB)

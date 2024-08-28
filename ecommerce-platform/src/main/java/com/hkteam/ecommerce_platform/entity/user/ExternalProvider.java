@@ -3,11 +3,13 @@ package com.hkteam.ecommerce_platform.entity.user;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -23,6 +25,8 @@ public class ExternalProvider {
     String name;
     String webSocketEndPoint;
 
+    @OneToMany(mappedBy = "externalProvider")
+    Set<ExternalAuth> externalAuths;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

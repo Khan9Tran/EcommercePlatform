@@ -38,6 +38,8 @@ public class Address {
 
     String detailLocate;
 
+    @ManyToOne
+    User user;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;
@@ -47,6 +49,4 @@ public class Address {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
-
 }

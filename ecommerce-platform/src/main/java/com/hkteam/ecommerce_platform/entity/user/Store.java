@@ -33,8 +33,14 @@ public class Store {
 
     Float rating;
 
+    @Column(name = "default_address_id")
+    Long defaultAddressId;
+
+    @OneToMany(mappedBy = "store")
+    Set<Product> products;
+
     @OneToOne
-    Address address;
+    User user;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;
@@ -44,7 +50,4 @@ public class Store {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
-    @OneToMany
-    Set<Product> products;
 }

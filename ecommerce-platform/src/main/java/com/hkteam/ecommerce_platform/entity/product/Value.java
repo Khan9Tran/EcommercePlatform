@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -30,6 +31,12 @@ public class Value {
 
     @ManyToOne
     User createdBy;
+
+    @ManyToOne
+    Attribute attribute;
+
+    @ManyToMany
+    Set<Variant> variants;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

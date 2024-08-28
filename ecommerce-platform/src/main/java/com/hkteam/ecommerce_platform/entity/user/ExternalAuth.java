@@ -18,11 +18,11 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExternalAuth {
     @Id
-    @OneToOne
+    @ManyToOne
     User user;
 
     @ManyToOne
-    ExternalProvider provider;
+    ExternalProvider externalProvider;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
+import com.hkteam.ecommerce_platform.entity.order.Order;
+import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.image.ProductImage;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
@@ -49,7 +51,7 @@ public class Product {
 
     Float rating;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     Set<ProductImage> images;
 
     @ManyToOne
@@ -61,11 +63,14 @@ public class Product {
     @ManyToOne
     Store store;
 
-    @OneToMany
+    @OneToMany(mappedBy = "product")
     Set<Variant> variants;
 
-    @OneToMany
+    @OneToMany(mappedBy = "product")
     Set<Review> reviews;
+
+    @OneToMany(mappedBy = "product")
+    Set<OrderItem> orderItems;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

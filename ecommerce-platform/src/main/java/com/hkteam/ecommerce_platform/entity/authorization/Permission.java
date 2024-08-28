@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -20,6 +21,9 @@ public class Permission {
     @Id
     String name;
     String description;
+
+    @ManyToMany(mappedBy = "permissions")
+    Set<Role> roles;
 
 
     @CreationTimestamp(source = SourceType.DB)

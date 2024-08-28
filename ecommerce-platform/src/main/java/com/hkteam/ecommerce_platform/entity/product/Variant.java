@@ -35,7 +35,7 @@ public class Variant {
 
     int quantity;
 
-    @OneToMany
+    @ManyToMany
     Set<Value> values;
 
     String imageUrl;
@@ -43,7 +43,7 @@ public class Variant {
     @ManyToOne
     Product product;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL)
     Set<VariantImage> images;
 
     @CreationTimestamp(source = SourceType.DB)

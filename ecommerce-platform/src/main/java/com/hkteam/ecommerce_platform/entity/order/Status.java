@@ -3,11 +3,13 @@ package com.hkteam.ecommerce_platform.entity.order;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -21,6 +23,9 @@ import java.time.Instant;
 public class Status {
     @Id
     String name;
+
+    @OneToMany(mappedBy = "status")
+    Set<Order> orders;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

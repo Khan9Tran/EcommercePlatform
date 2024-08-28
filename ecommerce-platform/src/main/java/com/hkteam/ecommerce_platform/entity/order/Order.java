@@ -18,6 +18,7 @@ import java.util.Set;
 @Entity
 @SQLDelete(sql = "UPDATE order SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted=false")
+@Table(name = "orders")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order {
     @Id
@@ -49,6 +50,6 @@ public class Order {
     @ManyToOne
     Status status;
 
-    @OneToMany
+    @OneToMany(mappedBy = "order")
     Set<OrderItem> items;
 }
