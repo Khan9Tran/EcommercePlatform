@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
-import com.hkteam.ecommerce_platform.entity.order.Order;
+import com.hkteam.ecommerce_platform.entity.category.Category;
+import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.image.ProductImage;
@@ -62,6 +63,10 @@ public class Product {
 
     @ManyToOne
     Store store;
+
+    @OneToMany(mappedBy = "product")
+    Set<ProductComponentValue> productComponentValues;
+
 
     @OneToMany(mappedBy = "product")
     Set<Variant> variants;

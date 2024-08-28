@@ -1,7 +1,6 @@
-package com.hkteam.ecommerce_platform.entity.product;
+package com.hkteam.ecommerce_platform.entity.category;
 
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
@@ -15,34 +14,25 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@SQLDelete(sql = "UPDATE category SET is_deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE component SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted=false")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Category {
+public class Component {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     String name;
 
-    String description;
-    String imageUrl;
+    @Column(nullable = false)
+    boolean required = false;
 
-    String iconUrl;
+    @ManyToMany(mappedBy = "components")
+    Set<Category> categories;
 
-    @Column(nullable = false, unique = true)
-    String slug;
-
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    Category parent;
-
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
-    Set<Category> children;
-
-    @OneToMany(mappedBy = "category")
-    Set<Product> products;
+    @OneToMany(mappedBy = "component")
+    Set<ProductComponentValue> productComponentValues;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;
@@ -52,6 +42,4 @@ public class Category {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
-
 }
