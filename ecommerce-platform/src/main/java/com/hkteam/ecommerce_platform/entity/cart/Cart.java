@@ -1,15 +1,17 @@
 package com.hkteam.ecommerce_platform.entity.cart;
 
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.entity.user.Store;
-import com.hkteam.ecommerce_platform.entity.user.User;
+import java.util.Set;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.util.Set;
+import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.entity.user.User;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -33,6 +35,4 @@ public class Cart {
 
     @OneToMany(mappedBy = "cart")
     Set<CartItem> cartItems;
-
-
 }

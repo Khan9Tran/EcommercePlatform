@@ -1,22 +1,25 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
-import com.hkteam.ecommerce_platform.entity.cart.CartItem;
-import com.hkteam.ecommerce_platform.entity.category.Category;
-import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
-import com.hkteam.ecommerce_platform.entity.order.OrderItem;
-import com.hkteam.ecommerce_platform.entity.user.Store;
-import com.hkteam.ecommerce_platform.entity.image.ProductImage;
-import com.hkteam.ecommerce_platform.entity.user.User;
-import com.hkteam.ecommerce_platform.entity.useractions.Review;
-import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
+
+import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.cart.CartItem;
+import com.hkteam.ecommerce_platform.entity.category.Category;
+import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
+import com.hkteam.ecommerce_platform.entity.image.ProductImage;
+import com.hkteam.ecommerce_platform.entity.order.OrderItem;
+import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.entity.user.User;
+import com.hkteam.ecommerce_platform.entity.useractions.Review;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -69,7 +72,6 @@ public class Product {
     @OneToMany(mappedBy = "product")
     Set<ProductComponentValue> productComponentValues;
 
-
     @OneToMany(mappedBy = "product")
     Set<Variant> variants;
 
@@ -79,7 +81,7 @@ public class Product {
     @OneToMany(mappedBy = "product")
     Set<OrderItem> orderItems;
 
-    @OneToMany(mappedBy =  "product")
+    @OneToMany(mappedBy = "product")
     Set<CartItem> cartItems;
 
     @ManyToMany(mappedBy = "followingProducts")

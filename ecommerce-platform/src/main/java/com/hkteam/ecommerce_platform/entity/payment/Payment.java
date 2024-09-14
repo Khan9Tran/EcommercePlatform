@@ -1,14 +1,16 @@
 package com.hkteam.ecommerce_platform.entity.payment;
 
+import java.time.Instant;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -29,9 +31,9 @@ public class Payment {
     Transaction transaction;
 
     String paymentDetails;
-//    ...
-//    Other fileds
-//    ...
+    //    ...
+    //    Other fileds
+    //    ...
     @CreationTimestamp
     Instant createdAt;
 

@@ -1,4 +1,3 @@
 package com.hkteam.ecommerce_platform.exception;
 
-public class GlobalExceptionHandler {
-}
+public class GlobalExceptionHandler {}

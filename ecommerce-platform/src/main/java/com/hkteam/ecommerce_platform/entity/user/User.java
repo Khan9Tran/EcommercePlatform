@@ -1,21 +1,24 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
-import com.hkteam.ecommerce_platform.entity.cart.Cart;
-import com.hkteam.ecommerce_platform.entity.order.Order;
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.entity.authorization.Role;
-import com.hkteam.ecommerce_platform.entity.useractions.Review;
-import com.hkteam.ecommerce_platform.enums.Gender;
-import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Table;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Set;
+
+import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.authorization.Role;
+import com.hkteam.ecommerce_platform.entity.cart.Cart;
+import com.hkteam.ecommerce_platform.entity.order.Order;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.useractions.Review;
+import com.hkteam.ecommerce_platform.enums.Gender;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -41,12 +44,14 @@ public class User {
 
     @Column(unique = true)
     String phone;
+
     String phoneValidationToken;
     Instant phoneTokenGeneratedAt;
     String phoneValidationStatus;
 
     @Column(unique = true)
     String email;
+
     String emailValidationToken;
     Instant emailTokenGeneratedAt;
     String emailValidationStatus;
@@ -59,7 +64,6 @@ public class User {
 
     @ManyToMany
     Set<Role> roles;
-
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Address> addresses;
@@ -86,16 +90,14 @@ public class User {
     @JoinTable(
             name = "user_store_following",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "store_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "store_id"))
     Set<Store> followingStores;
 
     @ManyToMany
     @JoinTable(
             name = "user_product_following",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "product_id"))
     Set<Product> followingProducts;
 
     @CreationTimestamp(source = SourceType.DB)
@@ -106,5 +108,4 @@ public class User {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
 }

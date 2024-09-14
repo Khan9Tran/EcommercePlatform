@@ -1,12 +1,14 @@
 package com.hkteam.ecommerce_platform.entity.authorization;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.time.Instant;
 import java.util.Set;
+
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.*;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -20,11 +22,11 @@ import java.util.Set;
 public class Permission {
     @Id
     String name;
+
     String description;
 
     @ManyToMany(mappedBy = "permissions")
     Set<Role> roles;
-
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

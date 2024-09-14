@@ -1,15 +1,18 @@
 package com.hkteam.ecommerce_platform.entity.payment;
 
-import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+import java.time.Instant;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
+import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter

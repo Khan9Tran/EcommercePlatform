@@ -1,17 +1,19 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
-import com.hkteam.ecommerce_platform.entity.cart.CartItem;
-import com.hkteam.ecommerce_platform.entity.image.VariantImage;
-import com.hkteam.ecommerce_platform.entity.order.OrderItem;
-import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
+
+import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.cart.CartItem;
+import com.hkteam.ecommerce_platform.entity.image.VariantImage;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -59,6 +61,4 @@ public class Variant {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
-
 }

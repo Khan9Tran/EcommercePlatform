@@ -1,4 +1,3 @@
 package com.hkteam.ecommerce_platform.service;
 
-public class UserService {
-}
+public class UserService {}

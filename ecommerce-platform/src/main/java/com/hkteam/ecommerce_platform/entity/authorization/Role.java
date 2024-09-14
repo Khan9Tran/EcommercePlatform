@@ -1,15 +1,17 @@
 package com.hkteam.ecommerce_platform.entity.authorization;
 
+import java.time.Instant;
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.*;
 
-import java.time.Instant;
-import java.util.Set;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -23,6 +25,7 @@ import java.util.Set;
 public class Role {
     @Id
     String name;
+
     String description;
 
     @ManyToMany

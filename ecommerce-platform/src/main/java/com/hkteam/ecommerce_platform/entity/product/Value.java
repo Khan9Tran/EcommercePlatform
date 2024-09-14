@@ -1,13 +1,16 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
-import com.hkteam.ecommerce_platform.entity.user.User;
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.time.Instant;
 import java.util.Set;
+
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.user.User;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -25,7 +28,6 @@ public class Value {
 
     @Column(nullable = false)
     String value;
-
 
     String otherValue;
 

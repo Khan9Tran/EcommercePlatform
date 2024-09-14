@@ -1,15 +1,17 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
+import java.time.Instant;
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.*;
 
-import java.time.Instant;
-import java.util.Set;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -23,6 +25,7 @@ import java.util.Set;
 public class ExternalProvider {
     @Id
     String name;
+
     String webSocketEndPoint;
 
     @OneToMany(mappedBy = "externalProvider")
@@ -36,5 +39,4 @@ public class ExternalProvider {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
 }

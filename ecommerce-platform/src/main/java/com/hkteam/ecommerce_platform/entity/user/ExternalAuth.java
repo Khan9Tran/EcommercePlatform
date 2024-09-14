@@ -1,11 +1,13 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
+import java.time.Instant;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.*;
 
-import java.time.Instant;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter

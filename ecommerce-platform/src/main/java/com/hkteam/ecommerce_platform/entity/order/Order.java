@@ -1,15 +1,18 @@
 package com.hkteam.ecommerce_platform.entity.order;
 
-import com.hkteam.ecommerce_platform.entity.payment.Transaction;
-import com.hkteam.ecommerce_platform.entity.user.User;
+import java.math.BigDecimal;
+import java.util.Set;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.math.BigDecimal;
-import java.util.Set;
+import com.hkteam.ecommerce_platform.entity.payment.Transaction;
+import com.hkteam.ecommerce_platform.entity.user.User;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -23,7 +26,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order {
     @Id
-    @GeneratedValue (strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
     @ManyToOne
@@ -47,7 +50,6 @@ public class Order {
 
     BigDecimal grandTotal; // total - discount + shippingTotal
     BigDecimal promo; // discount + shippingDiscount
-
 
     @OneToMany(mappedBy = "order")
     Set<OrderStatusHistory> orderStatusHistories;

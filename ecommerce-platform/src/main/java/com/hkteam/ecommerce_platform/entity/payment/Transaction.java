@@ -1,18 +1,20 @@
 package com.hkteam.ecommerce_platform.entity.payment;
 
-import com.hkteam.ecommerce_platform.entity.order.Order;
-import com.hkteam.ecommerce_platform.entity.user.User;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Set;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Set;
+import com.hkteam.ecommerce_platform.entity.order.Order;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter

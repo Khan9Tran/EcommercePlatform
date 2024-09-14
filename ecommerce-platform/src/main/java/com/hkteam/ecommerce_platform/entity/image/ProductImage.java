@@ -1,8 +1,10 @@
 package com.hkteam.ecommerce_platform.entity.image;
 
-import com.hkteam.ecommerce_platform.entity.product.Product;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+
+import com.hkteam.ecommerce_platform.entity.product.Product;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -12,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Entity
 @NoArgsConstructor
-public class ProductImage extends Image{
+public class ProductImage extends Image {
     @ManyToOne
     Product product;
 }

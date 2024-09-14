@@ -1,8 +1,10 @@
 package com.hkteam.ecommerce_platform.entity.image;
 
-import com.hkteam.ecommerce_platform.entity.useractions.Review;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+
+import com.hkteam.ecommerce_platform.entity.useractions.Review;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,12 +1,14 @@
 package com.hkteam.ecommerce_platform.entity.image;
 
+import java.time.Instant;
+
 import jakarta.persistence.*;
+
+import org.hibernate.annotations.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.*;
-
-import java.time.Instant;
 
 @Getter
 @Setter
