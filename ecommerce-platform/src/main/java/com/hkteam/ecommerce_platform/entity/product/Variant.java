@@ -28,7 +28,6 @@ public class Variant {
     String slug;
 
     BigDecimal originalPrice;
-    
     BigDecimal salePrice;
 
     boolean isAvailable = Boolean.TRUE;

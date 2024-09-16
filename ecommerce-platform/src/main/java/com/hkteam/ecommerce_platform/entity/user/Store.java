@@ -1,14 +1,17 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
-import com.hkteam.ecommerce_platform.entity.cart.Cart;
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.time.Instant;
 import java.util.Set;
+
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.cart.Cart;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter

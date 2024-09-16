@@ -1,4 +1,3 @@
 package com.hkteam.ecommerce_platform.repository;
 
-public interface UserRepository {
-}
+public interface UserRepository {}

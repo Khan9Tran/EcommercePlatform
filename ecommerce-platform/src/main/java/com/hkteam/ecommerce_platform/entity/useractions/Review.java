@@ -1,16 +1,19 @@
 package com.hkteam.ecommerce_platform.entity.useractions;
 
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.entity.user.User;
-import com.hkteam.ecommerce_platform.entity.image.ReviewImage;
-import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.time.Instant;
 import java.util.Set;
+
+import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.image.ReviewImage;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.user.User;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter

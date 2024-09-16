@@ -1,14 +1,17 @@
 package com.hkteam.ecommerce_platform.entity.category;
 
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.time.Instant;
 import java.util.Set;
+
+import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.product.Product;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -56,6 +59,4 @@ public class Category {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
-
 }

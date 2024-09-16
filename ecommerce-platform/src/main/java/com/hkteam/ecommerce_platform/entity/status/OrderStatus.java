@@ -1,13 +1,16 @@
 package com.hkteam.ecommerce_platform.entity.status;
 
-import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
+import java.util.Set;
+
 import jakarta.persistence.*;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.*;
-
-import java.util.Set;
 
 @Getter
 @Setter

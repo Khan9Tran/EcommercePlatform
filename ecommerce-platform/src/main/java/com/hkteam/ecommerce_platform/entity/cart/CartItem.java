@@ -1,16 +1,19 @@
 package com.hkteam.ecommerce_platform.entity.cart;
 
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.entity.product.Variant;
+import java.time.Instant;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.product.Variant;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
