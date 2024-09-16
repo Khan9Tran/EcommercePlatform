@@ -1,4 +1,3 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-public class RoleResponse {
-}
+public class RoleResponse {}

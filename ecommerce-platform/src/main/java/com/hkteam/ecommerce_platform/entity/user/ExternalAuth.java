@@ -1,12 +1,15 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
-import com.hkteam.ecommerce_platform.enums.Provider;
+import java.time.Instant;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.hibernate.annotations.*;
 
-import java.time.Instant;
+import com.hkteam.ecommerce_platform.enums.Provider;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
