@@ -1,10 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.product;
 
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
-import com.hkteam.ecommerce_platform.entity.image.VariantImage;
-import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.*;
@@ -31,6 +28,7 @@ public class Variant {
     String slug;
 
     BigDecimal originalPrice;
+    
     BigDecimal salePrice;
 
     boolean isAvailable = Boolean.TRUE;
@@ -47,9 +45,6 @@ public class Variant {
 
     @ManyToOne
     Product product;
-
-    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL)
-    Set<VariantImage> images;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

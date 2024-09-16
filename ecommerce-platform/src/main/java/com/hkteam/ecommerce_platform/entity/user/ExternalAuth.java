@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
+import com.hkteam.ecommerce_platform.enums.Provider;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,14 +22,15 @@ public class ExternalAuth {
     @ManyToOne
     User user;
 
-    @ManyToOne
-    ExternalProvider externalProvider;
+    String providerID;
+
+    Provider provider;
 
     @CreationTimestamp(source = SourceType.DB)
-    private Instant createdAt;
+    Instant createdAt;
 
     @UpdateTimestamp(source = SourceType.DB)
-    private Instant lastUpdatedAt;
+    Instant lastUpdatedAt;
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
