@@ -5,12 +5,10 @@ import java.time.Instant;
 import java.util.Set;
 
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
 
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
-import com.hkteam.ecommerce_platform.entity.image.VariantImage;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -49,9 +47,6 @@ public class Variant {
 
     @ManyToOne
     Product product;
-
-    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL)
-    Set<VariantImage> images;
 
     @CreationTimestamp(source = SourceType.DB)
     private Instant createdAt;

@@ -1,3 +1,3 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-public class UserCreationRespone {}
+public class UserCreationResponse {}
