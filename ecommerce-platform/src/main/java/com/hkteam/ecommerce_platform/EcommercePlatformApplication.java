@@ -18,12 +18,14 @@ public class EcommercePlatformApplication {
         final String POSTGRES_PASSWORD = "POSTGRES_PASSWORD";
         final String HOST = "HOST";
         final String PORT = "PORT";
+        final String JWT_SIGNER_KEY = "JWT_SIGNER_KEY";
 
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
         System.setProperty(HOST, Objects.requireNonNull(dotenv.get(HOST)));
         System.setProperty(PORT, Objects.requireNonNull(dotenv.get(PORT)));
+        System.setProperty(JWT_SIGNER_KEY, Objects.requireNonNull(dotenv.get(JWT_SIGNER_KEY)));
 
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
