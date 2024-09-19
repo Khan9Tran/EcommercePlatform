@@ -3,10 +3,11 @@ package com.hkteam.ecommerce_platform.entity.authorization;
 import java.time.Instant;
 import java.util.Set;
 
-import com.hkteam.ecommerce_platform.enums.RoleName;
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.enums.RoleName;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

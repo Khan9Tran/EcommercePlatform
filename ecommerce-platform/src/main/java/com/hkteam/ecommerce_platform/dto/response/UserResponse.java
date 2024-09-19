@@ -1,10 +1,9 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-import com.hkteam.ecommerce_platform.enums.RoleName;
+import java.util.List;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
 
 @Data
 @Builder

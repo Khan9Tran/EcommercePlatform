@@ -7,34 +7,34 @@ import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
 
-import com.hkteam.ecommerce_platform.dto.request.AuthenticationRequest;
-import com.hkteam.ecommerce_platform.dto.request.LogoutRequest;
-import com.hkteam.ecommerce_platform.dto.request.RefreshRequest;
-import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
-import com.hkteam.ecommerce_platform.entity.authorization.InvalidatedToken;
-import com.hkteam.ecommerce_platform.entity.user.User;
-import com.hkteam.ecommerce_platform.repository.UserRepository;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jwt.JWTClaimsSet;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import com.hkteam.ecommerce_platform.dto.request.AuthenticationRequest;
 import com.hkteam.ecommerce_platform.dto.request.IntrospectRequest;
+import com.hkteam.ecommerce_platform.dto.request.LogoutRequest;
+import com.hkteam.ecommerce_platform.dto.request.RefreshRequest;
+import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
 import com.hkteam.ecommerce_platform.dto.response.IntrospectResponse;
+import com.hkteam.ecommerce_platform.entity.authorization.InvalidatedToken;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.InvalidatedTokenRepository;
+import com.hkteam.ecommerce_platform.repository.UserRepository;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import org.springframework.util.CollectionUtils;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -100,7 +100,6 @@ public class AuthenticationService {
             log.error("Cannot create token", e);
             throw new RuntimeException(e);
         }
-
     }
 
     private String buildScope(User user) {
@@ -115,7 +114,6 @@ public class AuthenticationService {
 
         return stringJoiner.toString();
     }
-
 
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(SECRET_KEY.getBytes());
@@ -171,5 +169,4 @@ public class AuthenticationService {
 
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
-
 }

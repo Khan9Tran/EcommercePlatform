@@ -1,11 +1,11 @@
 package com.hkteam.ecommerce_platform.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.entity.user.User;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -14,5 +14,4 @@ public interface UserMapper {
     User toUser(UserCreationRequest request);
 
     UserResponse toUserResponse(User user);
-
 }

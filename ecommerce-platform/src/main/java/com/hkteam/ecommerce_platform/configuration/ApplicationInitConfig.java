@@ -1,21 +1,22 @@
 package com.hkteam.ecommerce_platform.configuration;
 
+import java.util.HashSet;
+
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.Gender;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.repository.RoleRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.Instant;
-import java.util.HashSet;
 
 @Configuration
 @RequiredArgsConstructor
@@ -63,11 +64,14 @@ public class ApplicationInitConfig {
                         .gender(Gender.OTHER)
                         .phone("00000000000")
                         .email("")
-                        .roles(new HashSet<>(roleRepository.findByName(RoleName.ADMIN).map(role -> {
-                            HashSet<Role> roles = new HashSet<>();
-                            roles.add(role);
-                            return roles;
-                        }).orElse(new HashSet<>())))
+                        .roles(new HashSet<>(roleRepository
+                                .findByName(RoleName.ADMIN)
+                                .map(role -> {
+                                    HashSet<Role> roles = new HashSet<>();
+                                    roles.add(role);
+                                    return roles;
+                                })
+                                .orElse(new HashSet<>())))
                         .build();
 
                 try {

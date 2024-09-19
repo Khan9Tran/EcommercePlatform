@@ -21,6 +21,7 @@ public class GlobalExceptionHandler {
     private static final String MIN_ATTRIBUTE = "min";
     private static final String MAX_ATTRIBUTE = "max";
     private static final String FIELD = "field";
+
     @ExceptionHandler(value = RuntimeException.class)
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
         ApiResponse apiResponse = new ApiResponse();
@@ -33,7 +34,6 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse> handlingRuntimeException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
         ApiResponse apiResponse = new ApiResponse();
-
 
         apiResponse.setMessage(errorCode.getMessage());
         apiResponse.setCode(errorCode.getCode());
@@ -75,7 +75,6 @@ public class GlobalExceptionHandler {
                         : errorCode.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
-
 
     private static String mapAttribute(String message, Map<String, Object> attributes, String fieldName) {
         String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));

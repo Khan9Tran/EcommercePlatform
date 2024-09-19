@@ -20,7 +20,10 @@ public enum ErrorCode {
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(1009, "Role not found", HttpStatus.NOT_FOUND),
     NOT_BLANK(1014, "{field} must not be empty", HttpStatus.BAD_REQUEST),
-    PASSWORD_FORMAT_INVALID(1015, "Password must contain at least one uppercase letter, one lowercase letter, and one number", HttpStatus.BAD_REQUEST),
+    PASSWORD_FORMAT_INVALID(
+            1015,
+            "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+            HttpStatus.BAD_REQUEST),
     PASSWORDS_DO_NOT_MATCH(1016, "Password and confirm password do not match.", HttpStatus.BAD_REQUEST),
     ;
 
