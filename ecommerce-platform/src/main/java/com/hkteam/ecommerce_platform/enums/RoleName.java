@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.enums;
 
-public enum Role {
+public enum RoleName {
     ADMIN,
-    USER
+    USER,
+    SELLER
 }

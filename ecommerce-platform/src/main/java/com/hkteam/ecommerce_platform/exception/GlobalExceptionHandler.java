@@ -10,10 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.hkteam.ecommerce_platform.dto.request.ApiResponse;
 
+@ControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final String MIN_ATTRIBUTE = "min";
@@ -30,6 +32,8 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse> handlingRuntimeException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
         ApiResponse apiResponse = new ApiResponse();
+
+
         apiResponse.setMessage(errorCode.getMessage());
         apiResponse.setCode(errorCode.getCode());
         return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);

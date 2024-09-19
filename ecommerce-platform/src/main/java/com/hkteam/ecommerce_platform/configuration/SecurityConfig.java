@@ -18,7 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/auth/log-in", "/auth/introspect", "/auth/logout", "/auth/refresh"
+        "/auths/log-in", "/auths/introspect", "/auths/logout", "/auths/refresh", "/users"
     };
 
     private final CustomJwtDecoder customJwtDecoder;

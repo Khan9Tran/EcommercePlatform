@@ -3,10 +3,8 @@ package com.hkteam.ecommerce_platform.entity.authorization;
 import java.time.Instant;
 import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import com.hkteam.ecommerce_platform.enums.RoleName;
+import jakarta.persistence.*;
 
 import org.hibernate.annotations.*;
 
@@ -24,7 +22,8 @@ import lombok.experimental.FieldDefaults;
 @Entity
 public class Role {
     @Id
-    String name;
+    @Enumerated(EnumType.STRING)
+    RoleName name;
 
     String description;
 
