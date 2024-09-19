@@ -13,13 +13,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.hkteam.ecommerce_platform.dto.request.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final String MIN_ATTRIBUTE = "min";
-
+    private static final String MAX_ATTRIBUTE = "max";
+    private static final String FIELD = "field";
     @ExceptionHandler(value = RuntimeException.class)
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
         ApiResponse apiResponse = new ApiResponse();
@@ -51,15 +52,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     static ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException exception) {
+
         String enumKey = exception.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
         Map<String, Object> attributes = null;
+        String fieldName = exception.getFieldError().getField();
         try {
             errorCode = ErrorCode.valueOf(enumKey);
             var constraintViolation =
                     exception.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
             attributes = constraintViolation.getConstraintDescriptor().getAttributes();
-            log.info("Attributes: " + attributes);
 
         } catch (IllegalArgumentException e) {
 
@@ -69,13 +71,18 @@ public class GlobalExceptionHandler {
         apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(
                 Objects.nonNull(attributes)
-                        ? mapAttribute(errorCode.getMessage(), attributes)
+                        ? mapAttribute(errorCode.getMessage(), attributes, fieldName)
                         : errorCode.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
-    private static String mapAttribute(String message, Map<String, Object> attributes) {
+
+    private static String mapAttribute(String message, Map<String, Object> attributes, String fieldName) {
         String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
-        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
+        String maxValue = String.valueOf(attributes.get(MAX_ATTRIBUTE));
+
+        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue)
+                .replace("{" + MAX_ATTRIBUTE + "}", maxValue)
+                .replace("{" + FIELD + "}", fieldName);
     }
 }
