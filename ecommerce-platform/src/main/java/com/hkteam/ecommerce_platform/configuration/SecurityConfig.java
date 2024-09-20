@@ -24,6 +24,10 @@ public class SecurityConfig {
         "/auths/log-in", "/auths/introspect", "/auths/log-out", "/auths/refresh", "/users"
     };
 
+    private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {
+        "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**"
+    };
+
     private final CustomJwtDecoder customJwtDecoder;
 
     public SecurityConfig(CustomJwtDecoder customJwtDecoder) {
@@ -34,8 +38,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(requests -> requests.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
                 .permitAll()
-                .requestMatchers(
-                        "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**")
+                .requestMatchers(SWAGGER_WHITELIST_ENDPOINTS)
                 .permitAll()
                 .anyRequest()
                 .authenticated());
