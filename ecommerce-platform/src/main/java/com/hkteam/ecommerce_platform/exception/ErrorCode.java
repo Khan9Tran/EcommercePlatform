@@ -25,6 +25,10 @@ public enum ErrorCode {
             "Password must contain at least one uppercase letter, one lowercase letter, and one number",
             HttpStatus.BAD_REQUEST),
     PASSWORDS_DO_NOT_MATCH(1016, "Password and confirm password do not match.", HttpStatus.BAD_REQUEST),
+    CATEGORY_EXISTED(1017, "Category already exists", HttpStatus.BAD_REQUEST),
+    PARENT_CATEGORY_NOT_FOUND(1018, "Parent category not found", HttpStatus.NOT_FOUND),
+    CATEGORY_NOT_FOUND(1019, "Category not found", HttpStatus.NOT_FOUND),
+    CATEGORY_DUPLICATE(1020, "Name is duplicated with another name", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
