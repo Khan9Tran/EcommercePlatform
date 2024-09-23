@@ -1,9 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,6 +36,13 @@ public class CategoryService {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
+        Category parentCategory = null;
+        if (request.getParentId() != null) {
+            parentCategory = categoryRepository
+                    .findById(request.getParentId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PARENT_CATEGORY_NOT_FOUND));
+        }
+
         Map imageData = cloudinaryService.uploadImage(request.getImageUrl(), "ecommerce-be/category");
         Map iconData = cloudinaryService.uploadImage(request.getIconUrl(), "ecommerce-be/category");
 
@@ -46,23 +51,9 @@ public class CategoryService {
         category.setSlug(generateSlug(category.getName()));
         category.setImageUrl((String) imageData.get("url"));
         category.setIconUrl((String) iconData.get("url"));
-
-        if (request.getParentId() != null) {
-            Optional<Category> parentCategory = categoryRepository.findById(request.getParentId());
-            if (parentCategory.isPresent()) {
-                category.setParent(parentCategory.get());
-            } else {
-                throw new AppException(ErrorCode.PARENT_CATEGORY_NOT_FOUND);
-            }
-        } else {
-            category.setParent(null);
-        }
+        category.setParent(parentCategory);
 
         try {
-            log.info(
-                    "Category created with createdAt: {} and lastUpdatedAt: {}",
-                    category.getCreatedAt(),
-                    category.getLastUpdatedAt());
             category = categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
@@ -71,7 +62,7 @@ public class CategoryService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public CategoryResponse updateCategory(Long id, CategoryCreationRequest request) {
+    public CategoryResponse updateCategory(Long id, CategoryCreationRequest request) throws IOException {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
@@ -84,15 +75,6 @@ public class CategoryService {
         category.setSlug(generateSlug(request.getName()));
         category.setDescription(request.getDescription());
 
-        if (request.getImageUrl() != null && !request.getImageUrl().isEmpty()) {
-            Map imageData = cloudinaryService.uploadImage(request.getImageUrl(), "ecommerce-be/category");
-            category.setImageUrl((String) imageData.get("url"));
-        }
-
-        if (request.getIconUrl() != null && !request.getIconUrl().isEmpty()) {
-            Map iconData = cloudinaryService.uploadImage(request.getIconUrl(), "ecommerce-be/category");
-            category.setIconUrl((String) iconData.get("url"));
-        }
         if (request.getParentId() != null) {
             Category parentCategory = categoryRepository
                     .findById(request.getParentId())
@@ -100,6 +82,24 @@ public class CategoryService {
             category.setParent(parentCategory);
         } else {
             category.setParent(null);
+        }
+
+        if (request.getImageUrl() != null && !request.getImageUrl().isEmpty()) {
+            if (category.getImageUrl() != null && !category.getImageUrl().isEmpty()) {
+                log.info("Deleting old image URL: {}", category.getImageUrl());
+                cloudinaryService.deleteImage(category.getImageUrl());
+            }
+            Map imageData = cloudinaryService.uploadImage(request.getImageUrl(), "ecommerce-be/category");
+            category.setImageUrl((String) imageData.get("url"));
+        }
+
+        if (request.getIconUrl() != null && !request.getIconUrl().isEmpty()) {
+            if (category.getIconUrl() != null && !category.getIconUrl().isEmpty()) {
+                log.info("Deleting old icon URL: {}", category.getIconUrl());
+                cloudinaryService.deleteImage(category.getIconUrl());
+            }
+            Map iconData = cloudinaryService.uploadImage(request.getIconUrl(), "ecommerce-be/category");
+            category.setIconUrl((String) iconData.get("url"));
         }
 
         return categoryMapper.toCategoryResponse(categoryRepository.save(category));
@@ -112,36 +112,40 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    public CategoryResponse getOneCategory(Long id) {
-        Category category =
-                categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-        return categoryMapper.toCategoryResponse(category);
-    }
-
     public List<CategoryResponse> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream().map(categoryMapper::toCategoryResponse).collect(Collectors.toList());
     }
 
-    public String generateSlug(String name) {
-        String noAccents = name.replaceAll("[áàạảãâấầậẩẫăắằặẳẵ]", "a")
-                .replaceAll("[éèẹẻẽêếềệểễ]", "e")
-                .replaceAll("[íìịỉĩ]", "i")
-                .replaceAll("[óòọỏõôốồộổỗơớờợởỡ]", "o")
-                .replaceAll("[úùụủũưứừựửữ]", "u")
-                .replaceAll("[ýỳỵỷỹ]", "y")
-                .replaceAll("[đ]", "d")
-                .replaceAll("[ÁÀẠẢÃÂẤẦẬẨẪĂẮẰẶẲẴ]", "A")
-                .replaceAll("[ÉÈẸẺẼÊẾỀỆỂỄ]", "E")
-                .replaceAll("[ÍÌỊỈĨ]", "I")
-                .replaceAll("[ÓÒỌỎÕÔỐỒỘỔỖƠỚỜỢỞỠ]", "O")
-                .replaceAll("[ÚÙỤỦŨƯỨỪỰỬỮ]", "U")
-                .replaceAll("[ÝỲỴỶỸ]", "Y")
-                .replaceAll("[Đ]", "D");
-        String sanitized = noAccents.replaceAll("[^a-zA-Z0-9\\s]", "");
-        String baseSlug = sanitized.trim().toLowerCase().replaceAll("\\s+", "-");
+    public CategoryResponse getOneCategoryBySlug(String slug) {
+        Category category =
+                categoryRepository.findBySlug(slug).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+        return categoryMapper.toCategoryResponse(category);
+    }
 
-        String randomCode = UUID.randomUUID().toString().substring(0, 8);
-        return baseSlug + "-" + randomCode;
+    public String generateSlug(String name) {
+        String slug;
+        do {
+            slug = name.trim();
+            slug = slug.replaceAll("[^\\p{L}\\p{N}\\s-]", "");
+            slug = slug.replaceAll("\\s+", "-");
+            slug = slug.replaceAll("-+", "-");
+            slug = slug.replaceAll("^-|-$", "");
+            String randomCode = generateNumericCode(8);
+            slug = slug + "-cate." + randomCode;
+        } while (categoryRepository.existsBySlug(slug));
+        return slug;
+    }
+
+    private String generateNumericCode(int length) {
+        Random random = new Random();
+        StringBuilder numericCode = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            int digit = random.nextInt(10);
+            numericCode.append(digit);
+        }
+
+        return numericCode.toString();
     }
 }

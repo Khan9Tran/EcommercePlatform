@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 public class CategoryController {
     CategoryService categoryService;
 
-    @Operation(summary = "Create category", description = "Api create new category")
+    @Operation(summary = "Create category", description = "Api create category")
     @PostMapping(consumes = {"multipart/form-data"})
     public ApiResponse<CategoryResponse> createCategory(
-            @RequestParam("name") String name,
+            @RequestParam(value = "name") String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "parentId", required = false) Long parentId,
-            @RequestParam("imageUrl") MultipartFile imageUrl,
-            @RequestParam("iconUrl") MultipartFile iconUrl) {
+            @RequestParam(value = "imageUrl") MultipartFile imageUrl,
+            @RequestParam(value = "iconUrl") MultipartFile iconUrl) {
 
         CategoryCreationRequest request = CategoryCreationRequest.builder()
                 .name(name)
@@ -45,20 +46,25 @@ public class CategoryController {
 
         CategoryResponse categoryResponse = categoryService.createCategory(request);
 
-        return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
+        return ApiResponse.<CategoryResponse>builder()
+                .result(categoryResponse)
+                .message("Create category successfully!")
+                .code(1000)
+                .build();
     }
 
-    @Operation(summary = "Update category", description = "Api update existing category")
+    @Operation(summary = "Update category", description = "Api update category")
     @PutMapping(
             value = "/{id}",
             consumes = {"multipart/form-data"})
     public ApiResponse<CategoryResponse> updateCategory(
             @PathVariable Long id,
-            @RequestParam("name") String name,
+            @RequestParam(value = "name") String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "parentId", required = false) Long parentId,
             @RequestParam(value = "imageUrl", required = false) MultipartFile imageUrl,
-            @RequestParam(value = "iconUrl", required = false) MultipartFile iconUrl) {
+            @RequestParam(value = "iconUrl", required = false) MultipartFile iconUrl)
+            throws IOException {
 
         CategoryCreationRequest request = CategoryCreationRequest.builder()
                 .name(name)
@@ -70,6 +76,8 @@ public class CategoryController {
 
         return ApiResponse.<CategoryResponse>builder()
                 .result(categoryService.updateCategory(id, request))
+                .message("Update category successfully!")
+                .code(1000)
                 .build();
     }
 
@@ -78,15 +86,8 @@ public class CategoryController {
     public ApiResponse<String> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ApiResponse.<String>builder()
-                .result("Category deleted successfully")
-                .build();
-    }
-
-    @Operation(summary = "Get one category", description = "Api get category by id")
-    @GetMapping("/{id}")
-    public ApiResponse<CategoryResponse> getOneCategory(@PathVariable Long id) {
-        return ApiResponse.<CategoryResponse>builder()
-                .result(categoryService.getOneCategory(id))
+                .message("Category deleted successfully")
+                .code(1000)
                 .build();
     }
 
@@ -95,6 +96,19 @@ public class CategoryController {
     public ApiResponse<List<CategoryResponse>> getAllCategories() {
         return ApiResponse.<List<CategoryResponse>>builder()
                 .result(categoryService.getAllCategories())
+                .message("Get all categories successfully!")
+                .code(1000)
+                .build();
+    }
+
+    @GetMapping("/{slug}")
+    @Operation(summary = "Get one category by slug", description = "Api get one category by slug")
+    public ApiResponse<CategoryResponse> getOneCategoryBySlug(@PathVariable String slug) {
+        CategoryResponse categoryResponse = categoryService.getOneCategoryBySlug(slug);
+        return ApiResponse.<CategoryResponse>builder()
+                .result(categoryResponse)
+                .message("Get one category by slug successfully!")
+                .code(1000)
                 .build();
     }
 }
