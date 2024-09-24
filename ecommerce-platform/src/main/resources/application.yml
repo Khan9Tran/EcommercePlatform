@@ -21,3 +21,8 @@ jwt:
   signerKey: ${JWT_SIGNER_KEY}
   valid-duration: 3600 # in second
   refreshable-duration: 360000 # seconds
+
+cloudinary:
+  name: ${CLOUD_NAME}
+  api-key: ${API_KEY}
+  api-secret: ${API_SECRET}
