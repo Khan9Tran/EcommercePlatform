@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.hkteam.ecommerce_platform.exception.AppException;
+import com.hkteam.ecommerce_platform.exception.ErrorCode;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class CloudinaryService {
-    private Cloudinary cloudinary;
+    Cloudinary cloudinary;
 
     public Map<String, Object> uploadImage(MultipartFile file, String folder) {
         try {
             Map<String, Object> options = Map.of("folder", folder);
-            Map data = this.cloudinary.uploader().upload(file.getBytes(), options);
-            return data;
+            return cloudinary.uploader().upload(file.getBytes(), options);
         } catch (IOException io) {
-            throw new RuntimeException("Image upload fail");
+            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
     }
 

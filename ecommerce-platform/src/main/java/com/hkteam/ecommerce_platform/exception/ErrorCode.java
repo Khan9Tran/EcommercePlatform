@@ -29,6 +29,7 @@ public enum ErrorCode {
     PARENT_CATEGORY_NOT_FOUND(1018, "Parent category not found", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_FOUND(1019, "Category not found", HttpStatus.NOT_FOUND),
     CATEGORY_DUPLICATE(1020, "Name is duplicated with another name", HttpStatus.BAD_REQUEST),
+    UPLOAD_FILE_FAILED(1021, "Upload file failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     int code;

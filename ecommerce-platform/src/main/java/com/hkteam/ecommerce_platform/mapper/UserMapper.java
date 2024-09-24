@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
+import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.entity.user.User;
 
@@ -14,4 +15,6 @@ public interface UserMapper {
     User toUser(UserCreationRequest request);
 
     UserResponse toUserResponse(User user);
+
+    UserDetailResponse toUserDetailResponse(User user);
 }

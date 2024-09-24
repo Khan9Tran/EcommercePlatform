@@ -20,7 +20,7 @@ public class EcommercePlatformApplication {
         final String PORT = "PORT";
         final String JWT_SIGNER_KEY = "JWT_SIGNER_KEY";
 
-        //Cloudinary
+        // Cloudinary
         final String CLOUD_NAME = "CLOUD_NAME";
         final String API_KEY = "API_KEY";
         final String API_SECRET = "API_SECRET";

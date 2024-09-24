@@ -3,12 +3,13 @@ package com.hkteam.ecommerce_platform.configuration;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.cloudinary.Cloudinary;
+
+import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 @Configuration

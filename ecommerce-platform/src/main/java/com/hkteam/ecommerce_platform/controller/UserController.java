@@ -2,13 +2,11 @@ package com.hkteam.ecommerce_platform.controller;
 
 import jakarta.validation.Valid;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.service.UserService;
 
@@ -34,5 +32,11 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.createUsers(request))
                 .build();
+    }
+
+    @Operation(summary = "Get user by id", description = "Api get user by id")
+    @GetMapping("/{userId}")
+    UserDetailResponse getUser(@PathVariable("userId") String userId) {
+        return userService.getUser(userId);
     }
 }
