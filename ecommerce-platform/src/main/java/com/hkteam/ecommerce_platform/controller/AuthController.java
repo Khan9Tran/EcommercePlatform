@@ -2,6 +2,8 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.text.ParseException;
 
+import com.hkteam.ecommerce_platform.dto.request.ChangePasswordRequest;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,5 +54,13 @@ public class AuthController {
             throws ParseException, JOSEException {
         var result = authenticationService.refreshToken(request);
         return ApiResponse.<AuthenticationResponse>builder().result(result).build();
+    }
+
+    @Operation(summary = "Change password", description = "Api reset password")
+    @PostMapping("/change-password")
+    ApiResponse<Void> changePassword(@RequestBody @Valid  ChangePasswordRequest request)
+    {
+        var result  = authenticationService.changePassword(request);
+        return  ApiResponse.<Void>builder().build();
     }
 }

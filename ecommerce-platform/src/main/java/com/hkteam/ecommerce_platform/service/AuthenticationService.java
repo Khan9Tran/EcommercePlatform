@@ -4,19 +4,21 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import com.hkteam.ecommerce_platform.dto.request.*;
+import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.hkteam.ecommerce_platform.dto.request.AuthenticationRequest;
-import com.hkteam.ecommerce_platform.dto.request.IntrospectRequest;
-import com.hkteam.ecommerce_platform.dto.request.LogoutRequest;
-import com.hkteam.ecommerce_platform.dto.request.RefreshRequest;
 import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
 import com.hkteam.ecommerce_platform.dto.response.IntrospectResponse;
 import com.hkteam.ecommerce_platform.entity.authorization.InvalidatedToken;
@@ -169,4 +171,40 @@ public class AuthenticationService {
 
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
+
+
+    public ApiResponse<Void> changePassword(ChangePasswordRequest request)
+    {
+        String newPassword = request.getNewPassword();
+        String newPasswordConfirmation = request.getNewPasswordConfirmation();
+
+        if (!newPassword.equals(newPasswordConfirmation))
+            throw  new AppException((ErrorCode.PASSWORDS_DO_NOT_MATCH));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var username = authentication.getName();
+
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        boolean authenticated = passwordEncoder.matches(request.getOldPassword(), user.getPasswordDigest());
+        if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (passwordEncoder.matches(newPassword,user.getPasswordDigest()))
+            throw new AppException(ErrorCode.NEW_PASSWORD_SAME_OLD_PASSWORD);
+
+        var newPasswordHasEncode = passwordEncoder.encode(newPassword);
+        user.setPasswordDigest(newPasswordHasEncode);
+
+        try {
+            userRepository.save(user);
+        } catch (DataAccessException e) {
+            log.info("Some problems when change pass ", e.getMessage());
+        }
+
+        return  ApiResponse.<Void>builder().build();
+    }
+
+
 }

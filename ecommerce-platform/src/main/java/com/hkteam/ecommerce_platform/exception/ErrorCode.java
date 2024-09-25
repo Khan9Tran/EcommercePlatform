@@ -33,6 +33,7 @@ public enum ErrorCode {
     NAME_NOT_BLANK(1022, "Name must not be empty", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_FOUND(1023, "There are components in list that can't be found", HttpStatus.NOT_FOUND),
     UPLOAD_FILE_FAILED(1024, "Upload file failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    NEW_PASSWORD_SAME_OLD_PASSWORD(1025,"The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST);
     ;
 
     int code;
