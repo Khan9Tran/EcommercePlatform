@@ -29,6 +29,9 @@ public enum ErrorCode {
     PARENT_CATEGORY_NOT_FOUND(1018, "Parent category not found", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_FOUND(1019, "Category not found", HttpStatus.NOT_FOUND),
     CATEGORY_DUPLICATE(1020, "Name is duplicated with another name", HttpStatus.BAD_REQUEST),
+    COMPONENT_NOT_FOUND(1021, "Component not found", HttpStatus.NOT_FOUND),
+    NAME_NOT_BLANK(1022, "Name must not be empty", HttpStatus.BAD_REQUEST),
+    LIST_COMPONENT_NOT_FOUND(1023, "There are components in list that can't be found", HttpStatus.NOT_FOUND),
     ;
 
     int code;

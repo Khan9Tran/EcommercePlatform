@@ -3,6 +3,8 @@ package com.hkteam.ecommerce_platform.controller;
 import java.io.IOException;
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,28 +31,18 @@ public class CategoryController {
 
     @Operation(summary = "Create category", description = "Api create category")
     @PostMapping(consumes = {"multipart/form-data"})
-    public ApiResponse<CategoryResponse> createCategory(
-            @RequestParam(value = "name") String name,
-            @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "parentId", required = false) Long parentId,
-            @RequestParam(value = "imageUrl") MultipartFile imageUrl,
-            @RequestParam(value = "iconUrl") MultipartFile iconUrl) {
-
-        CategoryCreationRequest request = CategoryCreationRequest.builder()
-                .name(name)
-                .description(description)
-                .parentId(parentId)
-                .imageUrl(imageUrl)
-                .iconUrl(iconUrl)
-                .build();
+    public ApiResponse<CategoryResponse> createCategory(@ModelAttribute @Valid CategoryCreationRequest request) {
+        log.info("Calling service to create category...");
 
         CategoryResponse categoryResponse = categoryService.createCategory(request);
+        log.info("Successfully created category: {}", categoryResponse);
 
-        return ApiResponse.<CategoryResponse>builder()
+        ApiResponse<CategoryResponse> response = ApiResponse.<CategoryResponse>builder()
                 .result(categoryResponse)
-                .message("Create category successfully!")
-                .code(1000)
                 .build();
+        log.debug("Response to be returned: {}", response);
+
+        return response;
     }
 
     @Operation(summary = "Update category", description = "Api update category")
@@ -59,7 +51,7 @@ public class CategoryController {
             consumes = {"multipart/form-data"})
     public ApiResponse<CategoryResponse> updateCategory(
             @PathVariable Long id,
-            @RequestParam(value = "name") String name,
+            @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "parentId", required = false) Long parentId,
             @RequestParam(value = "imageUrl", required = false) MultipartFile imageUrl,
@@ -108,6 +100,22 @@ public class CategoryController {
         return ApiResponse.<CategoryResponse>builder()
                 .result(categoryResponse)
                 .message("Get one category by slug successfully!")
+                .code(1000)
+                .build();
+    }
+
+    @Operation(summary = "Add components to category", description = "Api add components to a category")
+    @PostMapping("/{categoryId}/components")
+    public ApiResponse<CategoryResponse> addComponentToCategory(
+            @PathVariable Long categoryId,
+            @RequestBody AddComponentRequest addComponentRequest) {
+
+        List<Long> componentIds = addComponentRequest.getListComponent();
+        CategoryResponse categoryResponse = categoryService.addComponentToCategory(categoryId, componentIds);
+
+        return ApiResponse.<CategoryResponse>builder()
+                .result(categoryResponse)
+                .message("Components added to category successfully!")
                 .code(1000)
                 .build();
     }

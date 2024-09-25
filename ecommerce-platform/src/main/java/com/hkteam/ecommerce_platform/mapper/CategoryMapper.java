@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
+import com.hkteam.ecommerce_platform.entity.category.Component;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -14,5 +16,8 @@ public interface CategoryMapper {
     Category toCategory(CategoryCreationRequest request);
 
     @Mapping(source = "parent.id", target = "parentId")
+    @Mapping(target = "listComponent", expression = "java(category.getComponents().stream().map(this::toComponentResponse).collect(java.util.stream.Collectors.toSet()))")
     CategoryResponse toCategoryResponse(Category category);
+
+    ComponentResponse toComponentResponse(Component component);
 }
