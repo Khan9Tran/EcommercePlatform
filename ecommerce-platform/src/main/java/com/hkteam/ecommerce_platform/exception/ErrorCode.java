@@ -33,6 +33,8 @@ public enum ErrorCode {
     NAME_NOT_BLANK(1022, "Name must not be empty", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_FOUND(1023, "There are components in list that can't be found", HttpStatus.NOT_FOUND),
     UPLOAD_FILE_FAILED(1024, "Upload file failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    COMPONENT_EXISTED(1025, "Component already exists", HttpStatus.BAD_REQUEST),
+    COMPONENT_EXISTED_IN_CATE(1026, "Component already exists in Category", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
