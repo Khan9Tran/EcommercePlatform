@@ -1,13 +1,13 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
-import com.hkteam.ecommerce_platform.entity.category.Component;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
+import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
+import com.hkteam.ecommerce_platform.entity.category.Component;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
@@ -16,7 +16,7 @@ public interface CategoryMapper {
     Category toCategory(CategoryCreationRequest request);
 
     @Mapping(source = "parent.id", target = "parentId")
-    @Mapping(target = "listComponent", expression = "java(category.getComponents().stream().map(this::toComponentResponse).collect(java.util.stream.Collectors.toSet()))")
+    @Mapping(target = "listComponent", source = "components")
     CategoryResponse toCategoryResponse(Category category);
 
     ComponentResponse toComponentResponse(Component component);

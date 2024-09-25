@@ -3,11 +3,12 @@ package com.hkteam.ecommerce_platform.controller;
 import java.io.IOException;
 import java.util.List;
 
-import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
 import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
@@ -32,17 +33,9 @@ public class CategoryController {
     @Operation(summary = "Create category", description = "Api create category")
     @PostMapping(consumes = {"multipart/form-data"})
     public ApiResponse<CategoryResponse> createCategory(@ModelAttribute @Valid CategoryCreationRequest request) {
-        log.info("Calling service to create category...");
-
         CategoryResponse categoryResponse = categoryService.createCategory(request);
-        log.info("Successfully created category: {}", categoryResponse);
 
-        ApiResponse<CategoryResponse> response = ApiResponse.<CategoryResponse>builder()
-                .result(categoryResponse)
-                .build();
-        log.debug("Response to be returned: {}", response);
-
-        return response;
+        return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 
     @Operation(summary = "Update category", description = "Api update category")
@@ -107,8 +100,7 @@ public class CategoryController {
     @Operation(summary = "Add components to category", description = "Api add components to a category")
     @PostMapping("/{categoryId}/components")
     public ApiResponse<CategoryResponse> addComponentToCategory(
-            @PathVariable Long categoryId,
-            @RequestBody AddComponentRequest addComponentRequest) {
+            @PathVariable Long categoryId, @RequestBody AddComponentRequest addComponentRequest) {
 
         List<Long> componentIds = addComponentRequest.getListComponent();
         CategoryResponse categoryResponse = categoryService.addComponentToCategory(categoryId, componentIds);

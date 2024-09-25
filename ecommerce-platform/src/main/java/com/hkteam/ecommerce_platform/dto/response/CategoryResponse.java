@@ -1,7 +1,7 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,5 +21,5 @@ public class CategoryResponse {
     Long parentId;
     Instant createdAt;
     Instant lastUpdatedAt;
-    Set<ComponentResponse> listComponent;
+    List<ComponentResponse> listComponent;
 }

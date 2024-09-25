@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.hkteam.ecommerce_platform.entity.category.Component;
-import com.hkteam.ecommerce_platform.repository.ComponentRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -13,10 +11,12 @@ import org.springframework.stereotype.Service;
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
+import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.CategoryMapper;
 import com.hkteam.ecommerce_platform.repository.CategoryRepository;
+import com.hkteam.ecommerce_platform.repository.ComponentRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -35,28 +35,18 @@ public class CategoryService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse createCategory(CategoryCreationRequest request) {
-        log.info("Start creating category with name: {}", request.getName());
-
         if (categoryRepository.existsByName(request.getName())) {
-            log.warn("Category with name {} already exists.", request.getName());
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
         Category parentCategory = null;
         if (request.getParentId() != null) {
-            log.info("Checking for parent category with ID: {}", request.getParentId());
             parentCategory = categoryRepository
                     .findById(request.getParentId())
                     .orElseThrow(() -> new AppException(ErrorCode.PARENT_CATEGORY_NOT_FOUND));
         }
-
-        log.info("Uploading image for category...");
         Map imageData = cloudinaryService.uploadImage(request.getImageUrl(), "ecommerce-be/category");
-        log.info("Image uploaded with URL: {}", imageData.get("url"));
-
-        log.info("Uploading icon for category...");
         Map iconData = cloudinaryService.uploadImage(request.getIconUrl(), "ecommerce-be/category");
-        log.info("Icon uploaded with URL: {}", iconData.get("url"));
 
         Category category = categoryMapper.toCategory(request);
 
@@ -64,19 +54,13 @@ public class CategoryService {
         category.setImageUrl((String) imageData.get("url"));
         category.setIconUrl((String) iconData.get("url"));
         category.setParent(parentCategory);
-        log.debug("Category details before saving: {}", category);
 
         try {
             category = categoryRepository.save(category);
-            log.info("Category saved successfully with ID: {}", category.getId());
         } catch (DataIntegrityViolationException e) {
-            log.error("Data integrity violation while saving category: {}", e.getMessage());
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
-        CategoryResponse response = categoryMapper.toCategoryResponse(category);
-        log.info("Category created successfully: {}", response);
-
-        return response;
+        return categoryMapper.toCategoryResponse(category);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -171,7 +155,8 @@ public class CategoryService {
     }
 
     public CategoryResponse addComponentToCategory(Long categoryId, List<Long> componentIds) {
-        Category category = categoryRepository.findById(categoryId)
+        Category category = categoryRepository
+                .findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
         List<Component> components = componentRepository.findAllById(componentIds);
