@@ -20,12 +20,20 @@ public class EcommercePlatformApplication {
         final String PORT = "PORT";
         final String JWT_SIGNER_KEY = "JWT_SIGNER_KEY";
 
+        // Cloudinary
+        final String CLOUD_NAME = "CLOUD_NAME";
+        final String API_KEY = "API_KEY";
+        final String API_SECRET = "API_SECRET";
+
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
         System.setProperty(HOST, Objects.requireNonNull(dotenv.get(HOST)));
         System.setProperty(PORT, Objects.requireNonNull(dotenv.get(PORT)));
         System.setProperty(JWT_SIGNER_KEY, Objects.requireNonNull(dotenv.get(JWT_SIGNER_KEY)));
+        System.setProperty(CLOUD_NAME, Objects.requireNonNull(dotenv.get(CLOUD_NAME)));
+        System.setProperty(API_KEY, Objects.requireNonNull(dotenv.get(API_KEY)));
+        System.setProperty(API_SECRET, Objects.requireNonNull(dotenv.get(API_SECRET)));
 
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }

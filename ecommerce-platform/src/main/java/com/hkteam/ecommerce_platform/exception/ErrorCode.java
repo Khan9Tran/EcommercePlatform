@@ -32,6 +32,7 @@ public enum ErrorCode {
     COMPONENT_NOT_FOUND(1021, "Component not found", HttpStatus.NOT_FOUND),
     NAME_NOT_BLANK(1022, "Name must not be empty", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_FOUND(1023, "There are components in list that can't be found", HttpStatus.NOT_FOUND),
+    UPLOAD_FILE_FAILED(1021, "Upload file failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     int code;
