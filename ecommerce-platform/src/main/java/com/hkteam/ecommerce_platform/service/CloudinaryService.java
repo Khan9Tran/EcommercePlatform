@@ -25,7 +25,10 @@ public class CloudinaryService {
     public Map<String, Object> uploadImage(MultipartFile file, String folder) {
         try {
             Map<String, Object> options = Map.of("folder", folder);
-            return cloudinary.uploader().upload(file.getBytes(), options);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> upload = cloudinary.uploader().upload(file.getBytes(), options);
+            return upload;
         } catch (IOException io) {
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
@@ -36,7 +39,8 @@ public class CloudinaryService {
         String publicId = extractPublicId(imageUrl);
         log.info("Extracted publicId: {}", publicId);
 
-        Map result = cloudinary.uploader().destroy(publicId, Map.of());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = cloudinary.uploader().destroy(publicId, Map.of());
         log.info("Cloudinary response after deleting image: {}", result);
 
         if ("ok".equals(result.get("result"))) {
@@ -48,8 +52,6 @@ public class CloudinaryService {
 
     private String extractPublicId(String imageUrl) {
         String[] parts = imageUrl.split("/");
-        String folderPath = parts[parts.length - 3] + "/" + parts[parts.length - 2];
-        String publicIdWithExtension = parts[parts.length - 1];
-        return folderPath + "/" + publicIdWithExtension.split("\\.")[0];
+        return parts[parts.length - 2] + "/" + parts[parts.length - 1].split("\\.")[0];
     }
 }
