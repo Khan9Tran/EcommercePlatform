@@ -39,4 +39,6 @@ public class UserController {
     UserDetailResponse getUser(@PathVariable("userId") String userId) {
         return userService.getUser(userId);
     }
+
+
 }

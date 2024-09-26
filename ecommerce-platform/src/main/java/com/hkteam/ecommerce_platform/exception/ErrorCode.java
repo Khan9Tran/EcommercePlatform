@@ -37,6 +37,7 @@ public enum ErrorCode {
     COMPONENT_EXISTED_IN_CATE(1026, "Component already exists in Category", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST(1027, "Invalid request", HttpStatus.BAD_REQUEST),
     COMPONENT_DUPLICATE(1028, "Name is duplicated with another name", HttpStatus.BAD_REQUEST)
+    NEW_PASSWORD_SAME_OLD_PASSWORD(1025,"The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST);
     ;
 
     int code;
