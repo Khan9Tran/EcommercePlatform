@@ -2,14 +2,15 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.text.ParseException;
 
-import com.hkteam.ecommerce_platform.dto.request.ChangePasswordRequest;
 import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hkteam.ecommerce_platform.dto.request.AuthenticationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ChangePasswordRequest;
 import com.hkteam.ecommerce_platform.dto.request.LogoutRequest;
 import com.hkteam.ecommerce_platform.dto.request.RefreshRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
@@ -58,9 +59,8 @@ public class AuthController {
 
     @Operation(summary = "Change password", description = "Api reset password")
     @PostMapping("/change-password")
-    ApiResponse<Void> changePassword(@RequestBody @Valid  ChangePasswordRequest request)
-    {
-        var result  = authenticationService.changePassword(request);
-        return  ApiResponse.<Void>builder().build();
+    ApiResponse<Void> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        var result = authenticationService.changePassword(request);
+        return ApiResponse.<Void>builder().build();
     }
 }

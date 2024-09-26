@@ -1,20 +1,21 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.CategoryRepository;
-import org.springframework.stereotype.Service;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +30,15 @@ public class ImageService {
 
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> img = (cloudinaryService.uploadImage(image, TypeImage.MAIN_IMAGE_OF_CATEGORY.name().toLowerCase()));
+            Map<String, Object> img = (cloudinaryService.uploadImage(
+                    image, TypeImage.MAIN_IMAGE_OF_CATEGORY.name().toLowerCase()));
 
             if (img.get("url") == null) {
                 throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
             } else {
-                Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                Category category = categoryRepository
+                        .findById(categoryId)
+                        .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
                 if (category.getImageUrl() != null) {
                     cloudinaryService.deleteImage(category.getImageUrl());
@@ -54,12 +58,10 @@ public class ImageService {
                         .build();
             }
 
-            return  imageResponse;
-        }
-        catch (Exception e) {
+            return imageResponse;
+        } catch (Exception e) {
             log.error("Error while uploading image: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
-
     }
 }
