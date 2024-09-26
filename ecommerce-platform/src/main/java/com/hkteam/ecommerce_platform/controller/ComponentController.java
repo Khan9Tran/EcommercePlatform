@@ -31,12 +31,8 @@ public class ComponentController {
     @PostMapping()
     public ApiResponse<ComponentResponse> createComponent(@RequestBody @Valid ComponentCreationRequest request) {
 
-        ComponentResponse componentResponse = componentService.createComponent(request);
-
         return ApiResponse.<ComponentResponse>builder()
-                .result(componentResponse)
-                .message("Create component successfully!")
-                .code(1000)
+                .result(componentService.createComponent(request))
                 .build();
     }
 
@@ -49,8 +45,6 @@ public class ComponentController {
 
         return ApiResponse.<ComponentResponse>builder()
                 .result(componentResponse)
-                .message("Update component successfully!")
-                .code(1000)
                 .build();
     }
 
@@ -58,10 +52,7 @@ public class ComponentController {
     @DeleteMapping("/{id}")
     public ApiResponse<String> deleteComponent(@PathVariable Long id) {
         componentService.deleteComponent(id);
-        return ApiResponse.<String>builder()
-                .message("Component deleted successfully")
-                .code(1000)
-                .build();
+        return ApiResponse.<String>builder().build();
     }
 
     @Operation(summary = "Get all components", description = "Api get all components")
@@ -69,8 +60,6 @@ public class ComponentController {
     public ApiResponse<List<ComponentResponse>> getAllComponents() {
         return ApiResponse.<List<ComponentResponse>>builder()
                 .result(componentService.getAllComponents())
-                .message("Get all components successfully!")
-                .code(1000)
                 .build();
     }
 
@@ -80,8 +69,6 @@ public class ComponentController {
         ComponentResponse componentResponse = componentService.getOneComponentById(id);
         return ApiResponse.<ComponentResponse>builder()
                 .result(componentResponse)
-                .message("Get one category by id successfully!")
-                .code(1000)
                 .build();
     }
 }

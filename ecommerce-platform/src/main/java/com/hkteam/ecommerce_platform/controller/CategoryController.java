@@ -1,15 +1,14 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import java.io.IOException;
 import java.util.List;
 
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
 import com.hkteam.ecommerce_platform.service.CategoryService;
@@ -31,38 +30,20 @@ public class CategoryController {
     CategoryService categoryService;
 
     @Operation(summary = "Create category", description = "Api create category")
-    @PostMapping(consumes = {"multipart/form-data"})
-    public ApiResponse<CategoryResponse> createCategory(@ModelAttribute @Valid CategoryCreationRequest request) {
+    @PostMapping()
+    public ApiResponse<CategoryResponse> createCategory(@RequestBody @Valid CategoryCreationRequest request) {
         CategoryResponse categoryResponse = categoryService.createCategory(request);
 
         return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 
     @Operation(summary = "Update category", description = "Api update category")
-    @PutMapping(
-            value = "/{id}",
-            consumes = {"multipart/form-data"})
+    @PutMapping("/{id}")
     public ApiResponse<CategoryResponse> updateCategory(
-            @PathVariable Long id,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "parentId", required = false) Long parentId,
-            @RequestParam(value = "imageUrl", required = false) MultipartFile imageUrl,
-            @RequestParam(value = "iconUrl", required = false) MultipartFile iconUrl)
-            throws IOException {
-
-        CategoryCreationRequest request = CategoryCreationRequest.builder()
-                .name(name)
-                .description(description)
-                .parentId(parentId)
-                .imageUrl(imageUrl)
-                .iconUrl(iconUrl)
-                .build();
+            @PathVariable Long id, @RequestBody @Valid CategoryUpdateRequest request) {
 
         return ApiResponse.<CategoryResponse>builder()
                 .result(categoryService.updateCategory(id, request))
-                .message("Update category successfully!")
-                .code(1000)
                 .build();
     }
 
@@ -70,10 +51,7 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ApiResponse<String> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return ApiResponse.<String>builder()
-                .message("Category deleted successfully")
-                .code(1000)
-                .build();
+        return ApiResponse.<String>builder().build();
     }
 
     @Operation(summary = "Get all categories", description = "Api get all categories")
@@ -81,8 +59,6 @@ public class CategoryController {
     public ApiResponse<List<CategoryResponse>> getAllCategories() {
         return ApiResponse.<List<CategoryResponse>>builder()
                 .result(categoryService.getAllCategories())
-                .message("Get all categories successfully!")
-                .code(1000)
                 .build();
     }
 
@@ -90,11 +66,7 @@ public class CategoryController {
     @Operation(summary = "Get one category by slug", description = "Api get one category by slug")
     public ApiResponse<CategoryResponse> getOneCategoryBySlug(@PathVariable String slug) {
         CategoryResponse categoryResponse = categoryService.getOneCategoryBySlug(slug);
-        return ApiResponse.<CategoryResponse>builder()
-                .result(categoryResponse)
-                .message("Get one category by slug successfully!")
-                .code(1000)
-                .build();
+        return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 
     @Operation(summary = "Add components to category", description = "Api add components to a category")
@@ -105,10 +77,6 @@ public class CategoryController {
         List<Long> componentIds = addComponentRequest.getListComponent();
         CategoryResponse categoryResponse = categoryService.addComponentToCategory(categoryId, componentIds);
 
-        return ApiResponse.<CategoryResponse>builder()
-                .result(categoryResponse)
-                .message("Components added to category successfully!")
-                .code(1000)
-                .build();
+        return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 }

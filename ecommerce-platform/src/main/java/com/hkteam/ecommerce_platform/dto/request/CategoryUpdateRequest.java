@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class CategoryCreationRequest {
+public class CategoryUpdateRequest {
     @NotBlank(message = "NOT_BLANK")
     String name;
 

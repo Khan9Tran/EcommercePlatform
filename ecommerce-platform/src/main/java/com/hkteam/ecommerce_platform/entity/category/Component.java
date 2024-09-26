@@ -24,7 +24,7 @@ public class Component {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     String name;
 
     @Column(nullable = false)
@@ -37,10 +37,10 @@ public class Component {
     Set<ProductComponentValue> productComponentValues;
 
     @CreationTimestamp(source = SourceType.DB)
-    private Instant createdAt;
+    Instant createdAt;
 
     @UpdateTimestamp(source = SourceType.DB)
-    private Instant lastUpdatedAt;
+    Instant lastUpdatedAt;
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;

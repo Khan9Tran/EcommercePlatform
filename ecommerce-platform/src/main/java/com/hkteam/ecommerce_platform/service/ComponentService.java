@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,13 @@ public class ComponentService {
 
     public ComponentResponse createComponent(ComponentCreationRequest request) {
         Component component = componentMapper.toComponent(request);
-        component = componentRepository.save(component);
+
+        try {
+            component = componentRepository.save(component);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.COMPONENT_EXISTED);
+        }
+
         return componentMapper.toComponentResponse(component);
     }
 
