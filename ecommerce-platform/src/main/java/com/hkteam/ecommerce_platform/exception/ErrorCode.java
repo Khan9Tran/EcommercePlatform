@@ -35,6 +35,8 @@ public enum ErrorCode {
     UPLOAD_FILE_FAILED(1024, "Upload file failed", HttpStatus.INTERNAL_SERVER_ERROR),
     COMPONENT_EXISTED(1025, "Component already exists", HttpStatus.BAD_REQUEST),
     COMPONENT_EXISTED_IN_CATE(1026, "Component already exists in Category", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST(1027, "Invalid request", HttpStatus.BAD_REQUEST),
+    COMPONENT_DUPLICATE(1028, "Name is duplicated with another name", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

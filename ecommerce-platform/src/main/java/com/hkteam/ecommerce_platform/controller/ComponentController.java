@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -30,16 +31,17 @@ public class ComponentController {
     @Operation(summary = "Create component", description = "Api create component")
     @PostMapping()
     public ApiResponse<ComponentResponse> createComponent(@RequestBody @Valid ComponentCreationRequest request) {
+        ComponentResponse componentResponse = componentService.createComponent(request);
 
         return ApiResponse.<ComponentResponse>builder()
-                .result(componentService.createComponent(request))
+                .result(componentResponse)
                 .build();
     }
 
     @Operation(summary = "Update component", description = "Api update component")
     @PutMapping("/{id}")
     public ApiResponse<ComponentResponse> updateComponent(
-            @PathVariable Long id, @RequestBody ComponentCreationRequest request) {
+            @PathVariable Long id, @RequestBody @Valid ComponentUpdateRequest request) {
 
         ComponentResponse componentResponse = componentService.updateComponent(id, request);
 
@@ -67,6 +69,7 @@ public class ComponentController {
     @Operation(summary = "Get one component by id", description = "Api get one component by id")
     public ApiResponse<ComponentResponse> getOneComponentById(@PathVariable Long id) {
         ComponentResponse componentResponse = componentService.getOneComponentById(id);
+
         return ApiResponse.<ComponentResponse>builder()
                 .result(componentResponse)
                 .build();
