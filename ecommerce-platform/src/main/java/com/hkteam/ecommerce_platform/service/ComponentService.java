@@ -2,12 +2,12 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.List;
 
-import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.ComponentCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.exception.AppException;

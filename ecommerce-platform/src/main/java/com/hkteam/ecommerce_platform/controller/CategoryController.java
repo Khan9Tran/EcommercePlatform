@@ -43,9 +43,7 @@ public class CategoryController {
             @PathVariable Long id, @RequestBody @Valid CategoryUpdateRequest request) {
         CategoryResponse categoryResponse = categoryService.updateCategory(id, request);
 
-        return ApiResponse.<CategoryResponse>builder()
-                .result(categoryResponse)
-                .build();
+        return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 
     @Operation(summary = "Delete category", description = "Api delete category by id")

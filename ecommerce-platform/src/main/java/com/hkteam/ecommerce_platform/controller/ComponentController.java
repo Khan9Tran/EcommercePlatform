@@ -2,12 +2,12 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.util.List;
 
-import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.ComponentCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
 import com.hkteam.ecommerce_platform.service.ComponentService;

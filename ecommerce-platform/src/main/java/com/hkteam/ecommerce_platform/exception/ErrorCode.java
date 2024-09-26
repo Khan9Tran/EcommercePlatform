@@ -34,10 +34,13 @@ public enum ErrorCode {
     LIST_COMPONENT_NOT_FOUND(1023, "There are components in list that can't be found", HttpStatus.NOT_FOUND),
     UPLOAD_FILE_FAILED(1024, "Upload file failed", HttpStatus.INTERNAL_SERVER_ERROR),
     COMPONENT_EXISTED(1025, "Component already exists", HttpStatus.BAD_REQUEST),
-    COMPONENT_EXISTED_IN_CATE(1026, "Component already exists in Category", HttpStatus.BAD_REQUEST),
+    COMPONENT_EXISTED_IN_CATE(
+            1026, "There are components in list that already exist in category", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST(1027, "Invalid request", HttpStatus.BAD_REQUEST),
-    COMPONENT_DUPLICATE(1028, "Name is duplicated with another name", HttpStatus.BAD_REQUEST)
-    NEW_PASSWORD_SAME_OLD_PASSWORD(1025,"The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST);
+    COMPONENT_DUPLICATE(1028, "Name is duplicated with another name", HttpStatus.BAD_REQUEST),
+    NEW_PASSWORD_SAME_OLD_PASSWORD(
+            1029, "The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST),
+    LIST_COMPONENT_NOT_BLANK(1030, "List of components must not be empty", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

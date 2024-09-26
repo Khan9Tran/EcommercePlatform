@@ -43,7 +43,7 @@ public class CategoryService {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
-        if(description.isEmpty()){
+        if (description.isEmpty()) {
             description = null;
         }
 
@@ -81,7 +81,7 @@ public class CategoryService {
             throw new AppException(ErrorCode.CATEGORY_DUPLICATE);
         }
 
-        if(description.isEmpty()){
+        if (description.isEmpty()) {
             description = null;
         }
 
@@ -128,15 +128,21 @@ public class CategoryService {
                 .findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        for (Long componentId : componentIds) {
+        if (componentIds == null || componentIds.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_COMPONENT_NOT_BLANK);
+        }
+
+        Set<Long> uniqueComponentIds = new HashSet<>(componentIds);
+
+        for (Long componentId : uniqueComponentIds) {
             if (category.getComponents().stream()
                     .anyMatch(component -> (component.getId().equals(componentId))))
                 throw new AppException(ErrorCode.COMPONENT_EXISTED_IN_CATE);
         }
 
-        List<Component> components = componentRepository.findAllById(componentIds);
+        List<Component> components = componentRepository.findAllById(uniqueComponentIds);
 
-        if (components.size() != componentIds.size()) {
+        if (components.size() != uniqueComponentIds.size()) {
             throw new AppException(ErrorCode.LIST_COMPONENT_NOT_FOUND);
         }
 
