@@ -1,11 +1,10 @@
 package com.hkteam.ecommerce_platform.controller;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
 import com.hkteam.ecommerce_platform.service.ImageService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,11 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class ImageController {
     ImageService imageService;
-    @PostMapping("/categories/")
-    public ApiResponse<Object> uploadCategoryImage(@RequestParam("image") MultipartFile image) {
-        return ApiResponse.<Object>builder().result(imageService.uploadCategoryImage(image)).build();
+
+    @Operation(summary = "Upload Category Image", description = "Upload an image for a category")
+    @PostMapping(value = "/categories/{id}", consumes = "multipart/form-data")
+    public ApiResponse<ImageResponse> uploadCategoryImage(@RequestParam("image") MultipartFile image, @PathVariable("id") Long categoryId) {
+        return ApiResponse.<ImageResponse>builder().result(imageService.uploadCategoryImage(image, categoryId)).build();
     }
 
 }
