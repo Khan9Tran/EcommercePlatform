@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.Map;
 
+import com.hkteam.ecommerce_platform.util.ImageValidator;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,8 @@ public class ImageService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ImageResponse uploadCategoryImage(MultipartFile image, Long categoryId) {
+        ImageValidator.validateImage(image);
+
         ImageResponse imageResponse;
 
         try {

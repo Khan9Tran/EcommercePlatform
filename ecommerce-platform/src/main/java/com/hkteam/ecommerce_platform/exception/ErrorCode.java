@@ -45,6 +45,8 @@ public enum ErrorCode {
     BRAND_EXISTED(1032, "Brand already exists", HttpStatus.BAD_REQUEST),
     BRAND_NOT_FOUND(1033, "Brand not found", HttpStatus.NOT_FOUND),
     BRAND_DUPLICATE(1034, "Brand name is duplicated with another name", HttpStatus.BAD_REQUEST),
+    FILE_LIMIT_OF_1MB(1035, "File size exceeds the maximum limit of 1MB", HttpStatus.BAD_REQUEST),
+    ACCEPTED_FILE_TYPES(1036, "Invalid file type only JPG, PNG, JPEG, GIF are accepted", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
