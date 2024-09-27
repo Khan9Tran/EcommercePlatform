@@ -5,7 +5,6 @@ import java.util.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
@@ -44,7 +43,9 @@ public class CategoryService {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
-        String saveDescription = StringUtils.hasText(description) ? description : null;
+        if (description.isEmpty()) {
+            description = null;
+        }
 
         if (request.getParentId() != null) {
             parentCategory = categoryRepository
@@ -55,7 +56,7 @@ public class CategoryService {
         Category category = categoryMapper.toCategory(request);
 
         category.setSlug(SlugUtils.getSlug(name, TypeSlug.CATEGORY));
-        category.setDescription(saveDescription);
+        category.setDescription(description);
         category.setParent(parentCategory);
 
         try {
@@ -72,19 +73,17 @@ public class CategoryService {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        String name = request.getName();
-        String description = request.getDescription();
+        String name = request.getName().trim();
+        String description = request.getDescription().trim();
         Category parentCategory = null;
-
-        if (name == null || name.trim().isEmpty()) {
-            throw new AppException(ErrorCode.NAME_NOT_BLANK);
-        }
 
         if (categoryRepository.existsByName(name) && !category.getName().equals(name)) {
             throw new AppException(ErrorCode.CATEGORY_DUPLICATE);
         }
 
-        String saveDescription = StringUtils.hasText(description) ? description : null;
+        if (description.isEmpty()) {
+            description = null;
+        }
 
         if (request.getParentId() != null) {
             parentCategory = categoryRepository
@@ -97,10 +96,12 @@ public class CategoryService {
         }
 
         category.setName(name);
-        category.setDescription(saveDescription);
+        category.setDescription(description);
         category.setParent(parentCategory);
 
-        return categoryMapper.toCategoryResponse(categoryRepository.save(category));
+        category = categoryRepository.save(category);
+
+        return categoryMapper.toCategoryResponse(category);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -127,18 +128,26 @@ public class CategoryService {
                 .findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        for (Long componentId : componentIds) {
+        if (componentIds == null || componentIds.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_COMPONENT_NOT_BLANK);
+        }
+
+        Set<Long> uniqueComponentIds = new HashSet<>(componentIds);
+
+        for (Long componentId : uniqueComponentIds) {
             if (category.getComponents().stream()
                     .anyMatch(component -> (component.getId().equals(componentId))))
                 throw new AppException(ErrorCode.COMPONENT_EXISTED_IN_CATE);
         }
-        List<Component> components = componentRepository.findAllById(componentIds);
 
-        if (components.size() != componentIds.size()) {
+        List<Component> components = componentRepository.findAllById(uniqueComponentIds);
+
+        if (components.size() != uniqueComponentIds.size()) {
             throw new AppException(ErrorCode.LIST_COMPONENT_NOT_FOUND);
         }
 
         category.getComponents().addAll(components);
+
         Category savedCategory = categoryRepository.save(category);
 
         return categoryMapper.toCategoryResponse(savedCategory);

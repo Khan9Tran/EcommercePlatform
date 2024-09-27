@@ -41,10 +41,9 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ApiResponse<CategoryResponse> updateCategory(
             @PathVariable Long id, @RequestBody @Valid CategoryUpdateRequest request) {
+        CategoryResponse categoryResponse = categoryService.updateCategory(id, request);
 
-        return ApiResponse.<CategoryResponse>builder()
-                .result(categoryService.updateCategory(id, request))
-                .build();
+        return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 
     @Operation(summary = "Delete category", description = "Api delete category by id")
@@ -66,13 +65,14 @@ public class CategoryController {
     @Operation(summary = "Get one category by slug", description = "Api get one category by slug")
     public ApiResponse<CategoryResponse> getOneCategoryBySlug(@PathVariable String slug) {
         CategoryResponse categoryResponse = categoryService.getOneCategoryBySlug(slug);
+
         return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 
     @Operation(summary = "Add components to category", description = "Api add components to a category")
     @PostMapping("/{categoryId}/components")
     public ApiResponse<CategoryResponse> addComponentToCategory(
-            @PathVariable Long categoryId, @RequestBody AddComponentRequest addComponentRequest) {
+            @PathVariable Long categoryId, @RequestBody @Valid AddComponentRequest addComponentRequest) {
 
         List<Long> componentIds = addComponentRequest.getListComponent();
         CategoryResponse categoryResponse = categoryService.addComponentToCategory(categoryId, componentIds);

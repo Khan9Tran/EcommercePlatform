@@ -1,13 +1,13 @@
 package com.hkteam.ecommerce_platform.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.ComponentCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.exception.AppException;
@@ -28,21 +28,29 @@ public class ComponentService {
     ComponentRepository componentRepository;
     ComponentMapper componentMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public ComponentResponse createComponent(ComponentCreationRequest request) {
+        String name = request.getName().trim();
+
+        if (componentRepository.existsByName(name)) {
+            throw new AppException(ErrorCode.COMPONENT_EXISTED);
+        }
+
         Component component = componentMapper.toComponent(request);
 
         try {
             component = componentRepository.save(component);
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.COMPONENT_EXISTED);
+            throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
         return componentMapper.toComponentResponse(component);
     }
 
     public List<ComponentResponse> getAllComponents() {
-        List<Component> components = componentRepository.findAll();
-        return components.stream().map(componentMapper::toComponentResponse).collect(Collectors.toList());
+        return componentRepository.findAll().stream()
+                .map(componentMapper::toComponentResponse)
+                .toList();
     }
 
     public ComponentResponse getOneComponentById(Long id) {
@@ -51,15 +59,22 @@ public class ComponentService {
         return componentMapper.toComponentResponse(component);
     }
 
-    public ComponentResponse updateComponent(Long id, ComponentCreationRequest request) {
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new AppException(ErrorCode.NAME_NOT_BLANK);
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public ComponentResponse updateComponent(Long id, ComponentUpdateRequest request) {
         Component component =
                 componentRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
-        component.setName(request.getName());
+
+        String name = request.getName().trim();
+
+        if (componentRepository.existsByName(name) && !component.getName().equals(name)) {
+            throw new AppException(ErrorCode.COMPONENT_DUPLICATE);
+        }
+
+        component.setName(name);
         component.setRequired(request.isRequired());
+
         component = componentRepository.save(component);
+
         return componentMapper.toComponentResponse(component);
     }
 

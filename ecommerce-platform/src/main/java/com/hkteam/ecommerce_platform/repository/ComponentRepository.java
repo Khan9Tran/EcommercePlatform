@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 
 @Repository
-public interface ComponentRepository extends JpaRepository<Component, Long> {}
+public interface ComponentRepository extends JpaRepository<Component, Long> {
+    boolean existsByName(String name);
+}
