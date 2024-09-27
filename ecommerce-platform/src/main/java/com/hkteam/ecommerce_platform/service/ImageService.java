@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +26,7 @@ public class ImageService {
     CloudinaryService cloudinaryService;
     CategoryRepository categoryRepository;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public ImageResponse uploadCategoryImage(MultipartFile image, Long categoryId) {
         ImageResponse imageResponse;
 
@@ -62,6 +64,25 @@ public class ImageService {
         } catch (Exception e) {
             log.error("Error while uploading image: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteCategoryImage(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        try {
+            if (category.getImageUrl() != null) {
+                cloudinaryService.deleteImage(category.getImageUrl());
+
+                category.setImageUrl(null);
+                categoryRepository.save(category);
+            } else {
+                throw new AppException(ErrorCode.IMAGE_NULL);
+            }
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.IMAGE_NULL);
         }
     }
 }

@@ -123,6 +123,7 @@ public class CategoryService {
         return categoryMapper.toCategoryResponse(category);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse addComponentToCategory(Long categoryId, List<Long> componentIds) {
         Category category = categoryRepository
                 .findById(categoryId)

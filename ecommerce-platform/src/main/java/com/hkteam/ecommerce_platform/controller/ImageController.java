@@ -29,4 +29,11 @@ public class ImageController {
                 .result(imageService.uploadCategoryImage(image, categoryId))
                 .build();
     }
+
+    @Operation(summary = "Delete Category Image", description = "Delete an image for a category")
+    @DeleteMapping(value = "/categories/{id}")
+    public ApiResponse<Void> deleteCategoryImage(@PathVariable("id") Long categoryId) {
+        imageService.deleteCategoryImage(categoryId);
+        return ApiResponse.<Void>builder().build();
+    }
 }
