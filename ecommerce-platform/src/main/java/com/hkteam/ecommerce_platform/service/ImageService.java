@@ -2,7 +2,6 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.Map;
 
-import com.hkteam.ecommerce_platform.util.ImageValidator;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +12,7 @@ import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.CategoryRepository;
+import com.hkteam.ecommerce_platform.util.ImageValidator;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

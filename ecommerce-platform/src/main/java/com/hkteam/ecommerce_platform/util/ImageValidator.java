@@ -1,11 +1,12 @@
 package com.hkteam.ecommerce_platform.util;
 
-import com.hkteam.ecommerce_platform.exception.AppException;
-import com.hkteam.ecommerce_platform.exception.ErrorCode;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.Arrays;
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import com.hkteam.ecommerce_platform.exception.AppException;
+import com.hkteam.ecommerce_platform.exception.ErrorCode;
 
 public class ImageValidator {
     private static final long MAX_FILE_SIZE = 1000L * 1024;
