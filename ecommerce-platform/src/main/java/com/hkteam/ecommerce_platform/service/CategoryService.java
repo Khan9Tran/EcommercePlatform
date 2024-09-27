@@ -35,11 +35,11 @@ public class CategoryService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse createCategory(CategoryCreationRequest request) {
-        String name = request.getName().trim();
+        String name = request.getName().trim().toLowerCase();
         String description = request.getDescription().trim();
         Category parentCategory = null;
 
-        if (categoryRepository.existsByName(name)) {
+        if (categoryRepository.existsByNameIgnoreCase(name)) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
@@ -73,11 +73,13 @@ public class CategoryService {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        String name = request.getName().trim();
+        String name = request.getName().trim().toLowerCase();
         String description = request.getDescription().trim();
         Category parentCategory = null;
 
-        if (categoryRepository.existsByName(name) && !category.getName().equals(name)) {
+        boolean isDuplicateName = categoryRepository.existsByNameIgnoreCase(name)
+                && !category.getName().equalsIgnoreCase(name);
+        if (isDuplicateName) {
             throw new AppException(ErrorCode.CATEGORY_DUPLICATE);
         }
 
@@ -91,11 +93,11 @@ public class CategoryService {
                     .orElseThrow(() -> new AppException(ErrorCode.PARENT_CATEGORY_NOT_FOUND));
         }
 
-        if (!category.getName().equals(name)) {
-            category.setSlug(SlugUtils.getSlug(name, TypeSlug.CATEGORY));
+        if (!category.getName().equalsIgnoreCase(name)) {
+            category.setSlug(SlugUtils.getSlug(request.getName().trim(), TypeSlug.CATEGORY));
         }
 
-        category.setName(name);
+        category.setName(request.getName().trim());
         category.setDescription(description);
         category.setParent(parentCategory);
 

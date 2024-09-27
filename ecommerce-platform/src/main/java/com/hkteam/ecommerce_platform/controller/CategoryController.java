@@ -48,9 +48,9 @@ public class CategoryController {
 
     @Operation(summary = "Delete category", description = "Api delete category by id")
     @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteCategory(@PathVariable Long id) {
+    public ApiResponse<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return ApiResponse.<String>builder().build();
+        return ApiResponse.<Void>builder().build();
     }
 
     @Operation(summary = "Get all categories", description = "Api get all categories")

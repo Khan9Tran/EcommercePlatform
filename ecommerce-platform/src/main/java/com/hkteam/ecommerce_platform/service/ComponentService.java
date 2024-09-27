@@ -30,9 +30,9 @@ public class ComponentService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ComponentResponse createComponent(ComponentCreationRequest request) {
-        String name = request.getName().trim();
+        String name = request.getName().trim().toLowerCase();
 
-        if (componentRepository.existsByName(name)) {
+        if (componentRepository.existsByNameIgnoreCase(name)) {
             throw new AppException(ErrorCode.COMPONENT_EXISTED);
         }
 
@@ -64,13 +64,15 @@ public class ComponentService {
         Component component =
                 componentRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
 
-        String name = request.getName().trim();
+        String name = request.getName().trim().toLowerCase();
 
-        if (componentRepository.existsByName(name) && !component.getName().equals(name)) {
+        boolean isDuplicateName = componentRepository.existsByNameIgnoreCase(name)
+                && !component.getName().equalsIgnoreCase(name);
+        if (isDuplicateName) {
             throw new AppException(ErrorCode.COMPONENT_DUPLICATE);
         }
 
-        component.setName(name);
+        component.setName(request.getName().trim());
         component.setRequired(request.isRequired());
 
         component = componentRepository.save(component);

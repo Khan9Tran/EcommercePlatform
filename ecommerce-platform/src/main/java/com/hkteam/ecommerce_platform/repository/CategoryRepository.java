@@ -9,7 +9,7 @@ import com.hkteam.ecommerce_platform.entity.category.Category;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    boolean existsByName(String name);
+    boolean existsByNameIgnoreCase(String name);
 
     Optional<Category> findBySlug(String slug);
 }

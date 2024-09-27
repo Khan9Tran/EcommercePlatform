@@ -28,7 +28,7 @@ public enum ErrorCode {
     CATEGORY_EXISTED(1017, "Category already exists", HttpStatus.BAD_REQUEST),
     PARENT_CATEGORY_NOT_FOUND(1018, "Parent category not found", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_FOUND(1019, "Category not found", HttpStatus.NOT_FOUND),
-    CATEGORY_DUPLICATE(1020, "Name is duplicated with another name", HttpStatus.BAD_REQUEST),
+    CATEGORY_DUPLICATE(1020, "Category name is duplicated with another name", HttpStatus.BAD_REQUEST),
     COMPONENT_NOT_FOUND(1021, "Component not found", HttpStatus.NOT_FOUND),
     NAME_NOT_BLANK(1022, "Name must not be empty", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_FOUND(1023, "There are components in list that can't be found", HttpStatus.NOT_FOUND),
@@ -37,11 +37,14 @@ public enum ErrorCode {
     COMPONENT_EXISTED_IN_CATE(
             1026, "There are components in list that already exist in category", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST(1027, "Invalid request", HttpStatus.BAD_REQUEST),
-    COMPONENT_DUPLICATE(1028, "Name is duplicated with another name", HttpStatus.BAD_REQUEST),
+    COMPONENT_DUPLICATE(1028, "Component name is duplicated with another name", HttpStatus.BAD_REQUEST),
     NEW_PASSWORD_SAME_OLD_PASSWORD(
             1029, "The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_BLANK(1030, "List of components must not be empty", HttpStatus.BAD_REQUEST),
     IMAGE_NULL(1031, "Image is null", HttpStatus.BAD_REQUEST),
+    BRAND_EXISTED(1032, "Brand already exists", HttpStatus.BAD_REQUEST),
+    BRAND_NOT_FOUND(1033, "Brand not found", HttpStatus.NOT_FOUND),
+    BRAND_DUPLICATE(1034, "Brand name is duplicated with another name", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
