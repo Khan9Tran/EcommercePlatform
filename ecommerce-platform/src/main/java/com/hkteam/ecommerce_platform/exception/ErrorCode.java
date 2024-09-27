@@ -41,6 +41,8 @@ public enum ErrorCode {
     NEW_PASSWORD_SAME_OLD_PASSWORD(
             1029, "The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_BLANK(1030, "List of components must not be empty", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_BLANK(1031,"Email must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_EMAIL_FORMAT(1032,"Please provide a valid email address", HttpStatus.BAD_REQUEST)
     ;
 
     int code;
