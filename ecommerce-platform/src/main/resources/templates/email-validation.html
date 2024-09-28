@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xác thực Email</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+<div style="background-color: #ffffff; padding: 20px; border-radius: 5px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+    <h2 style="color: #333;">Xác thực Email</h2>
+    <p>Xin chào,</p>
+    <p>Cảm ơn bạn đã đăng ký! Để hoàn tất quá trình, vui lòng xác thực email của bạn bằng cách nhấn vào nút bên dưới:</p>
+    <a th:href="@{${tokenUrl}}"
+       style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        Xác thực Email
+    </a>
+    <p>Nếu liên kết không hoạt động, bạn có thể sao chép và dán đường dẫn sau vào trình duyệt của mình:</p>
+    <p><a th:href="@{${tokenUrl}}" th:text="${tokenUrl}"></a></p>
+    <p>Trân trọng,</p>
+    <p>Đội ngũ hỗ trợ</p>
+</div>
+</body>
+</html>

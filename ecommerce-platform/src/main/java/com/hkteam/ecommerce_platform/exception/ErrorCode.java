@@ -41,9 +41,14 @@ public enum ErrorCode {
     NEW_PASSWORD_SAME_OLD_PASSWORD(
             1029, "The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_BLANK(1030, "List of components must not be empty", HttpStatus.BAD_REQUEST),
-    EMAIL_NOT_BLANK(1031,"Email must not be empty", HttpStatus.BAD_REQUEST),
-    INVALID_EMAIL_FORMAT(1032,"Please provide a valid email address", HttpStatus.BAD_REQUEST)
-    ;
+    EMAIL_NOT_BLANK(1031, "Email must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_EMAIL_FORMAT(1032, "Please provide a valid email address", HttpStatus.BAD_REQUEST),
+    NEW_EMAIL_SAME_CURRENT_EMAIL(
+            1033, "The new email cannot be the same as the current email.", HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED(1034, "Email existed", HttpStatus.BAD_REQUEST),
+    EMAIL_SEND_FAILURE(1035, "Send mail failure", HttpStatus.INTERNAL_SERVER_ERROR),
+    EMAIL_TOKEN_TOO_RECENT(
+            1036, "A new email token cannot be generated within 30 seconds of the last token.", HttpStatus.BAD_REQUEST);
 
     int code;
     String message;

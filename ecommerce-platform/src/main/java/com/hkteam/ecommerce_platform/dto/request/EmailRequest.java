@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 public class EmailRequest {
     @NonNull
     String userId;
+
     @NotBlank(message = "EMAIL_NOT_BLANK")
     @Email(message = "INVALID_EMAIL_FORMAT")
     @Email
