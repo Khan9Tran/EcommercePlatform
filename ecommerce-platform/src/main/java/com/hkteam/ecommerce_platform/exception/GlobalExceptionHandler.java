@@ -3,10 +3,9 @@ package com.hkteam.ecommerce_platform.exception;
 import java.util.Map;
 import java.util.Objects;
 
+import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,13 +14,19 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.nimbusds.jose.JOSEException;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private static final String MIN_ATTRIBUTE = "min";
-    private static final String MAX_ATTRIBUTE = "max";
-    private static final String FIELD = "field";
+    static String MIN_ATTRIBUTE = "min";
+    static String MAX_ATTRIBUTE = "max";
+    static String FIELD = "field";
 
     @ExceptionHandler(value = RuntimeException.class)
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
@@ -34,6 +39,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<ApiResponse> handlingRuntimeException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setCode(errorCode.getCode());
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
+    }
+
+    @ExceptionHandler(value = MessagingException.class)
+    ResponseEntity<ApiResponse> handlingMessagingException(MessagingException exception) {
+        log.info(logMessage(exception));
+
+        ErrorCode errorCode = ErrorCode.EMAIL_SEND_FAILURE;
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setCode(errorCode.getCode());
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
+    }
+
+    @ExceptionHandler(value = JOSEException.class)
+    ResponseEntity<ApiResponse> handlingJOSEException(JOSEException exception) {
+        log.info(logMessage(exception));
+
+        ErrorCode errorCode = ErrorCode.EMAIL_SEND_FAILURE;
         ApiResponse apiResponse = new ApiResponse();
 
         apiResponse.setMessage(errorCode.getMessage());
@@ -94,5 +123,9 @@ public class GlobalExceptionHandler {
                         .code(errorCode.getCode())
                         .message(errorCode.getMessage())
                         .build());
+    }
+
+    private String logMessage(Exception exception) {
+        return "Errors: {}" + exception.getMessage();
     }
 }

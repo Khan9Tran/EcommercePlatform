@@ -47,7 +47,14 @@ public enum ErrorCode {
     BRAND_DUPLICATE(1034, "Brand name is duplicated with another name", HttpStatus.BAD_REQUEST),
     FILE_LIMIT_OF_1MB(1035, "File size exceeds the maximum limit of 1MB", HttpStatus.BAD_REQUEST),
     ACCEPTED_FILE_TYPES(1036, "Invalid file type only JPG, PNG, JPEG, GIF are accepted", HttpStatus.BAD_REQUEST),
-    ;
+    EMAIL_NOT_BLANK(1037, "Email must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_EMAIL_FORMAT(1038, "Please provide a valid email address", HttpStatus.BAD_REQUEST),
+    NEW_EMAIL_SAME_CURRENT_EMAIL(
+            1039, "The new email cannot be the same as the current email.", HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED(1040, "Email existed", HttpStatus.BAD_REQUEST),
+    EMAIL_SEND_FAILURE(1041, "Send mail failure", HttpStatus.INTERNAL_SERVER_ERROR),
+    EMAIL_TOKEN_TOO_RECENT(
+            1042, "A new email token cannot be generated within 30 seconds of the last token.", HttpStatus.BAD_REQUEST);
 
     int code;
     String message;
