@@ -3,12 +3,15 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.enums.TypeSlug;
@@ -17,6 +20,7 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.CategoryMapper;
 import com.hkteam.ecommerce_platform.repository.CategoryRepository;
 import com.hkteam.ecommerce_platform.repository.ComponentRepository;
+import com.hkteam.ecommerce_platform.util.PageUtils;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
 
 import lombok.AccessLevel;
@@ -113,10 +117,27 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    public List<CategoryResponse> getAllCategories() {
-        return categoryRepository.findAll().stream()
-                .map(categoryMapper::toCategoryResponse)
-                .toList();
+    public PaginationResponse<CategoryResponse> getAllCategories(String pageStr, String sizeStr) {
+        Sort sort = Sort.by("createdAt").descending();
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+
+        var pageData = categoryRepository.findAll(pageable);
+
+        PageUtils.validatePageBounds(Integer.parseInt(pageStr), pageData);
+
+        return PaginationResponse.<CategoryResponse>builder()
+                .currentPage(Integer.parseInt(pageStr))
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .hasNext(pageData.hasNext())
+                .hasPrevious(pageData.hasPrevious())
+                .nextPage(pageData.hasNext() ? Integer.parseInt(pageStr) + 1 : null)
+                .previousPage(pageData.hasPrevious() ? Integer.parseInt(pageStr) - 1 : null)
+                .data(pageData.getContent().stream()
+                        .map(categoryMapper::toCategoryResponse)
+                        .toList())
+                .build();
     }
 
     public CategoryResponse getOneCategoryBySlug(String slug) {

@@ -1,19 +1,21 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.List;
-
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.BrandCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.BrandUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.BrandResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.product.Brand;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.BrandMapper;
 import com.hkteam.ecommerce_platform.repository.BrandRepository;
+import com.hkteam.ecommerce_platform.util.PageUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -85,10 +87,27 @@ public class BrandService {
         brandRepository.delete(brand);
     }
 
-    public List<BrandResponse> getAllBrands() {
-        return brandRepository.findAll().stream()
-                .map(brandMapper::toBrandResponse)
-                .toList();
+    public PaginationResponse<BrandResponse> getAllBrands(String pageStr, String sizeStr) {
+        Sort sort = Sort.by("createdAt").descending();
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+
+        var pageData = brandRepository.findAll(pageable);
+
+        PageUtils.validatePageBounds(Integer.parseInt(pageStr), pageData);
+
+        return PaginationResponse.<BrandResponse>builder()
+                .currentPage(Integer.parseInt(pageStr))
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .hasNext(pageData.hasNext())
+                .hasPrevious(pageData.hasPrevious())
+                .nextPage(pageData.hasNext() ? Integer.parseInt(pageStr) + 1 : null)
+                .previousPage(pageData.hasPrevious() ? Integer.parseInt(pageStr) - 1 : null)
+                .data(pageData.getContent().stream()
+                        .map(brandMapper::toBrandResponse)
+                        .toList())
+                .build();
     }
 
     public BrandResponse getOneBrandById(Long id) {

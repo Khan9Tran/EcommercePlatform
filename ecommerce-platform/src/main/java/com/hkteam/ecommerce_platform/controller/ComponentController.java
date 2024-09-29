@@ -1,7 +1,5 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +8,7 @@ import com.hkteam.ecommerce_platform.dto.request.ComponentCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.service.ComponentService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,9 +58,13 @@ public class ComponentController {
 
     @Operation(summary = "Get all components", description = "Api get all components")
     @GetMapping()
-    public ApiResponse<List<ComponentResponse>> getAllComponents() {
-        return ApiResponse.<List<ComponentResponse>>builder()
-                .result(componentService.getAllComponents())
+    public ApiResponse<PaginationResponse<ComponentResponse>> getAllComponents(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        PaginationResponse<ComponentResponse> paginationResponse = componentService.getAllComponents(page, size);
+
+        return ApiResponse.<PaginationResponse<ComponentResponse>>builder()
+                .result(paginationResponse)
                 .build();
     }
 

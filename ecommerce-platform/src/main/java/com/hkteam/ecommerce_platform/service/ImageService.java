@@ -12,7 +12,7 @@ import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.CategoryRepository;
-import com.hkteam.ecommerce_platform.util.ImageValidator;
+import com.hkteam.ecommerce_platform.util.ImageUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class ImageService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ImageResponse uploadCategoryImage(MultipartFile image, Long categoryId) {
-        ImageValidator.validateImage(image);
+        ImageUtils.validateImage(image);
 
         ImageResponse imageResponse;
 

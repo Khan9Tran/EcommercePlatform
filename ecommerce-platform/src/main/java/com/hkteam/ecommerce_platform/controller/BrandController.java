@@ -1,7 +1,5 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +8,7 @@ import com.hkteam.ecommerce_platform.dto.request.BrandCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.BrandUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.BrandResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.service.BrandService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,9 +53,13 @@ public class BrandController {
 
     @Operation(summary = "Get all brands", description = "Api get all brands")
     @GetMapping()
-    public ApiResponse<List<BrandResponse>> getAllBrands() {
-        return ApiResponse.<List<BrandResponse>>builder()
-                .result(brandService.getAllBrands())
+    public ApiResponse<PaginationResponse<BrandResponse>> getAllBrands(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        PaginationResponse<BrandResponse> paginationResponse = brandService.getAllBrands(page, size);
+
+        return ApiResponse.<PaginationResponse<BrandResponse>>builder()
+                .result(paginationResponse)
                 .build();
     }
 
