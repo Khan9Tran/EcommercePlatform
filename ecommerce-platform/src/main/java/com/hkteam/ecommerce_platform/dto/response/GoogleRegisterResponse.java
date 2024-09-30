@@ -8,4 +8,6 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class GoogleRegisterResponse {}
+public class GoogleRegisterResponse {
+    String status;
+}

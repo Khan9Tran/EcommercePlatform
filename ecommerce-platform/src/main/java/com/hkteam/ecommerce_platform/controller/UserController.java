@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.service.UserService;
@@ -16,8 +17,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -44,11 +43,14 @@ public class UserController {
                 .build();
     }
 
-    @Operation(summary = "Get list user", description = "Api get list user")
+    @Operation(summary = "Get all user", description = "Api get list user with page and size")
     @GetMapping
-    ApiResponse<Object> getListUsers()
-    {
-        return  null;
+    ApiResponse<PaginationResponse<UserResponse>> getAllUsers(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        return ApiResponse.<PaginationResponse<UserResponse>>builder()
+                .result(userService.getAllUsers(page, size))
+                .build();
     }
 
 
