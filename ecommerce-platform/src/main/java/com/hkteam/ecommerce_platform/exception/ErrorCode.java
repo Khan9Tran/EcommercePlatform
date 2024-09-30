@@ -54,7 +54,9 @@ public enum ErrorCode {
     EMAIL_EXISTED(1040, "Email existed", HttpStatus.BAD_REQUEST),
     EMAIL_SEND_FAILURE(1041, "Send mail failure", HttpStatus.INTERNAL_SERVER_ERROR),
     EMAIL_TOKEN_TOO_RECENT(
-            1042, "A new email token cannot be generated within 30 seconds of the last token.", HttpStatus.BAD_REQUEST);
+            1042, "A new email token cannot be generated within 30 seconds of the last token.", HttpStatus.BAD_REQUEST),
+    PAGE_NOT_FOUND(1043, "Page not found", HttpStatus.NOT_FOUND),
+    ;
 
     int code;
     String message;

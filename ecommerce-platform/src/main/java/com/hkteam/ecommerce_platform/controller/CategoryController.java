@@ -11,6 +11,7 @@ import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.service.CategoryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,9 +56,13 @@ public class CategoryController {
 
     @Operation(summary = "Get all categories", description = "Api get all categories")
     @GetMapping()
-    public ApiResponse<List<CategoryResponse>> getAllCategories() {
-        return ApiResponse.<List<CategoryResponse>>builder()
-                .result(categoryService.getAllCategories())
+    public ApiResponse<PaginationResponse<CategoryResponse>> getAllCategories(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        PaginationResponse<CategoryResponse> paginationResponse = categoryService.getAllCategories(page, size);
+
+        return ApiResponse.<PaginationResponse<CategoryResponse>>builder()
+                .result(paginationResponse)
                 .build();
     }
 

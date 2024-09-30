@@ -8,13 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 
-public class ImageValidator {
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
+public class ImageUtils {
     private static final long MAX_FILE_SIZE = 1000L * 1024;
     private static final List<String> ACCEPTED_FILE_TYPES = Arrays.asList("jpg", "png", "jpeg", "gif");
-
-    private ImageValidator() {
-        throw new IllegalStateException("This is a utility class and cannot be instantiated");
-    }
 
     public static void validateImage(MultipartFile image) {
         if (image.getSize() > MAX_FILE_SIZE) {

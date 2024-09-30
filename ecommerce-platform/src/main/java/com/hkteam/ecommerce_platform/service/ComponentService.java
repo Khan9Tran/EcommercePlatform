@@ -1,19 +1,21 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.List;
-
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.ComponentCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ComponentUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ComponentResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.ComponentMapper;
 import com.hkteam.ecommerce_platform.repository.ComponentRepository;
+import com.hkteam.ecommerce_platform.util.PageUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -47,10 +49,27 @@ public class ComponentService {
         return componentMapper.toComponentResponse(component);
     }
 
-    public List<ComponentResponse> getAllComponents() {
-        return componentRepository.findAll().stream()
-                .map(componentMapper::toComponentResponse)
-                .toList();
+    public PaginationResponse<ComponentResponse> getAllComponents(String pageStr, String sizeStr) {
+        Sort sort = Sort.by("createdAt").descending();
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+
+        var pageData = componentRepository.findAll(pageable);
+
+        PageUtils.validatePageBounds(Integer.parseInt(pageStr), pageData);
+
+        return PaginationResponse.<ComponentResponse>builder()
+                .currentPage(Integer.parseInt(pageStr))
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .hasNext(pageData.hasNext())
+                .hasPrevious(pageData.hasPrevious())
+                .nextPage(pageData.hasNext() ? Integer.parseInt(pageStr) + 1 : null)
+                .previousPage(pageData.hasPrevious() ? Integer.parseInt(pageStr) - 1 : null)
+                .data(pageData.getContent().stream()
+                        .map(componentMapper::toComponentResponse)
+                        .toList())
+                .build();
     }
 
     public ComponentResponse getOneComponentById(Long id) {
