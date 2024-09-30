@@ -27,7 +27,7 @@ public class ExternalAuthController {
     ExternalAuthService externalAuthService;
 
     @Operation(summary = "Google register", description = "Api google register account")
-    @PostMapping("/google")
+    @PostMapping("/google/register")
     ApiResponse<GoogleRegisterResponse> registerWithGoogle(@RequestBody GoogleTokenRequest request) {
         return ApiResponse.<GoogleRegisterResponse>builder()
                 .result(externalAuthService.registerWithGoogle(request))
@@ -35,7 +35,7 @@ public class ExternalAuthController {
     }
 
     @Operation(summary = "Google register", description = "Api google register account")
-    @PostMapping("/google")
+    @PostMapping("/google/log-in")
     ApiResponse<GoogleLoginResponse> loginWithGoogle(@RequestBody GoogleTokenRequest request) {
         return ApiResponse.<GoogleLoginResponse>builder()
                 .result(externalAuthService.loginWithGoogle(request))
