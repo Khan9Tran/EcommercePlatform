@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -15,6 +16,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -34,6 +38,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.crypto.spec.SecretKeySpec;
 
 @Service
 @RequiredArgsConstructor
@@ -78,6 +84,7 @@ public class EmailService {
 
         return emailMapper.toEmailResponse(user);
     }
+
 
     public void sendMailValidation() throws MessagingException, JOSEException {
         authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -131,4 +138,28 @@ public class EmailService {
         context.setVariables(variables);
         return templateEngine.process(templateName, context);
     }
+
+    public void verifyEmail(String token) throws ParseException, JOSEException {
+        var claims = jwtUtils.decodeToken(token);
+        String jti = claims.getJWTID();
+
+        var user = userRepository.findByEmailValidationToken(jti)
+                .orElseThrow(() -> new AppException(ErrorCode.TOKEN_INVALID));
+
+        if (user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name())) throw new AppException(ErrorCode.ALREADY_VERIFIED);
+
+        if (!user.getEmail().equals(claims.getSubject())) throw  new  AppException(ErrorCode.TOKEN_INVALID);
+
+        try {
+            user.setEmailValidationStatus(EmailValidationStatus.VERIFIED.name());
+            userRepository.save(user);
+        }
+        catch (DataIntegrityViolationException exception)
+        {
+            throw new AppException(ErrorCode.VALIDATION_EMAIL_FAILURE);
+        }
+
+    }
+
+
 }

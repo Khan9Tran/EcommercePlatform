@@ -56,6 +56,9 @@ public enum ErrorCode {
     EMAIL_TOKEN_TOO_RECENT(
             1042, "A new email token cannot be generated within 30 seconds of the last token.", HttpStatus.BAD_REQUEST),
     PAGE_NOT_FOUND(1043, "Page not found", HttpStatus.NOT_FOUND),
+    TOKEN_INVALID(1044, "Token is invalid or expired", HttpStatus.BAD_REQUEST),
+    VALIDATION_EMAIL_FAILURE(1045, "Email verification failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    ALREADY_VERIFIED(1046, "Email already verified", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

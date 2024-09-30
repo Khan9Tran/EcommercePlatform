@@ -1,14 +1,13 @@
 package com.hkteam.ecommerce_platform.util;
 
+import java.text.ParseException;
 import java.util.Date;
 
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACVerifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -16,6 +15,8 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+
+import javax.crypto.spec.SecretKeySpec;
 
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -42,5 +43,25 @@ public class JwtUtils {
         signedJWT.sign(signer);
 
         return signedJWT.serialize();
+    }
+
+    public JWTClaimsSet decodeToken(String token) throws JOSEException, ParseException {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        JWSVerifier verifier = new MACVerifier(SECRET.getBytes());
+
+        if (!signedJWT.verify(verifier)) {
+            throw new JOSEException("Invalid token signature");
+        }
+
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+        Date expiration = claims.getExpirationTime();
+
+        if (expiration.before(new Date())) {
+            throw new JOSEException("Token has expired");
+        }
+
+        return claims;
     }
 }

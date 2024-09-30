@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.exception;
 
+import java.text.ParseException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -62,13 +63,26 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse> handlingJOSEException(JOSEException exception) {
         log.info(logMessage(exception));
 
-        ErrorCode errorCode = ErrorCode.EMAIL_SEND_FAILURE;
+        ErrorCode errorCode = ErrorCode.TOKEN_INVALID;
         ApiResponse apiResponse = new ApiResponse();
 
         apiResponse.setMessage(errorCode.getMessage());
         apiResponse.setCode(errorCode.getCode());
         return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
     }
+
+    @ExceptionHandler(value = ParseException.class)
+    ResponseEntity<ApiResponse> handlingParseException(ParseException exception) {
+        log.info(logMessage(exception));
+
+        ErrorCode errorCode = ErrorCode.TOKEN_INVALID;
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setCode(errorCode.getCode());
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
+    }
+
 
     @ExceptionHandler(value = AccessDeniedException.class)
     ResponseEntity<ApiResponse> handlingAccessDenied(AccessDeniedException exception) {
