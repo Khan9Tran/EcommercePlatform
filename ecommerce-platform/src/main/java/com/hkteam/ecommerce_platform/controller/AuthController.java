@@ -9,10 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hkteam.ecommerce_platform.dto.request.AuthenticationRequest;
-import com.hkteam.ecommerce_platform.dto.request.ChangePasswordRequest;
-import com.hkteam.ecommerce_platform.dto.request.LogoutRequest;
-import com.hkteam.ecommerce_platform.dto.request.RefreshRequest;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
 import com.hkteam.ecommerce_platform.service.AuthenticationService;

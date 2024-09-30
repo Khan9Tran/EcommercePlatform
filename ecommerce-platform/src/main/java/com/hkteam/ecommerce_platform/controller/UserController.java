@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -36,7 +38,18 @@ public class UserController {
 
     @Operation(summary = "Get user by id", description = "Api get user by id")
     @GetMapping("/{userId}")
-    UserDetailResponse getUser(@PathVariable("userId") String userId) {
-        return userService.getUser(userId);
+    ApiResponse<UserDetailResponse> getUser(@PathVariable("userId") String userId) {
+        return ApiResponse.<UserDetailResponse>builder()
+                .result(userService.getUser(userId))
+                .build();
     }
+
+    @Operation(summary = "Get list user", description = "Api get list user")
+    @GetMapping
+    ApiResponse<Object> getListUsers()
+    {
+        return  null;
+    }
+
+
 }
