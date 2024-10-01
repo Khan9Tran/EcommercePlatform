@@ -1,4 +1,4 @@
-package com.hkteam.ecommerce_platform.repository;
+package com.hkteam.ecommerce_platform.repository.httpclient;
 
 import com.hkteam.ecommerce_platform.dto.request.ExchangeTokenRequest;
 import com.hkteam.ecommerce_platform.dto.response.ExchangeTokenResponse;
