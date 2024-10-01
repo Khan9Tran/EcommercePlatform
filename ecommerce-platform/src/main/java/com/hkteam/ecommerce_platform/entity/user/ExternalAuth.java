@@ -3,8 +3,8 @@ package com.hkteam.ecommerce_platform.entity.user;
 import java.time.Instant;
 
 import jakarta.persistence.*;
-
 import jakarta.persistence.CascadeType;
+
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.enums.Provider;
@@ -26,12 +26,12 @@ public class ExternalAuth {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-
     @ManyToOne(cascade = CascadeType.PERSIST)
     User user;
 
     String providerID;
 
+    @Enumerated(EnumType.STRING)
     Provider provider;
 
     @CreationTimestamp(source = SourceType.DB)

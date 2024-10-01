@@ -15,10 +15,11 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ExchangeTokenResponse {
-    String accessToken;
-    Long expiresIn;
-    String refreshToken;
-    String scope;
-    String tokenType;
+public class ExternalAuthResponse {
+    Long id;
+    String providerID;
+    String provider;
+    String createdAt;
+    String lastUpdatedAt;
+    boolean isDeleted;
 }

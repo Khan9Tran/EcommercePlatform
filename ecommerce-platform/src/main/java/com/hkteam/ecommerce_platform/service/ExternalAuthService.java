@@ -6,6 +6,7 @@ import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.entity.user.ExternalAuth;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.EmailValidationStatus;
+import com.hkteam.ecommerce_platform.enums.Gender;
 import com.hkteam.ecommerce_platform.enums.Provider;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.exception.AppException;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +44,7 @@ public class ExternalAuthService {
     UserRepository userRepository;
     ExternalAuthRepository externalAuthRepository;
     RoleRepository roleRepository;
+    AuthenticationService authenticationService;
 
     @NonFinal
     @Value("${outbound.google.client-id}")
@@ -67,42 +70,64 @@ public class ExternalAuthService {
                 .grantType(GRANT_TYPE)
                 .build());
 
-        response.getAccessToken();
-
         var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
 
-        if (userRepository.findByEmail(userInfo.getEmail()).isPresent()) {
-            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        //onboard user if not already onboarded
+        var externalAuths = externalAuthRepository.findByProviderAndProviderID(Provider.GOOGLE, userInfo.getId());
+        if (externalAuths.isEmpty()) {
+
+            if (userRepository.findByEmail(userInfo.getEmail()).isPresent()) {
+                throw new AppException(ErrorCode.EMAIL_EXISTED);
+            }
+
+            var roles = roleRepository.findByName(RoleName.USER);
+            if (roles.isEmpty()) {
+                throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+            }
+
+            String email = userInfo.getEmail();
+            int atIndex = email.indexOf("@");
+            String baseUsername = "G_" + (atIndex != -1 ? email.substring(0, atIndex) : email);
+
+            int counter = 1;
+            String username = baseUsername;
+
+            while (userRepository.findByUsername(username).isPresent()) {
+                username = baseUsername + counter;
+                counter++;
+            }
+
+            ExternalAuth externalAuth = ExternalAuth.builder()
+                    .provider(Provider.GOOGLE)
+                    .providerID(userInfo.getId())
+                    .user(User.builder()
+                            .email(userInfo.getEmail())
+                            .name(userInfo.getName())
+                            .emailValidationStatus(EmailValidationStatus.VERIFIED.name())
+                            .emailTokenGeneratedAt(Instant.now())
+                            .imageUrl(userInfo.getPicture())
+                            .roles(new HashSet<>(List.of(roles.get())))
+                            .gender(Gender.OTHER)
+                            .username(username)
+                            .build())
+                    .build();
+
+
+            try {
+                externalAuthRepository.save(externalAuth);
+            } catch (Exception e) {
+                log.info("Error: {}", e.getMessage());
+                throw new AppException(ErrorCode.UNKNOWN_ERROR);
+            }
         }
 
-        var roles = roleRepository.findByName(RoleName.USER);
-        if (roles.isEmpty()) {
-            throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+        var user = externalAuths.get().getUser();
+        if (ObjectUtils.isEmpty(user)) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
 
-        long currentTimeMillis = System.currentTimeMillis();
-        String username = "G_" + userInfo.getEmail().split("@")[0] + "_" + currentTimeMillis;
-
-        ExternalAuth externalAuth = ExternalAuth.builder()
-                .provider(Provider.GOOGLE).providerID(userInfo.getId())
-                .user(User.builder()
-                        .email(userInfo.getEmail())
-                        .name(userInfo.getName())
-                        .emailValidationStatus(EmailValidationStatus.VERIFIED.name())
-                        .imageUrl(userInfo.getPicture())
-                        .roles(new HashSet<>(List.of(roles.get())))
-                        .username(username)
-                        .build())
-                .build();
-
-        try {
-            externalAuthRepository.save(externalAuth);
-        } catch (Exception e) {
-            log.info("Error: {}", e.getMessage());
-            throw new AppException(ErrorCode.UNKNOWN_ERROR);
-        }
-
-        return AuthenticationResponse.builder().token(response.getAccessToken()).build();
+        var token = authenticationService.generateToken(user);
+        return AuthenticationResponse.builder().token(token).build();
     }
 
 }
