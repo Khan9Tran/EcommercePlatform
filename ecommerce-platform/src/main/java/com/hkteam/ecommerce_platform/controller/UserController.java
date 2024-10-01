@@ -52,6 +52,4 @@ public class UserController {
                 .result(userService.getAllUsers(page, size))
                 .build();
     }
-
-
 }

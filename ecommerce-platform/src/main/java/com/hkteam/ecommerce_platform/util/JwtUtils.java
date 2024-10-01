@@ -3,20 +3,18 @@ package com.hkteam.ecommerce_platform.util;
 import java.text.ParseException;
 import java.util.Date;
 
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACVerifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-
-import javax.crypto.spec.SecretKeySpec;
 
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE)

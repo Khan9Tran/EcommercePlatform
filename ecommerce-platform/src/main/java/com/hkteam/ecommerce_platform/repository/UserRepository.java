@@ -16,5 +16,4 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findById(@NotNull String id);
 
     Optional<User> findByEmailValidationToken(String token);
-
 }
