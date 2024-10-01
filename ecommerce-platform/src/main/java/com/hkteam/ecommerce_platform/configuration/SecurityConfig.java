@@ -21,7 +21,8 @@ import org.springframework.web.filter.CorsFilter;
 @EnableMethodSecurity
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/auths/log-in", "/auths/introspect", "/auths/log-out", "/auths/refresh", "/users", "/emails/verify"
+        "/auths/log-in", "/auths/introspect", "/auths/log-out", "/auths/refresh", "/users", "/emails/verify",
+            "/external-auths/authentication/google"
     };
 
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {

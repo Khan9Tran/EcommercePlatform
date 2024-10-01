@@ -1,14 +1,9 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
+import org.springframework.web.bind.annotation.*;
 
-import com.hkteam.ecommerce_platform.dto.request.GoogleTokenRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
-import com.hkteam.ecommerce_platform.dto.response.GoogleLoginResponse;
-import com.hkteam.ecommerce_platform.dto.response.GoogleRegisterResponse;
 import com.hkteam.ecommerce_platform.service.ExternalAuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,18 +22,11 @@ public class ExternalAuthController {
     ExternalAuthService externalAuthService;
 
     @Operation(summary = "Google register", description = "Api google register account")
-    @PostMapping("/google/register")
-    ApiResponse<GoogleRegisterResponse> registerWithGoogle(@RequestBody GoogleTokenRequest request) {
-        return ApiResponse.<GoogleRegisterResponse>builder()
-                .result(externalAuthService.registerWithGoogle(request))
+    @PostMapping("/authentication/google")
+    ApiResponse<AuthenticationResponse> googleAuthenticate(@RequestParam("code") String code) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(externalAuthService.googleAuthenticate(code))
                 .build();
-    }
 
-    @Operation(summary = "Google register", description = "Api google register account")
-    @PostMapping("/google/log-in")
-    ApiResponse<GoogleLoginResponse> loginWithGoogle(@RequestBody GoogleTokenRequest request) {
-        return ApiResponse.<GoogleLoginResponse>builder()
-                .result(externalAuthService.loginWithGoogle(request))
-                .build();
     }
 }
