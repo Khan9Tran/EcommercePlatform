@@ -98,6 +98,7 @@ public class GlobalExceptionHandler {
 
         String enumKey = exception.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
+        log.info("Error: {}", exception.getMessage());
         Map<String, Object> attributes = null;
         String fieldName = exception.getFieldError().getField();
         try {
@@ -131,6 +132,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException exception) {
         ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+
         return ResponseEntity.badRequest()
                 .body(ApiResponse.builder()
                         .code(errorCode.getCode())

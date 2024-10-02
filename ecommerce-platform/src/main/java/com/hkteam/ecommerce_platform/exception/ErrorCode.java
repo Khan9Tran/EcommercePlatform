@@ -65,6 +65,8 @@ public enum ErrorCode {
     VALIDATION_EMAIL_FAILURE(1050, "Email verification failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ALREADY_VERIFIED(1051, "Email already verified", HttpStatus.BAD_REQUEST),
     UNKNOWN_ERROR(1052, "An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
+    DATE_OF_BIRTH_INVALID(1053, "Date of birth is invalid", HttpStatus.BAD_REQUEST),
+    GENDER_INVALID(1054, "Gender is invalid", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

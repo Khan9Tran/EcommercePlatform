@@ -1,8 +1,14 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.hkteam.ecommerce_platform.dto.request.ExchangeTokenRequest;
 import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
-import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.entity.user.ExternalAuth;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.EmailValidationStatus;
@@ -16,22 +22,12 @@ import com.hkteam.ecommerce_platform.repository.RoleRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
 import com.hkteam.ecommerce_platform.repository.httpclient.OutboundIdentityClient;
 import com.hkteam.ecommerce_platform.repository.httpclient.OutboundUserClient;
-import lombok.experimental.NonFinal;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -48,18 +44,18 @@ public class ExternalAuthService {
 
     @NonFinal
     @Value("${outbound.google.client-id}")
-    protected  String CLIENT_ID;
+    String CLIENT_ID;
 
     @Value("${outbound.google.client-secret}")
     @NonFinal
-    protected  String CLIENT_SECRET;
+    String CLIENT_SECRET;
 
     @Value("${outbound.google.redirect-uri}")
     @NonFinal
-    protected String REDIRECT_URI;
+    String REDIRECT_URI;
 
     @NonFinal
-    protected String GRANT_TYPE = "authorization_code";
+    String GRANT_TYPE = "authorization_code";
 
     public AuthenticationResponse googleAuthenticate(String code) {
         var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
@@ -72,7 +68,7 @@ public class ExternalAuthService {
 
         var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
 
-        //onboard user if not already onboarded
+        // onboard user if not already onboarded
         var externalAuths = externalAuthRepository.findByProviderAndProviderID(Provider.GOOGLE, userInfo.getId());
         if (externalAuths.isEmpty()) {
 
@@ -112,7 +108,6 @@ public class ExternalAuthService {
                             .build())
                     .build();
 
-
             try {
                 externalAuthRepository.save(externalAuth);
             } catch (Exception e) {
@@ -121,11 +116,11 @@ public class ExternalAuthService {
             }
         }
 
-        var user = userRepository.findByEmail(userInfo.getEmail())
+        var user = userRepository
+                .findByEmail(userInfo.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var token = authenticationService.generateToken(user);
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
-
 }
