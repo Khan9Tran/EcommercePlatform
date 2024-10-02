@@ -6,10 +6,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
-import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
-import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
-import com.hkteam.ecommerce_platform.dto.response.UserResponse;
+import com.hkteam.ecommerce_platform.dto.request.UserUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,5 +57,29 @@ public class UserController {
     ApiResponse<Void> setDefaultAddress(@RequestBody @Valid DefaultAddressRequest request) {
         userService.setDefaultAddress(request);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @Operation(summary = "Delete user by id", description = "Api delete user by id")
+    @DeleteMapping("/{userId}")
+    ApiResponse<Void> deleteUser(@PathVariable("userId") String userId) {
+        userService.deleteUser(userId);
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @Operation(summary = "Update user by id", description = "Api update user by id")
+    @PutMapping("/{userId}")
+    ApiResponse<UserUpdateResponse> updateUser(
+            @PathVariable("userId") String userId, @RequestBody @Valid UserUpdateRequest request) {
+        return ApiResponse.<UserUpdateResponse>builder()
+                .result(userService.updateUser(userId, request))
+                .build();
+    }
+
+    @Operation(summary = "My information", description = "Api get my information")
+    @GetMapping("/me")
+    ApiResponse<UserDetailResponse> getMyInformation() {
+        return ApiResponse.<UserDetailResponse>builder()
+                .result(userService.getMyInformation())
+                .build();
     }
 }

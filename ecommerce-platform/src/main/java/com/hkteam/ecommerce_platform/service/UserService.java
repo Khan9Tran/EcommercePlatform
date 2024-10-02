@@ -7,16 +7,16 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.UserUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
+import com.hkteam.ecommerce_platform.dto.response.UserUpdateResponse;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.exception.AppException;
@@ -25,6 +25,7 @@ import com.hkteam.ecommerce_platform.mapper.UserMapper;
 import com.hkteam.ecommerce_platform.repository.AddressRepository;
 import com.hkteam.ecommerce_platform.repository.RoleRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
+import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 
 import lombok.AccessLevel;
@@ -42,6 +43,7 @@ public class UserService {
     UserRepository userRepository;
     RoleRepository roleRepository;
     AddressRepository addressRepository;
+    AuthenticatedUserUtil authenticatedUserUtil;
 
     public UserResponse createUsers(UserCreationRequest request) {
 
@@ -50,10 +52,6 @@ public class UserService {
         }
 
         User user = userMapper.toUser(request);
-
-        String fullName = request.getFirstName() + " " + request.getLastName();
-
-        user.setName(fullName);
 
         var roles = roleRepository.findByName(RoleName.USER);
         if (roles.isEmpty()) {
@@ -79,11 +77,7 @@ public class UserService {
     }
 
     public void setDefaultAddress(DefaultAddressRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        var user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = authenticatedUserUtil.getAuthenticatedUser();
 
         var address = addressRepository
                 .findByIdAndUserId(request.getAddressId(), user.getId())
@@ -94,7 +88,11 @@ public class UserService {
         }
 
         user.setDefaultAddressId(address.getId());
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -121,5 +119,41 @@ public class UserService {
                         .map(userMapper::toUserResponse)
                         .toList())
                 .build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUser(String userId) {
+        var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        try {
+            userRepository.delete(user);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    public UserUpdateResponse updateUser(String userId, UserUpdateRequest request) {
+
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!user.getId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        userMapper.updateUserFromRequest(request, user);
+
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return userMapper.toUserUpdateResponse(user);
+    }
+
+    public UserDetailResponse getMyInformation() {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        return userMapper.toUserDetailResponse(user);
     }
 }
