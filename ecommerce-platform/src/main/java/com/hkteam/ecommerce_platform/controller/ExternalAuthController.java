@@ -1,9 +1,9 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
 import com.hkteam.ecommerce_platform.service.ExternalAuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +27,5 @@ public class ExternalAuthController {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(externalAuthService.googleAuthenticate(code))
                 .build();
-
     }
 }

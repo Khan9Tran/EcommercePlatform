@@ -4,9 +4,9 @@ import java.util.Objects;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
@@ -32,10 +32,9 @@ public class EcommercePlatformApplication {
         final String API_KEY = "API_KEY";
         final String API_SECRET = "API_SECRET";
 
-        //Google
+        // Google
         final String GOOGLE_CLIENT_ID = "GOOGLE_CLIENT_ID";
-        final String GOOGLE_CLIENT_SECRET
-                = "GOOGLE_CLIENT_SECRET";
+        final String GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET";
         final String GOOGLE_REDIRECT_URI = "GOOGLE_REDIRECT_URI";
 
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));

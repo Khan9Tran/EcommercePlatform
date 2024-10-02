@@ -8,14 +8,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.hkteam.ecommerce_platform.entity.category.Category;
+import com.hkteam.ecommerce_platform.entity.user.Address;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, Long> {
-    boolean existsByNameIgnoreCase(String name);
-
-    Optional<Category> findBySlug(String slug);
+public interface AddressRepository extends JpaRepository<Address, Long> {
+    @NotNull
+    Optional<Address> findById(@NotNull Long id);
 
     @NotNull
-    Page<Category> findAll(@NotNull Pageable pageable);
+    Page<Address> findAll(@NotNull Pageable pageable);
+
+    @NotNull
+    Optional<Address> findByIdAndUserId(@NotNull Long id, @NotNull String userId);
 }
