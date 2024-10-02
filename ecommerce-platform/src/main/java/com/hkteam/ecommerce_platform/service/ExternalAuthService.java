@@ -48,15 +48,15 @@ public class ExternalAuthService {
 
     @NonFinal
     @Value("${outbound.google.client-id}")
-    protected  String CLIENT_ID = "114329022200-hkajl8098uino3u4hjl1e30gmph9m80l.apps.googleusercontent.com";
+    protected  String CLIENT_ID;
 
     @Value("${outbound.google.client-secret}")
     @NonFinal
-    protected  String CLIENT_SECRET = "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";
+    protected  String CLIENT_SECRET;
 
     @Value("${outbound.google.redirect-uri}")
     @NonFinal
-    protected String REDIRECT_URI = "http://localhost:3000/authenticate";
+    protected String REDIRECT_URI;
 
     @NonFinal
     protected String GRANT_TYPE = "authorization_code";
@@ -121,13 +121,11 @@ public class ExternalAuthService {
             }
         }
 
-        var user = externalAuths.get().getUser();
-        if (ObjectUtils.isEmpty(user)) {
-            throw new AppException(ErrorCode.USER_NOT_EXISTED);
-        }
+        var user = userRepository.findByEmail(userInfo.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var token = authenticationService.generateToken(user);
-        return AuthenticationResponse.builder().token(token).build();
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
 }
