@@ -8,14 +8,17 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ImageUtils {
-    private static final long MAX_FILE_SIZE = 1000L * 1024;
-    private static final List<String> ACCEPTED_FILE_TYPES = Arrays.asList("jpg", "png", "jpeg", "gif");
+    long MAX_FILE_SIZE = 1000L * 1024;
+    List<String> ACCEPTED_FILE_TYPES = Arrays.asList("jpg", "png", "jpeg", "gif");
 
-    public static void validateImage(MultipartFile image) {
+    public void validateImage(MultipartFile image) {
         if (image.getSize() > MAX_FILE_SIZE) {
             throw new AppException(ErrorCode.FILE_LIMIT_OF_1MB);
         }
@@ -30,7 +33,7 @@ public class ImageUtils {
         }
     }
 
-    private static String getFileExtension(String fileName) {
+    private String getFileExtension(String fileName) {
         if (fileName == null || fileName.isEmpty()) {
             return "";
         }

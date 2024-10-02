@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.service.UserService;
@@ -37,8 +38,20 @@ public class UserController {
 
     @Operation(summary = "Get user by id", description = "Api get user by id")
     @GetMapping("/{userId}")
-    UserDetailResponse getUser(@PathVariable("userId") String userId) {
-        return userService.getUser(userId);
+    ApiResponse<UserDetailResponse> getUser(@PathVariable("userId") String userId) {
+        return ApiResponse.<UserDetailResponse>builder()
+                .result(userService.getUser(userId))
+                .build();
+    }
+
+    @Operation(summary = "Get all user", description = "Api get list user with page and size")
+    @GetMapping
+    ApiResponse<PaginationResponse<UserResponse>> getAllUsers(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        return ApiResponse.<PaginationResponse<UserResponse>>builder()
+                .result(userService.getAllUsers(page, size))
+                .build();
     }
 
     @Operation(summary = "Set default address for user", description = "Api set default address for user")

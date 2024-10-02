@@ -14,6 +14,7 @@ public interface UserMapper {
     @Mapping(target = "username", source = "username")
     User toUser(UserCreationRequest request);
 
+    @Mapping(target = "externalAuth", source = "externalAuth")
     UserResponse toUserResponse(User user);
 
     UserDetailResponse toUserDetailResponse(User user);

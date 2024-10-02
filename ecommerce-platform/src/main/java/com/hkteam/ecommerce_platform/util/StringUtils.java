@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class StringUtils {
-    public static String convertEmptyToNull(String str) {
+    public String convertEmptyToNull(String str) {
         return (str != null && str.isEmpty() ? null : str);
     }
 }

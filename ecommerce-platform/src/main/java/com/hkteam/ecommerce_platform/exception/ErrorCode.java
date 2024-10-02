@@ -61,6 +61,10 @@ public enum ErrorCode {
     PHONE_START_0(1048, "Phone number must start with 0", HttpStatus.BAD_REQUEST),
     ADDRESS_NOT_FOUND(1047, "Address not found", HttpStatus.NOT_FOUND),
     ADDRESS_NOT_BELONG_TO_USER(1048, "Address not belong to user", HttpStatus.BAD_REQUEST),
+    TOKEN_INVALID(1044, "Token is invalid or expired", HttpStatus.BAD_REQUEST),
+    VALIDATION_EMAIL_FAILURE(1045, "Email verification failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    ALREADY_VERIFIED(1046, "Email already verified", HttpStatus.BAD_REQUEST),
+    UNKNOWN_ERROR(1047, "An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     int code;

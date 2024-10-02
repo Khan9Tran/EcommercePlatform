@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.entity.user.User;
@@ -22,6 +25,7 @@ import com.hkteam.ecommerce_platform.mapper.UserMapper;
 import com.hkteam.ecommerce_platform.repository.AddressRepository;
 import com.hkteam.ecommerce_platform.repository.RoleRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
+import com.hkteam.ecommerce_platform.util.PageUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -91,5 +95,31 @@ public class UserService {
 
         user.setDefaultAddressId(address.getId());
         userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public PaginationResponse<UserResponse> getAllUsers(String pageStr, String sizeStr) {
+        Sort sort = Sort.by("createdAt").descending();
+
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+        var pageData = userRepository.findAll(pageable);
+
+        int page = Integer.parseInt(pageStr);
+
+        PageUtils.validatePageBounds(page, pageData);
+
+        return PaginationResponse.<UserResponse>builder()
+                .currentPage(page)
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .hasNext(pageData.hasNext())
+                .hasPrevious(pageData.hasPrevious())
+                .nextPage(pageData.hasNext() ? page + 1 : null)
+                .previousPage(pageData.hasPrevious() ? page - 1 : null)
+                .data(pageData.getContent().stream()
+                        .map(userMapper::toUserResponse)
+                        .toList())
+                .build();
     }
 }

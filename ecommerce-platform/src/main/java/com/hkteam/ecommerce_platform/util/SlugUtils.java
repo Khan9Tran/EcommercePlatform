@@ -8,7 +8,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class SlugUtils {
-    public static String getSlug(String input, TypeSlug typeSlug) {
+    public String getSlug(String input, TypeSlug typeSlug) {
         String slug = input.trim()
                 .replaceAll("[^\\p{L}\\p{N}\\s-]", "")
                 .replaceAll("\\s+", "-")
@@ -19,7 +19,7 @@ public class SlugUtils {
         return slug + "-" + typeSlug.name().substring(0, 3).toLowerCase() + "." + code;
     }
 
-    private static String generateNumericCode() {
+    private String generateNumericCode() {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 }

@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -130,5 +131,26 @@ public class EmailService {
         Context context = new Context();
         context.setVariables(variables);
         return templateEngine.process(templateName, context);
+    }
+
+    public void verifyEmail(String token) throws ParseException, JOSEException {
+        var claims = jwtUtils.decodeToken(token);
+        String jti = claims.getJWTID();
+
+        var user = userRepository
+                .findByEmailValidationToken(jti)
+                .orElseThrow(() -> new AppException(ErrorCode.TOKEN_INVALID));
+
+        if (user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name()))
+            throw new AppException(ErrorCode.ALREADY_VERIFIED);
+
+        if (!user.getEmail().equals(claims.getSubject())) throw new AppException(ErrorCode.TOKEN_INVALID);
+
+        try {
+            user.setEmailValidationStatus(EmailValidationStatus.VERIFIED.name());
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException exception) {
+            throw new AppException(ErrorCode.VALIDATION_EMAIL_FAILURE);
+        }
     }
 }

@@ -1,11 +1,10 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import java.text.ParseException;
+
 import jakarta.mail.MessagingException;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.EmailRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
@@ -35,9 +34,15 @@ public class EmailController {
                 .build();
     }
 
-    @PostMapping()
+    @PostMapping("/send-verification")
     ApiResponse<Void> sendMailValidation() throws MessagingException, JOSEException {
         emailService.sendMailValidation();
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @GetMapping("/verify")
+    ApiResponse<Void> verifyEmail(@RequestParam("token") String token) throws ParseException, JOSEException {
+        emailService.verifyEmail(token);
         return ApiResponse.<Void>builder().build();
     }
 }

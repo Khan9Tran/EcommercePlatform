@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.entity.user;
 import java.time.Instant;
 
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
 
 import org.hibernate.annotations.*;
 
@@ -22,11 +23,15 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExternalAuth {
     @Id
-    @ManyToOne
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @ManyToOne(cascade = CascadeType.PERSIST)
     User user;
 
     String providerID;
 
+    @Enumerated(EnumType.STRING)
     Provider provider;
 
     @CreationTimestamp(source = SourceType.DB)

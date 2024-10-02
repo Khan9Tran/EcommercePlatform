@@ -15,4 +15,5 @@ public class UserResponse {
     String id;
     String name;
     List<RoleResponse> roles;
+    List<ExternalAuthResponse> externalAuth;
 }

@@ -4,10 +4,12 @@ import java.util.Objects;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication
+@EnableFeignClients
 public class EcommercePlatformApplication {
 
     public static void main(String[] args) {
@@ -30,6 +32,11 @@ public class EcommercePlatformApplication {
         final String API_KEY = "API_KEY";
         final String API_SECRET = "API_SECRET";
 
+        // Google
+        final String GOOGLE_CLIENT_ID = "GOOGLE_CLIENT_ID";
+        final String GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET";
+        final String GOOGLE_REDIRECT_URI = "GOOGLE_REDIRECT_URI";
+
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
@@ -42,7 +49,9 @@ public class EcommercePlatformApplication {
         System.setProperty(JWT_MAIL_KEY, Objects.requireNonNull(dotenv.get(JWT_MAIL_KEY)));
         System.setProperty(MAIL_USER, Objects.requireNonNull(dotenv.get(MAIL_USER)));
         System.setProperty(MAIL_PASSWORD, Objects.requireNonNull(dotenv.get(MAIL_PASSWORD)));
-
+        System.setProperty(GOOGLE_CLIENT_ID, Objects.requireNonNull(dotenv.get(GOOGLE_CLIENT_ID)));
+        System.setProperty(GOOGLE_CLIENT_SECRET, Objects.requireNonNull(dotenv.get(GOOGLE_CLIENT_SECRET)));
+        System.setProperty(GOOGLE_REDIRECT_URI, Objects.requireNonNull(dotenv.get(GOOGLE_REDIRECT_URI)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }

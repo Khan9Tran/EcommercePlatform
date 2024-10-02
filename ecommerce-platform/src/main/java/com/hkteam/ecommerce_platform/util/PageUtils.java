@@ -12,7 +12,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PageUtils {
-    public static int[] validateAndConvertPageAndSize(String pageStr, String sizeStr) {
+    private int[] validateAndConvertPageAndSize(String pageStr, String sizeStr) {
         int page;
         int size;
 
@@ -30,7 +30,7 @@ public class PageUtils {
         return new int[] {page, size};
     }
 
-    public static Pageable createPageable(String pageStr, String sizeStr, Sort sort) {
+    public Pageable createPageable(String pageStr, String sizeStr, Sort sort) {
         int[] pageAndSize = validateAndConvertPageAndSize(pageStr, sizeStr);
         int page = pageAndSize[0];
         int size = pageAndSize[1];
@@ -38,7 +38,7 @@ public class PageUtils {
         return PageRequest.of(page - 1, size, sort != null ? sort : Sort.unsorted());
     }
 
-    public static <T> void validatePageBounds(int page, Page<T> pageData) {
+    public <T> void validatePageBounds(int page, Page<T> pageData) {
         if (pageData.getTotalPages() > 0 && (page - 1) >= pageData.getTotalPages()) {
             throw new AppException(ErrorCode.PAGE_NOT_FOUND);
         }
