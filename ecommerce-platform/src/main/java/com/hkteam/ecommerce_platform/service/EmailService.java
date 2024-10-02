@@ -109,7 +109,7 @@ public class EmailService {
     }
 
     @Async
-    private void setupMailValidation(String to, String subject, String tokenUrl, String template)
+    protected void setupMailValidation(String to, String subject, String tokenUrl, String template)
             throws MessagingException {
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

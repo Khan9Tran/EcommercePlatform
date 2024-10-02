@@ -14,7 +14,6 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.AddressMapper;
 import com.hkteam.ecommerce_platform.repository.AddressRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
-import com.hkteam.ecommerce_platform.util.StringUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -37,22 +36,14 @@ public class AddressService {
                 .findByUsername(authentication.getName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        String detailLocate = request.getDetailLocate().trim();
-        detailLocate = StringUtils.convertEmptyToNull(detailLocate);
-
         Address address = addressMapper.toAddress(request);
-        address.setRecipientName(request.getRecipientName().trim());
-        address.setPhone(request.getPhone().trim());
-        address.setProvince(request.getProvince().trim());
-        address.setDistrict(request.getDistrict().trim());
-        address.setDetailAddress(request.getDetailAddress().trim());
-        address.setDetailLocate(detailLocate);
         address.setUser(user);
 
         try {
-            address = addressRepository.save(address);
+            addressRepository.save(address);
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.ADDRESS_EXISTED);
+            log.info("Error while creating address {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         return addressMapper.toAddressResponse(address);
@@ -60,34 +51,47 @@ public class AddressService {
 
     public AddressResponse updateAddress(Long id, AddressUpdateRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         var user = userRepository
                 .findByUsername(authentication.getName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        Address address =
-                addressRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+        Address address = addressRepository
+                .findByIdAndUserId(id, user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        address.setRecipientName(request.getRecipientName().trim());
-        address.setPhone(request.getPhone().trim());
-        address.setProvince(request.getProvince().trim());
-        address.setDistrict(request.getDistrict().trim());
-        address.setDetailAddress(request.getDetailAddress().trim());
-        address.setDetailLocate(request.getDetailLocate().trim());
-        address.setUser(user);
+        addressMapper.updateAddressFromRequest(request, address);
 
-        return addressMapper.toAddressResponse(addressRepository.save(address));
+        try {
+            addressRepository.save(address);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while updating address {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return addressMapper.toAddressResponse(address);
     }
 
     public void deleteAddress(Long id) {
-        Address address =
-                addressRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var user = userRepository
+                .findByUsername(authentication.getName())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Address address = addressRepository
+                .findByIdAndUserId(id, user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
         addressRepository.delete(address);
     }
 
     public AddressResponse getOneAddressById(Long id) {
-        Address address =
-                addressRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var user = userRepository
+                .findByUsername(authentication.getName())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Address address = addressRepository
+                .findByIdAndUserId(id, user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
         return addressMapper.toAddressResponse(address);
     }
 }

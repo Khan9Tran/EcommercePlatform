@@ -2,7 +2,6 @@ package com.hkteam.ecommerce_platform.service;
 
 import com.hkteam.ecommerce_platform.dto.request.ExchangeTokenRequest;
 import com.hkteam.ecommerce_platform.dto.response.AuthenticationResponse;
-import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.entity.user.ExternalAuth;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.EmailValidationStatus;
@@ -18,20 +17,15 @@ import com.hkteam.ecommerce_platform.repository.httpclient.OutboundIdentityClien
 import com.hkteam.ecommerce_platform.repository.httpclient.OutboundUserClient;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -111,7 +105,6 @@ public class ExternalAuthService {
                             .username(username)
                             .build())
                     .build();
-
 
             try {
                 externalAuthRepository.save(externalAuth);

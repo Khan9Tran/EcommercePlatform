@@ -65,6 +65,7 @@ public enum ErrorCode {
     VALIDATION_EMAIL_FAILURE(1050, "Email verification failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ALREADY_VERIFIED(1051, "Email already verified", HttpStatus.BAD_REQUEST),
     UNKNOWN_ERROR(1052, "An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
+    DUPLICATE_COMPONENT_IDS(1053, "Duplicate component id", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
