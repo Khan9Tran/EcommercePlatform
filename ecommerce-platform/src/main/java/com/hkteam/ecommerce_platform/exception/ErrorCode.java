@@ -56,6 +56,11 @@ public enum ErrorCode {
     EMAIL_TOKEN_TOO_RECENT(
             1042, "A new email token cannot be generated within 30 seconds of the last token.", HttpStatus.BAD_REQUEST),
     PAGE_NOT_FOUND(1043, "Page not found", HttpStatus.NOT_FOUND),
+    ADDRESS_EXISTED(1044, "Address already exists", HttpStatus.BAD_REQUEST),
+    PHONE_10_DIGITS(1045, "Phone number must be 10 digits", HttpStatus.BAD_REQUEST),
+    PHONE_START_0(1048, "Phone number must start with 0", HttpStatus.BAD_REQUEST),
+    ADDRESS_NOT_FOUND(1047, "Address not found", HttpStatus.NOT_FOUND),
+    ADDRESS_NOT_BELONG_TO_USER(1048, "Address not belong to user", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

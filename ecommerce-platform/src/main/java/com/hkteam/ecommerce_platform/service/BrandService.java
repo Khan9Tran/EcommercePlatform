@@ -16,6 +16,7 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.BrandMapper;
 import com.hkteam.ecommerce_platform.repository.BrandRepository;
 import com.hkteam.ecommerce_platform.util.PageUtils;
+import com.hkteam.ecommerce_platform.util.StringUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -39,12 +40,11 @@ public class BrandService {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
 
-        if (description.isEmpty()) {
-            description = null;
-        }
+        description = StringUtils.convertEmptyToNull(description);
 
         Brand brand = brandMapper.toBrand(request);
 
+        brand.setName(request.getName().trim());
         brand.setDescription(description);
 
         try {
@@ -69,9 +69,7 @@ public class BrandService {
             throw new AppException(ErrorCode.BRAND_DUPLICATE);
         }
 
-        if (description.isEmpty()) {
-            description = null;
-        }
+        description = StringUtils.convertEmptyToNull(description);
 
         brand.setName(request.getName().trim());
         brand.setDescription(description);
@@ -92,8 +90,9 @@ public class BrandService {
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
 
         var pageData = brandRepository.findAll(pageable);
+        int page = Integer.parseInt(pageStr);
 
-        PageUtils.validatePageBounds(Integer.parseInt(pageStr), pageData);
+        PageUtils.validatePageBounds(page, pageData);
 
         return PaginationResponse.<BrandResponse>builder()
                 .currentPage(Integer.parseInt(pageStr))
@@ -102,8 +101,8 @@ public class BrandService {
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? Integer.parseInt(pageStr) + 1 : null)
-                .previousPage(pageData.hasPrevious() ? Integer.parseInt(pageStr) - 1 : null)
+                .nextPage(pageData.hasNext() ? page + 1 : null)
+                .previousPage(pageData.hasPrevious() ? page - 1 : null)
                 .data(pageData.getContent().stream()
                         .map(brandMapper::toBrandResponse)
                         .toList())

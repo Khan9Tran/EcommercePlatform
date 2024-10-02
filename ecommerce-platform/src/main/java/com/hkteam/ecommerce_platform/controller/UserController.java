@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
@@ -38,5 +39,12 @@ public class UserController {
     @GetMapping("/{userId}")
     UserDetailResponse getUser(@PathVariable("userId") String userId) {
         return userService.getUser(userId);
+    }
+
+    @Operation(summary = "Set default address for user", description = "Api set default address for user")
+    @PostMapping("/default-address")
+    ApiResponse<Void> setDefaultAddress(@RequestBody @Valid DefaultAddressRequest request) {
+        userService.setDefaultAddress(request);
+        return ApiResponse.<Void>builder().build();
     }
 }
