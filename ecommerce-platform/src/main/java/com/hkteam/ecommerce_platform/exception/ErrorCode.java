@@ -62,12 +62,13 @@ public enum ErrorCode {
     UNKNOWN_ERROR(1047, "An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
     ADDRESS_EXISTED(1044, "Address already exists", HttpStatus.BAD_REQUEST),
     PHONE_10_DIGITS(1045, "Phone number must be 10 digits", HttpStatus.BAD_REQUEST),
-    PHONE_START_0(1046, "Phone number must start with 0", HttpStatus.BAD_REQUEST),
+    INVALID_PHONE(1046, "Phone only accepts digits, must be 10 digits and start with 0", HttpStatus.BAD_REQUEST),
     ADDRESS_NOT_FOUND(1047, "Address not found", HttpStatus.NOT_FOUND),
     ADDRESS_NOT_BELONG_TO_USER(1048, "Address not belong to user", HttpStatus.BAD_REQUEST),
     DATE_OF_BIRTH_INVALID(1053, "Date of birth is invalid", HttpStatus.BAD_REQUEST),
     GENDER_INVALID(1054, "Gender is invalid", HttpStatus.BAD_REQUEST),
     DUPLICATE_COMPONENT_IDS(1055, "Duplicate component id", HttpStatus.BAD_REQUEST),
+    INVALID_SPACE(1056, "{field} must not blank and not have spaces at start or end", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
