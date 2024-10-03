@@ -39,6 +39,7 @@ public class ComponentService {
         }
 
         Component component = componentMapper.toComponent(request);
+        component.setName(request.getName().trim());
 
         try {
             component = componentRepository.save(component);
@@ -54,8 +55,9 @@ public class ComponentService {
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
 
         var pageData = componentRepository.findAll(pageable);
+        int page = Integer.parseInt(pageStr);
 
-        PageUtils.validatePageBounds(Integer.parseInt(pageStr), pageData);
+        PageUtils.validatePageBounds(page, pageData);
 
         return PaginationResponse.<ComponentResponse>builder()
                 .currentPage(Integer.parseInt(pageStr))
@@ -64,8 +66,8 @@ public class ComponentService {
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? Integer.parseInt(pageStr) + 1 : null)
-                .previousPage(pageData.hasPrevious() ? Integer.parseInt(pageStr) - 1 : null)
+                .nextPage(pageData.hasNext() ? page + 1 : null)
+                .previousPage(pageData.hasPrevious() ? page - 1 : null)
                 .data(pageData.getContent().stream()
                         .map(componentMapper::toComponentResponse)
                         .toList())

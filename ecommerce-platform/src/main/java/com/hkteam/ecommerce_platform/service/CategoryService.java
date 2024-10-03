@@ -22,6 +22,7 @@ import com.hkteam.ecommerce_platform.repository.CategoryRepository;
 import com.hkteam.ecommerce_platform.repository.ComponentRepository;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
+import com.hkteam.ecommerce_platform.util.StringUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +48,7 @@ public class CategoryService {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
-        if (description.isEmpty()) {
-            description = null;
-        }
+        description = StringUtils.convertEmptyToNull(description);
 
         if (request.getParentId() != null) {
             parentCategory = categoryRepository
@@ -59,6 +58,7 @@ public class CategoryService {
 
         Category category = categoryMapper.toCategory(request);
 
+        category.setName(request.getName().trim());
         category.setSlug(SlugUtils.getSlug(name, TypeSlug.CATEGORY));
         category.setDescription(description);
         category.setParent(parentCategory);
@@ -87,9 +87,7 @@ public class CategoryService {
             throw new AppException(ErrorCode.CATEGORY_DUPLICATE);
         }
 
-        if (description.isEmpty()) {
-            description = null;
-        }
+        description = StringUtils.convertEmptyToNull(description);
 
         if (request.getParentId() != null) {
             parentCategory = categoryRepository
@@ -105,9 +103,7 @@ public class CategoryService {
         category.setDescription(description);
         category.setParent(parentCategory);
 
-        category = categoryRepository.save(category);
-
-        return categoryMapper.toCategoryResponse(category);
+        return categoryMapper.toCategoryResponse(categoryRepository.save(category));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -122,8 +118,9 @@ public class CategoryService {
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
 
         var pageData = categoryRepository.findAll(pageable);
+        int page = Integer.parseInt(pageStr);
 
-        PageUtils.validatePageBounds(Integer.parseInt(pageStr), pageData);
+        PageUtils.validatePageBounds(page, pageData);
 
         return PaginationResponse.<CategoryResponse>builder()
                 .currentPage(Integer.parseInt(pageStr))
@@ -132,8 +129,8 @@ public class CategoryService {
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? Integer.parseInt(pageStr) + 1 : null)
-                .previousPage(pageData.hasPrevious() ? Integer.parseInt(pageStr) - 1 : null)
+                .nextPage(pageData.hasNext() ? page + 1 : null)
+                .previousPage(pageData.hasPrevious() ? page - 1 : null)
                 .data(pageData.getContent().stream()
                         .map(categoryMapper::toCategoryResponse)
                         .toList())

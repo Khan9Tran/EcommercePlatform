@@ -44,18 +44,18 @@ public class ExternalAuthService {
 
     @NonFinal
     @Value("${outbound.google.client-id}")
-    protected String CLIENT_ID;
+    String CLIENT_ID;
 
     @Value("${outbound.google.client-secret}")
     @NonFinal
-    protected String CLIENT_SECRET;
+    String CLIENT_SECRET;
 
     @Value("${outbound.google.redirect-uri}")
     @NonFinal
-    protected String REDIRECT_URI;
+    String REDIRECT_URI;
 
     @NonFinal
-    protected String GRANT_TYPE = "authorization_code";
+    String GRANT_TYPE = "authorization_code";
 
     public AuthenticationResponse googleAuthenticate(String code) {
         var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
