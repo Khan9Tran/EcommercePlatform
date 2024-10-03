@@ -3,22 +3,16 @@ package com.hkteam.ecommerce_platform.service;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.hkteam.ecommerce_platform.configuration.RabbitMQConfig;
+import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
+import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
 import com.hkteam.ecommerce_platform.dto.request.EmailRequest;
 import com.hkteam.ecommerce_platform.dto.response.EmailResponse;
@@ -33,7 +27,6 @@ import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -41,25 +34,19 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class EmailService {
-
-    JavaMailSender emailSender;
-    TemplateEngine templateEngine;
+    RabbitTemplate rabbitTemplate;
 
     UserRepository userRepository;
     EmailMapper emailMapper;
 
-    @NonFinal
-    Authentication authentication;
+    AuthenticatedUserUtil authenticationUtil;
 
     JwtUtils jwtUtils;
 
     public EmailResponse updateEmail(EmailRequest request) {
-        authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String newEmail = request.getEmail();
-        var user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = authenticationUtil.getAuthenticatedUser();
 
         if (!user.getId().equals(request.getUserId())) throw new AppException(ErrorCode.UNAUTHORIZED);
 
@@ -80,15 +67,20 @@ public class EmailService {
         return emailMapper.toEmailResponse(user);
     }
 
-    public void sendMailValidation() throws MessagingException, JOSEException {
-        authentication = SecurityContextHolder.getContext().getAuthentication();
-        var user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    public void sendMailValidation() throws JOSEException {
+        var user = authenticationUtil.getAuthenticatedUser();
+
+        if (user.getEmailValidationStatus() != null && user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name()))
+            throw new AppException(ErrorCode.ALREADY_VERIFIED);
 
         if (user.getEmailTokenGeneratedAt() != null
                 && user.getEmailTokenGeneratedAt().isAfter(Instant.now().minus(Duration.ofSeconds(30))))
             throw new AppException(ErrorCode.EMAIL_TOKEN_TOO_RECENT);
+
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            throw new AppException(ErrorCode.EMAIL_NOT_BLANK);
+        }
+
 
         String jti = UUID.randomUUID().toString();
         String token = jwtUtils.generateToken(user.getEmail(), jti);
@@ -104,33 +96,25 @@ public class EmailService {
         }
 
         String tokenUrl = "http://localhost:8080/emails/verify?token=" + token;
+        try {
+            sendMailValidation(user.getEmail(), "Xác thực email", tokenUrl, "email-validation");
+        }
+        catch (Exception e) {
+            log.info("Error sending email {}", e.getMessage());
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILURE);
+        }
 
-        setupMailValidation(user.getEmail(), "Xác thực email", tokenUrl, "email-validation");
     }
 
-    @Async
-    private void setupMailValidation(String to, String subject, String tokenUrl, String template)
-            throws MessagingException {
-        MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    private void sendMailValidation(String to, String subject, String tokenUrl, String template) {
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_QUEUE, EmailMessageRequest.builder()
+                .to(to)
+                .subject(subject)
+                .tokenUrl(tokenUrl)
+                .template(template)
+                .build());
 
-        helper.setTo(to);
-        helper.setSubject(subject);
-
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("tokenUrl", tokenUrl);
-
-        String htmlContent = renderTemplate("email-validation", variables);
-
-        helper.setText(htmlContent, true);
-
-        emailSender.send(message);
-    }
-
-    private String renderTemplate(String templateName, Map<String, Object> variables) {
-        Context context = new Context();
-        context.setVariables(variables);
-        return templateEngine.process(templateName, context);
+        log.info("Email sent to the queue for processing: {}", to);
     }
 
     public void verifyEmail(String token) throws ParseException, JOSEException {

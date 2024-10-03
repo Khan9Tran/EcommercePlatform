@@ -37,6 +37,10 @@ public class EcommercePlatformApplication {
         final String GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET";
         final String GOOGLE_REDIRECT_URI = "GOOGLE_REDIRECT_URI";
 
+        //RabbitMQ
+        final String RABBITMQ_DEFAULT_USER = "RABBITMQ_DEFAULT_USER";
+        final String RABBITMQ_DEFAULT_PASS = "RABBITMQ_DEFAULT_PASS";
+
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
@@ -52,6 +56,8 @@ public class EcommercePlatformApplication {
         System.setProperty(GOOGLE_CLIENT_ID, Objects.requireNonNull(dotenv.get(GOOGLE_CLIENT_ID)));
         System.setProperty(GOOGLE_CLIENT_SECRET, Objects.requireNonNull(dotenv.get(GOOGLE_CLIENT_SECRET)));
         System.setProperty(GOOGLE_REDIRECT_URI, Objects.requireNonNull(dotenv.get(GOOGLE_REDIRECT_URI)));
+        System.setProperty(RABBITMQ_DEFAULT_USER, Objects.requireNonNull(dotenv.get(RABBITMQ_DEFAULT_USER)));
+        System.setProperty(RABBITMQ_DEFAULT_PASS, Objects.requireNonNull(dotenv.get(RABBITMQ_DEFAULT_PASS)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }
