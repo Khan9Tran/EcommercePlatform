@@ -1,7 +1,5 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -79,8 +77,7 @@ public class CategoryController {
     public ApiResponse<CategoryResponse> addComponentToCategory(
             @PathVariable Long categoryId, @RequestBody @Valid AddComponentRequest addComponentRequest) {
 
-        List<Long> componentIds = addComponentRequest.getListComponent();
-        CategoryResponse categoryResponse = categoryService.addComponentToCategory(categoryId, componentIds);
+        var categoryResponse = categoryService.addComponentToCategory(categoryId, addComponentRequest);
 
         return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
