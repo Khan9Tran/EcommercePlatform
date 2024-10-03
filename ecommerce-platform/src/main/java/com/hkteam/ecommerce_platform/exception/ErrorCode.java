@@ -59,7 +59,7 @@ public enum ErrorCode {
     TOKEN_INVALID(1044, "Token is invalid or expired", HttpStatus.BAD_REQUEST),
     VALIDATION_EMAIL_FAILURE(1045, "Email verification failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ALREADY_VERIFIED(1046, "Email already verified", HttpStatus.BAD_REQUEST),
-    UNKNOWN_ERROR(1047,  "An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNKNOWN_ERROR(1047, "An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     int code;
