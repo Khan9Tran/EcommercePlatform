@@ -36,4 +36,19 @@ public class ImageController {
         imageService.deleteCategoryImage(categoryId);
         return ApiResponse.<Void>builder().build();
     }
+
+    @Operation(summary = "Upload user image", description = "Upload an image for a user")
+    @PostMapping(value = "/users", consumes = "multipart/form-data")
+    public ApiResponse<ImageResponse> uploadUserImage(@RequestParam("image") MultipartFile image) {
+        return ApiResponse.<ImageResponse>builder()
+                .result(imageService.uploadUserImage(image))
+                .build();
+    }
+
+    @Operation(summary = "Delete User Image", description = "Delete an image for a category")
+    @DeleteMapping(value = "/users")
+    public ApiResponse<Void> deleteUserImage() {
+        imageService.deleteUserImage();
+        return ApiResponse.<Void>builder().build();
+    }
 }

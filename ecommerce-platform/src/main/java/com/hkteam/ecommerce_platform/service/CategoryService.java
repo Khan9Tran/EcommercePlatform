@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
@@ -144,7 +145,9 @@ public class CategoryService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public CategoryResponse addComponentToCategory(Long categoryId, List<Long> componentIds) {
+    public CategoryResponse addComponentToCategory(Long categoryId, AddComponentRequest request) {
+        var componentIds = request.getListComponent();
+
         Category category = categoryRepository
                 .findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -163,14 +166,18 @@ public class CategoryService {
 
         List<Component> components = componentRepository.findAllById(uniqueComponentIds);
 
-        if (components.size() != uniqueComponentIds.size()) {
+        if (componentIds.size() != uniqueComponentIds.size()) {
             throw new AppException(ErrorCode.LIST_COMPONENT_NOT_FOUND);
         }
 
         category.getComponents().addAll(components);
 
-        Category savedCategory = categoryRepository.save(category);
+        try {
+            category = categoryRepository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.CATEGORY_EXISTED);
+        }
 
-        return categoryMapper.toCategoryResponse(savedCategory);
+        return categoryMapper.toCategoryResponse(category);
     }
 }
