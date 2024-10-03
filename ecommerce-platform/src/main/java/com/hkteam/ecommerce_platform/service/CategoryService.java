@@ -23,7 +23,6 @@ import com.hkteam.ecommerce_platform.repository.CategoryRepository;
 import com.hkteam.ecommerce_platform.repository.ComponentRepository;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
-import com.hkteam.ecommerce_platform.util.StringUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -41,15 +40,11 @@ public class CategoryService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse createCategory(CategoryCreationRequest request) {
-        String name = request.getName().trim().toLowerCase();
-        String description = request.getDescription().trim();
         Category parentCategory = null;
 
-        if (categoryRepository.existsByNameIgnoreCase(name)) {
+        if (categoryRepository.existsByNameIgnoreCase(request.getName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
-
-        description = StringUtils.convertEmptyToNull(description);
 
         if (request.getParentId() != null) {
             parentCategory = categoryRepository
@@ -59,15 +54,14 @@ public class CategoryService {
 
         Category category = categoryMapper.toCategory(request);
 
-        category.setName(request.getName().trim());
-        category.setSlug(SlugUtils.getSlug(name, TypeSlug.CATEGORY));
-        category.setDescription(description);
+        category.setSlug(SlugUtils.getSlug(request.getName(), TypeSlug.CATEGORY));
         category.setParent(parentCategory);
 
         try {
             category = categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.CATEGORY_EXISTED);
+            log.info("Error while creating category: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         return categoryMapper.toCategoryResponse(category);
@@ -78,17 +72,13 @@ public class CategoryService {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        String name = request.getName().trim().toLowerCase();
-        String description = request.getDescription().trim();
         Category parentCategory = null;
 
-        boolean isDuplicateName = categoryRepository.existsByNameIgnoreCase(name)
-                && !category.getName().equalsIgnoreCase(name);
+        boolean isDuplicateName = categoryRepository.existsByNameIgnoreCase(request.getName())
+                && !category.getName().equalsIgnoreCase(request.getName());
         if (isDuplicateName) {
             throw new AppException(ErrorCode.CATEGORY_DUPLICATE);
         }
-
-        description = StringUtils.convertEmptyToNull(description);
 
         if (request.getParentId() != null) {
             parentCategory = categoryRepository
@@ -96,15 +86,22 @@ public class CategoryService {
                     .orElseThrow(() -> new AppException(ErrorCode.PARENT_CATEGORY_NOT_FOUND));
         }
 
-        if (!category.getName().equalsIgnoreCase(name)) {
-            category.setSlug(SlugUtils.getSlug(request.getName().trim(), TypeSlug.CATEGORY));
+        if (!category.getName().equalsIgnoreCase(request.getName())) {
+            category.setSlug(SlugUtils.getSlug(request.getName(), TypeSlug.CATEGORY));
         }
 
-        category.setName(request.getName().trim());
-        category.setDescription(description);
+        categoryMapper.updateCategoryFromRequest(request, category);
+
         category.setParent(parentCategory);
 
-        return categoryMapper.toCategoryResponse(categoryRepository.save(category));
+        try {
+            categoryRepository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while updating category: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return categoryMapper.toCategoryResponse(category);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -157,6 +154,9 @@ public class CategoryService {
         }
 
         Set<Long> uniqueComponentIds = new HashSet<>(componentIds);
+        if (uniqueComponentIds.size() < componentIds.size()) {
+            throw new AppException(ErrorCode.DUPLICATE_COMPONENT_IDS);
+        }
 
         for (Long componentId : uniqueComponentIds) {
             if (category.getComponents().stream()
@@ -175,7 +175,8 @@ public class CategoryService {
         try {
             category = categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.CATEGORY_EXISTED);
+            log.info("Error while adding component to the category: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         return categoryMapper.toCategoryResponse(category);

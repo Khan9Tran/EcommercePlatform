@@ -16,7 +16,6 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.BrandMapper;
 import com.hkteam.ecommerce_platform.repository.BrandRepository;
 import com.hkteam.ecommerce_platform.util.PageUtils;
-import com.hkteam.ecommerce_platform.util.StringUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -33,24 +32,17 @@ public class BrandService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public BrandResponse createBrand(BrandCreationRequest request) {
-        String name = request.getName().trim().toLowerCase();
-        String description = request.getDescription().trim();
-
-        if (brandRepository.existsByNameIgnoreCase(name)) {
+        if (brandRepository.existsByNameIgnoreCase(request.getName())) {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
 
-        description = StringUtils.convertEmptyToNull(description);
-
         Brand brand = brandMapper.toBrand(request);
 
-        brand.setName(request.getName().trim());
-        brand.setDescription(description);
-
         try {
-            brand = brandRepository.save(brand);
+            brandRepository.save(brand);
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.BRAND_EXISTED);
+            log.info("Error while creating brand: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         return brandMapper.toBrandResponse(brand);
@@ -60,23 +52,22 @@ public class BrandService {
     public BrandResponse updateBrand(Long id, BrandUpdateRequest request) {
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
-        String name = request.getName().trim().toLowerCase();
-        String description = request.getDescription().trim();
-
-        boolean isDuplicateName =
-                brandRepository.existsByNameIgnoreCase(name) && !brand.getName().equalsIgnoreCase(name);
+        boolean isDuplicateName = brandRepository.existsByNameIgnoreCase(request.getName())
+                && !brand.getName().equalsIgnoreCase(request.getName());
         if (isDuplicateName) {
             throw new AppException(ErrorCode.BRAND_DUPLICATE);
         }
 
-        description = StringUtils.convertEmptyToNull(description);
+        brandMapper.updateBrandFromRequest(request, brand);
 
-        brand.setName(request.getName().trim());
-        brand.setDescription(description);
+        try {
+            brandRepository.save(brand);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while updating brand {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
 
-        brand = brandRepository.save(brand);
-
-        return brandMapper.toBrandResponse(brand);
+        return brandMapper.toBrandResponse(brandRepository.save(brand));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

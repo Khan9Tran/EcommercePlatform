@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
@@ -18,4 +19,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @NotNull
     Page<Category> findAll(@NotNull Pageable pageable);
+
+    @NotNull
+    List<Category> findAllById(@NotNull Iterable<Long> ids);
 }

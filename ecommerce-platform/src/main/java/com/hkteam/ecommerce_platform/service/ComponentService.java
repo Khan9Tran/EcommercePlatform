@@ -32,19 +32,17 @@ public class ComponentService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ComponentResponse createComponent(ComponentCreationRequest request) {
-        String name = request.getName().trim().toLowerCase();
-
-        if (componentRepository.existsByNameIgnoreCase(name)) {
+        if (componentRepository.existsByNameIgnoreCase(request.getName())) {
             throw new AppException(ErrorCode.COMPONENT_EXISTED);
         }
 
         Component component = componentMapper.toComponent(request);
-        component.setName(request.getName().trim());
 
         try {
-            component = componentRepository.save(component);
+            componentRepository.save(component);
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.CATEGORY_EXISTED);
+            log.info("Error while creating component: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         return componentMapper.toComponentResponse(component);
@@ -85,18 +83,20 @@ public class ComponentService {
         Component component =
                 componentRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
 
-        String name = request.getName().trim().toLowerCase();
-
-        boolean isDuplicateName = componentRepository.existsByNameIgnoreCase(name)
-                && !component.getName().equalsIgnoreCase(name);
+        boolean isDuplicateName = componentRepository.existsByNameIgnoreCase(request.getName())
+                && !component.getName().equalsIgnoreCase(request.getName());
         if (isDuplicateName) {
             throw new AppException(ErrorCode.COMPONENT_DUPLICATE);
         }
 
-        component.setName(request.getName().trim());
-        component.setRequired(request.isRequired());
+        componentMapper.updateComponentFromRequest(request, component);
 
-        component = componentRepository.save(component);
+        try {
+            componentRepository.save(component);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while updating component: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
 
         return componentMapper.toComponentResponse(component);
     }
