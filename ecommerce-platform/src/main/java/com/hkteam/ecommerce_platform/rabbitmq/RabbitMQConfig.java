@@ -1,6 +1,5 @@
-package com.hkteam.ecommerce_platform.configuration;
+package com.hkteam.ecommerce_platform.rabbitmq;
 
-import com.hkteam.ecommerce_platform.util.CustomMessageConverter;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -18,7 +17,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, CustomMessageConverter customMessageConverter) {
+    public RabbitTemplate rabbitTemplate(
+            ConnectionFactory connectionFactory, CustomMessageConverter customMessageConverter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(customMessageConverter);
         return rabbitTemplate;

@@ -3,24 +3,22 @@ package com.hkteam.ecommerce_platform.service;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
-
-import com.hkteam.ecommerce_platform.configuration.RabbitMQConfig;
-import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
-import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
 import com.hkteam.ecommerce_platform.dto.request.EmailRequest;
 import com.hkteam.ecommerce_platform.dto.response.EmailResponse;
 import com.hkteam.ecommerce_platform.enums.EmailValidationStatus;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.EmailMapper;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
+import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.JwtUtils;
 import com.nimbusds.jose.JOSEException;
 
@@ -70,7 +68,8 @@ public class EmailService {
     public void sendMailValidation() throws JOSEException {
         var user = authenticationUtil.getAuthenticatedUser();
 
-        if (user.getEmailValidationStatus() != null && user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name()))
+        if (user.getEmailValidationStatus() != null
+                && user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name()))
             throw new AppException(ErrorCode.ALREADY_VERIFIED);
 
         if (user.getEmailTokenGeneratedAt() != null
@@ -80,7 +79,6 @@ public class EmailService {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             throw new AppException(ErrorCode.EMAIL_NOT_BLANK);
         }
-
 
         String jti = UUID.randomUUID().toString();
         String token = jwtUtils.generateToken(user.getEmail(), jti);
@@ -98,21 +96,21 @@ public class EmailService {
         String tokenUrl = "http://localhost:8080/emails/verify?token=" + token;
         try {
             sendMailValidation(user.getEmail(), "Xác thực email", tokenUrl, "email-validation");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("Error sending email {}", e.getMessage());
             throw new AppException(ErrorCode.EMAIL_SEND_FAILURE);
         }
-
     }
 
     private void sendMailValidation(String to, String subject, String tokenUrl, String template) {
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_QUEUE, EmailMessageRequest.builder()
-                .to(to)
-                .subject(subject)
-                .tokenUrl(tokenUrl)
-                .template(template)
-                .build());
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EMAIL_QUEUE,
+                EmailMessageRequest.builder()
+                        .to(to)
+                        .subject(subject)
+                        .tokenUrl(tokenUrl)
+                        .template(template)
+                        .build());
 
         log.info("Email sent to the queue for processing: {}", to);
     }

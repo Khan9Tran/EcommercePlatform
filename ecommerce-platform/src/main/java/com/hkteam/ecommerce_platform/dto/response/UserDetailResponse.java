@@ -25,5 +25,6 @@ public class UserDetailResponse {
     String imageUrl;
     String emailValidationStatus;
     String phoneValidationStatus;
+    Boolean noPassword;
     List<RoleResponse> roles;
 }

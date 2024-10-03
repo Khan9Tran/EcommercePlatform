@@ -9,8 +9,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
+import com.hkteam.ecommerce_platform.dto.request.PasswordCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
@@ -154,6 +156,25 @@ public class UserService {
     public UserDetailResponse getMyInformation() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
-        return userMapper.toUserDetailResponse(user);
+        var userDetail = userMapper.toUserDetailResponse(user);
+        userDetail.setNoPassword(!StringUtils.hasText(user.getPasswordDigest()));
+
+        return userDetail;
+    }
+
+    public void createPassword(PasswordCreationRequest request) {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (StringUtils.hasText(user.getPasswordDigest())) {
+            throw new AppException(ErrorCode.PASSWORD_ALREADY_CREATED);
+        }
+
+        user.setPasswordDigest(passwordEncoder.encode(request.getPassword()));
+
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
     }
 }

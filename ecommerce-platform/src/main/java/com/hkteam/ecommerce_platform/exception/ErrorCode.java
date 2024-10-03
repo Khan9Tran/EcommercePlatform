@@ -67,6 +67,7 @@ public enum ErrorCode {
     ADDRESS_NOT_BELONG_TO_USER(1048, "Address not belong to user", HttpStatus.BAD_REQUEST),
     DATE_OF_BIRTH_INVALID(1053, "Date of birth is invalid", HttpStatus.BAD_REQUEST),
     GENDER_INVALID(1054, "Gender is invalid", HttpStatus.BAD_REQUEST),
+    PASSWORD_ALREADY_CREATED(1055, "Password already created", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

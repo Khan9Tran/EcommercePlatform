@@ -37,7 +37,7 @@ public class EcommercePlatformApplication {
         final String GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET";
         final String GOOGLE_REDIRECT_URI = "GOOGLE_REDIRECT_URI";
 
-        //RabbitMQ
+        // RabbitMQ
         final String RABBITMQ_DEFAULT_USER = "RABBITMQ_DEFAULT_USER";
         final String RABBITMQ_DEFAULT_PASS = "RABBITMQ_DEFAULT_PASS";
 

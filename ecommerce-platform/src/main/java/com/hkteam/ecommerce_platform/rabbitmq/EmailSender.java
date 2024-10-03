@@ -1,13 +1,11 @@
-package com.hkteam.ecommerce_platform.service;
+package com.hkteam.ecommerce_platform.rabbitmq;
 
-import com.hkteam.ecommerce_platform.configuration.RabbitMQConfig;
-import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
+import java.util.HashMap;
+import java.util.Map;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,14 +13,18 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class EmailSenderService {
+public class EmailSender {
 
     JavaMailSender emailSender;
     TemplateEngine templateEngine;
@@ -57,4 +59,3 @@ public class EmailSenderService {
         return templateEngine.process(templateName, context);
     }
 }
-

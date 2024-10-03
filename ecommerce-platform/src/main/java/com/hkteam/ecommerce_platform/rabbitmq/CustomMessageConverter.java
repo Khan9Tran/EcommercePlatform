@@ -1,18 +1,19 @@
-package com.hkteam.ecommerce_platform.util;
+package com.hkteam.ecommerce_platform.rabbitmq;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.io.IOException;
+
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
+
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Component
 @AllArgsConstructor
