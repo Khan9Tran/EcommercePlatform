@@ -10,10 +10,16 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String EMAIL_QUEUE = "emailQueue";
+    public static final String IMAGE_QUEUE = "imageQueue";
 
     @Bean
     public Queue emailQueue() {
         return new Queue(EMAIL_QUEUE, true);
+    }
+
+    @Bean
+    public  Queue imageQueue() {
+        return new Queue(IMAGE_QUEUE, true);
     }
 
     @Bean
