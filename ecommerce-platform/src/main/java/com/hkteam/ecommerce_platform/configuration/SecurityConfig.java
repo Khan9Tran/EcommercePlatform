@@ -27,7 +27,9 @@ public class SecurityConfig {
         "/auths/refresh",
         "/users",
         "/emails/verify",
-        "/external-auths/authentication/google"
+        "/external-auths/authentication/google",
+        "/emails/reset-request",
+        "/emails/reset-password",
     };
 
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {

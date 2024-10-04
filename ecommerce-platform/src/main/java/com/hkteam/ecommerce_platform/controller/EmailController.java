@@ -3,10 +3,14 @@ package com.hkteam.ecommerce_platform.controller;
 import java.text.ParseException;
 
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.hkteam.ecommerce_platform.dto.request.ConfirmResetPassordRequest;
 import com.hkteam.ecommerce_platform.dto.request.EmailRequest;
+import com.hkteam.ecommerce_platform.dto.request.ResetPasswordRequest;
+import com.hkteam.ecommerce_platform.dto.request.VerifyEmailRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.EmailResponse;
 import com.hkteam.ecommerce_platform.service.EmailService;
@@ -28,7 +32,7 @@ public class EmailController {
     EmailService emailService;
 
     @PostMapping("/user/")
-    ApiResponse<EmailResponse> updateEmail(@RequestBody EmailRequest request) {
+    ApiResponse<EmailResponse> updateEmail(@RequestBody @Valid EmailRequest request) {
         return ApiResponse.<EmailResponse>builder()
                 .result(emailService.updateEmail(request))
                 .build();
@@ -40,9 +44,22 @@ public class EmailController {
         return ApiResponse.<Void>builder().build();
     }
 
-    @GetMapping("/verify")
-    ApiResponse<Void> verifyEmail(@RequestParam("token") String token) throws ParseException, JOSEException {
+    @PostMapping("/verify")
+    ApiResponse<Void> verifyEmail(@RequestBody @Valid VerifyEmailRequest token) throws ParseException, JOSEException {
         emailService.verifyEmail(token);
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @PostMapping("/reset-request")
+    ApiResponse<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request) throws JOSEException {
+        emailService.sendPasswordResetEmail(request);
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @PostMapping("/reset-password")
+    ApiResponse<Void> resetPassword(@RequestBody @Valid ConfirmResetPassordRequest request)
+            throws JOSEException, ParseException {
+        emailService.confirmResetPassword(request);
         return ApiResponse.<Void>builder().build();
     }
 }

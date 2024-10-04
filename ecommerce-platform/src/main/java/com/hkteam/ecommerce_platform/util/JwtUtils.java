@@ -27,11 +27,12 @@ public class JwtUtils {
     @Value("${mail.valid-duration}")
     long EXPIRATION_TIME;
 
-    public String generateToken(String subject, String tokenId) throws JOSEException {
+    public String generateToken(String subject, String tokenId, String purpose) throws JOSEException {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .jwtID(tokenId)
                 .subject(subject)
                 .issuer("HKTeam")
+                .claim("purpose", purpose)
                 .issueTime(new Date())
                 .expirationTime(new Date(System.currentTimeMillis() + (EXPIRATION_TIME * 1000)))
                 .build();

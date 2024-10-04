@@ -70,7 +70,8 @@ public enum ErrorCode {
     PASSWORD_ALREADY_CREATED(1055, "Password already created", HttpStatus.BAD_REQUEST),
     DUPLICATE_COMPONENT_IDS(1056, "Duplicate component id", HttpStatus.BAD_REQUEST),
     INVALID_SPACE(1057, "{field} must not blank and not have spaces at start or end", HttpStatus.BAD_REQUEST),
-    ;
+    PASSWORD_INCORRECT(1058, "Password incorrect", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_VERIFIED(1059, "Email not verified", HttpStatus.BAD_REQUEST);
 
     int code;
     String message;

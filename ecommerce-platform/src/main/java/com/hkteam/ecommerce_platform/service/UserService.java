@@ -11,10 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
-import com.hkteam.ecommerce_platform.dto.request.PasswordCreationRequest;
-import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
-import com.hkteam.ecommerce_platform.dto.request.UserUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
@@ -169,12 +166,30 @@ public class UserService {
             throw new AppException(ErrorCode.PASSWORD_ALREADY_CREATED);
         }
 
-        user.setPasswordDigest(passwordEncoder.encode(request.getPassword()));
+        setPassword(user, request.getPassword());
+    }
+
+    public void updatePassword(ChangePasswordRequest request) {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordDigest())) {
+            throw new AppException(ErrorCode.PASSWORD_INCORRECT);
+        }
+
+        if (!request.getNewPassword().equals(request.getNewPasswordConfirmation())) {
+            throw new AppException(ErrorCode.PASSWORDS_DO_NOT_MATCH);
+        }
+
+        setPassword(user, request.getNewPassword());
+    }
+
+    public void setPassword(User user, String password) {
+        user.setPasswordDigest(passwordEncoder.encode(password));
 
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.USER_EXISTED);
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 }
