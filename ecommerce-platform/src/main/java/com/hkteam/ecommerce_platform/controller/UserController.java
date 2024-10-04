@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.hkteam.ecommerce_platform.dto.request.DefaultAddressRequest;
-import com.hkteam.ecommerce_platform.dto.request.PasswordCreationRequest;
-import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
-import com.hkteam.ecommerce_platform.dto.request.UserUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.service.UserService;
 
@@ -88,6 +85,13 @@ public class UserController {
     @PostMapping("/create-password")
     ApiResponse<Void> createPassword(@RequestBody @Valid PasswordCreationRequest request) {
         userService.createPassword(request);
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @Operation(summary = "Update password", description = "Api for update password")
+    @PutMapping("/update-password")
+    ApiResponse<Void> updatePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        userService.updatePassword(request);
         return ApiResponse.<Void>builder().build();
     }
 }

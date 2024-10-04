@@ -9,9 +9,10 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
-import com.hkteam.ecommerce_platform.dto.request.EmailRequest;
+import com.hkteam.ecommerce_platform.constant.TokenPurpose;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.EmailResponse;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.EmailValidationStatus;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
@@ -36,6 +37,8 @@ public class EmailService {
 
     UserRepository userRepository;
     EmailMapper emailMapper;
+
+    UserService userService;
 
     AuthenticatedUserUtil authenticationUtil;
 
@@ -81,7 +84,7 @@ public class EmailService {
         }
 
         String jti = UUID.randomUUID().toString();
-        String token = jwtUtils.generateToken(user.getEmail(), jti);
+        String token = jwtUtils.generateToken(user.getEmail(), jti, TokenPurpose.EMAIL);
 
         user.setEmailValidationStatus(EmailValidationStatus.PENDING.name());
         user.setEmailValidationToken(jti);
@@ -97,7 +100,6 @@ public class EmailService {
         try {
             sendMailValidation(user.getEmail(), "Xác thực email", tokenUrl, "email-validation");
         } catch (Exception e) {
-            log.info("Error sending email {}", e.getMessage());
             throw new AppException(ErrorCode.EMAIL_SEND_FAILURE);
         }
     }
@@ -115,18 +117,11 @@ public class EmailService {
         log.info("Email sent to the queue for processing: {}", to);
     }
 
-    public void verifyEmail(String token) throws ParseException, JOSEException {
-        var claims = jwtUtils.decodeToken(token);
-        String jti = claims.getJWTID();
-
-        var user = userRepository
-                .findByEmailValidationToken(jti)
-                .orElseThrow(() -> new AppException(ErrorCode.TOKEN_INVALID));
+    public void verifyEmail(VerifyEmailRequest request) throws ParseException, JOSEException {
+        var user = toUser(request.getToken(), TokenPurpose.EMAIL);
 
         if (user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name()))
             throw new AppException(ErrorCode.ALREADY_VERIFIED);
-
-        if (!user.getEmail().equals(claims.getSubject())) throw new AppException(ErrorCode.TOKEN_INVALID);
 
         try {
             user.setEmailValidationStatus(EmailValidationStatus.VERIFIED.name());
@@ -134,5 +129,66 @@ public class EmailService {
         } catch (DataIntegrityViolationException exception) {
             throw new AppException(ErrorCode.VALIDATION_EMAIL_FAILURE);
         }
+    }
+
+    public void sendPasswordResetEmail(ResetPasswordRequest request) throws JOSEException {
+        var user = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (user.getEmailValidationStatus() == null
+                || !user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name())) {
+            throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
+        String jti = UUID.randomUUID().toString();
+        String token = jwtUtils.generateToken(user.getEmail(), jti, TokenPurpose.RESET_PASSWORD);
+
+        user.setEmailValidationToken(jti);
+        user.setEmailTokenGeneratedAt(Instant.now());
+
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        String tokenUrl = "http://localhost:8080/emails/reset-password?token=" + token;
+        try {
+            sendMailValidation(user.getEmail(), "Reset password", tokenUrl, "reset-password");
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILURE);
+        }
+    }
+
+    public void confirmResetPassword(ConfirmResetPassordRequest request) throws ParseException, JOSEException {
+        var user = toUser(request.getToken(), TokenPurpose.RESET_PASSWORD);
+
+        if (user.getEmailValidationStatus() == null
+                || !user.getEmailValidationStatus().equals(EmailValidationStatus.VERIFIED.name())) {
+            throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
+        if (!request.getPasswordConfirmation().equals(request.getPassword()))
+            throw new AppException(ErrorCode.PASSWORDS_DO_NOT_MATCH);
+
+        user.setEmailValidationToken(null);
+        userService.setPassword(user, request.getPassword());
+    }
+
+    private User toUser(String token, String purpose) throws ParseException, JOSEException {
+        var claims = jwtUtils.decodeToken(token);
+        String jti = claims.getJWTID();
+
+        String tokenPurpose = claims.getStringClaim("purpose");
+        if (!purpose.equals(tokenPurpose)) throw new AppException(ErrorCode.TOKEN_INVALID);
+
+        var user = userRepository
+                .findByEmailValidationToken(jti)
+                .orElseThrow(() -> new AppException(ErrorCode.TOKEN_INVALID));
+
+        if (!user.getEmail().equals(claims.getSubject())) throw new AppException(ErrorCode.TOKEN_INVALID);
+
+        return user;
     }
 }

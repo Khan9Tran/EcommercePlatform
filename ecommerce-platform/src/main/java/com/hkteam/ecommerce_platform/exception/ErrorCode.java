@@ -74,7 +74,8 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(1060, "Product not found", HttpStatus.NOT_FOUND),
     STORE_NOT_FOUND(1061, "Store not found", HttpStatus.NOT_FOUND),
     DELETE_FILE_FAILED(1062, "Delete file failed", HttpStatus.INTERNAL_SERVER_ERROR),
-    ;
+    PASSWORD_INCORRECT(1058, "Password incorrect", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_VERIFIED(1059, "Email not verified", HttpStatus.BAD_REQUEST);
 
     int code;
     String message;
