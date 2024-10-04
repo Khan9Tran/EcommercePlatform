@@ -2,7 +2,6 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.text.ParseException;
 
-import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +38,7 @@ public class EmailController {
     }
 
     @PostMapping("/send-verification")
-    ApiResponse<Void> sendMailValidation() throws MessagingException, JOSEException {
+    ApiResponse<Void> sendMailValidation() throws JOSEException {
         emailService.sendMailValidation();
         return ApiResponse.<Void>builder().build();
     }
