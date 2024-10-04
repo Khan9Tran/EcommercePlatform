@@ -1,19 +1,21 @@
 package com.hkteam.ecommerce_platform.service;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.AddressCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.AddressUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.AddressResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.AddressMapper;
 import com.hkteam.ecommerce_platform.repository.AddressRepository;
-import com.hkteam.ecommerce_platform.repository.UserRepository;
+import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
+import com.hkteam.ecommerce_platform.util.PageUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AddressService {
     AddressRepository addressRepository;
-    UserRepository userRepository;
     AddressMapper addressMapper;
+    AuthenticatedUserUtil authenticatedUserUtil;
 
     public AddressResponse createAddress(AddressCreationRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        var user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Address address = addressMapper.toAddress(request);
         address.setUser(user);
@@ -50,10 +48,7 @@ public class AddressService {
     }
 
     public AddressResponse updateAddress(Long id, AddressUpdateRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        var user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Address address = addressRepository
                 .findByIdAndUserId(id, user.getId())
@@ -72,10 +67,7 @@ public class AddressService {
     }
 
     public void deleteAddress(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        var user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Address address = addressRepository
                 .findByIdAndUserId(id, user.getId())
@@ -83,11 +75,32 @@ public class AddressService {
         addressRepository.delete(address);
     }
 
+    public PaginationResponse<AddressResponse> getAllAddresses(String pageStr, String sizeStr) {
+        Sort sort = Sort.by("createdAt").descending();
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+
+        var pageData = addressRepository.findAll(pageable);
+        int page = Integer.parseInt(pageStr);
+
+        PageUtils.validatePageBounds(page, pageData);
+
+        return PaginationResponse.<AddressResponse>builder()
+                .currentPage(Integer.parseInt(pageStr))
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .hasNext(pageData.hasNext())
+                .hasPrevious(pageData.hasPrevious())
+                .nextPage(pageData.hasNext() ? page + 1 : null)
+                .previousPage(pageData.hasPrevious() ? page - 1 : null)
+                .data(pageData.getContent().stream()
+                        .map(addressMapper::toAddressResponse)
+                        .toList())
+                .build();
+    }
+
     public AddressResponse getOneAddressById(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        var user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Address address = addressRepository
                 .findByIdAndUserId(id, user.getId())

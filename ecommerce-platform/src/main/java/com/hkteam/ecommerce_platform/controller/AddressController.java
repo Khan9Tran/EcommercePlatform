@@ -8,6 +8,7 @@ import com.hkteam.ecommerce_platform.dto.request.AddressCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.AddressUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.AddressResponse;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.service.AddressService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +48,21 @@ public class AddressController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteAddress(@PathVariable Long id) {
         addressService.deleteAddress(id);
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder()
+                .message("Deleted address successfully")
+                .build();
+    }
+
+    @Operation(summary = "Get all addresses", description = "Api get all addresses")
+    @GetMapping()
+    public ApiResponse<PaginationResponse<AddressResponse>> getAllAddresses(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        PaginationResponse<AddressResponse> paginationResponse = addressService.getAllAddresses(page, size);
+
+        return ApiResponse.<PaginationResponse<AddressResponse>>builder()
+                .result(paginationResponse)
+                .build();
     }
 
     @GetMapping("/{id}")

@@ -53,7 +53,9 @@ public class ComponentController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteComponent(@PathVariable Long id) {
         componentService.deleteComponent(id);
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder()
+                .message("Deleted component successfully")
+                .build();
     }
 
     @Operation(summary = "Get all components", description = "Api get all components")

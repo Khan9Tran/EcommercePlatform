@@ -48,7 +48,7 @@ public class BrandController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteBrand(@PathVariable Long id) {
         brandService.deleteBrand(id);
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder().message("Deleted brand successfully").build();
     }
 
     @Operation(summary = "Get all brands", description = "Api get all brands")
