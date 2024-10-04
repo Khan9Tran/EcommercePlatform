@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.request.UpdateComponentRequest;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
@@ -180,5 +181,74 @@ public class CategoryService {
         }
 
         return categoryMapper.toCategoryResponse(category);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public CategoryResponse updateComponentToCategory(Long categoryId, UpdateComponentRequest request) {
+        var componentIds = request.getListComponent();
+
+        Category category = categoryRepository
+                .findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        if (componentIds == null || componentIds.isEmpty()) {
+            category.getComponents().clear();
+            try {
+                category = categoryRepository.save(category);
+            } catch (DataIntegrityViolationException e) {
+                log.info("Error while clearing components from category: {}", e.getMessage());
+                throw new AppException(ErrorCode.UNKNOWN_ERROR);
+            }
+
+            return categoryMapper.toCategoryResponse(category);
+        }
+
+        Set<Long> uniqueComponentIds = new HashSet<>(componentIds);
+        if (uniqueComponentIds.size() < componentIds.size()) {
+            throw new AppException(ErrorCode.DUPLICATE_COMPONENT_IDS);
+        }
+
+        List<Component> components = componentRepository.findAllById(uniqueComponentIds);
+
+        if (components.size() != uniqueComponentIds.size()) {
+            throw new AppException(ErrorCode.LIST_COMPONENT_NOT_FOUND);
+        }
+
+        category.getComponents().clear();
+
+        category.getComponents().addAll(components);
+
+        try {
+            category = categoryRepository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while updating components to category: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return categoryMapper.toCategoryResponse(category);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteOneComponentFromCategory(Long categoryId, Long componentId) {
+        Category category = categoryRepository
+                .findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        Component component = componentRepository
+                .findById(componentId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
+
+        if (!category.getComponents().contains(component)) {
+            throw new AppException(ErrorCode.COMPONENT_NOT_EXIST_IN_CATEGORY);
+        }
+
+        category.getComponents().remove(component);
+
+        try {
+            categoryRepository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while deleting one component from category: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
     }
 }

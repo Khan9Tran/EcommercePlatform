@@ -61,8 +61,7 @@ public enum ErrorCode {
     ALREADY_VERIFIED(1046, "Email already verified", HttpStatus.BAD_REQUEST),
     UNKNOWN_ERROR(1047, "An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
     ADDRESS_EXISTED(1048, "Address already exists", HttpStatus.BAD_REQUEST),
-    PHONE_10_DIGITS(1049, "Phone number must be 10 digits", HttpStatus.BAD_REQUEST),
-    INVALID_PHONE(1046, "Phone only accepts digits, must be 10 digits and start with 0", HttpStatus.BAD_REQUEST),
+    INVALID_PHONE(1049, "Phone only accepts digits, must be 10 digits and start with 0", HttpStatus.BAD_REQUEST),
     ADDRESS_NOT_FOUND(1051, "Address not found", HttpStatus.NOT_FOUND),
     ADDRESS_NOT_BELONG_TO_USER(1052, "Address not belong to user", HttpStatus.BAD_REQUEST),
     DATE_OF_BIRTH_INVALID(1053, "Date of birth is invalid", HttpStatus.BAD_REQUEST),
@@ -70,6 +69,11 @@ public enum ErrorCode {
     PASSWORD_ALREADY_CREATED(1055, "Password already created", HttpStatus.BAD_REQUEST),
     DUPLICATE_COMPONENT_IDS(1056, "Duplicate component id", HttpStatus.BAD_REQUEST),
     INVALID_SPACE(1057, "{field} must not blank and not have spaces at start or end", HttpStatus.BAD_REQUEST),
+    FORMAT_ERROR(1058, "Please provide a valid format", HttpStatus.BAD_REQUEST),
+    COMPONENT_NOT_EXIST_IN_CATEGORY(1059, "Component not exist in category", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_FOUND(1060, "Product not found", HttpStatus.NOT_FOUND),
+    STORE_NOT_FOUND(1061, "Store not found", HttpStatus.NOT_FOUND),
+    DELETE_FILE_FAILED(1062, "Delete file failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     int code;

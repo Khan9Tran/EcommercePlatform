@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.nimbusds.jose.JOSEException;
@@ -52,6 +53,19 @@ public class GlobalExceptionHandler {
         log.info(logMessage(exception));
 
         ErrorCode errorCode = ErrorCode.EMAIL_SEND_FAILURE;
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setCode(errorCode.getCode());
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
+    }
+
+    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ApiResponse> handlingMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException exception) {
+        log.info(logMessage(exception));
+
+        ErrorCode errorCode = ErrorCode.FORMAT_ERROR;
         ApiResponse apiResponse = new ApiResponse();
 
         apiResponse.setMessage(errorCode.getMessage());
