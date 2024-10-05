@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @Operation(summary = "Set default address for user", description = "Api set default address for user")
-    @PostMapping("/default-address")
+    @PutMapping("/default-address")
     ApiResponse<Void> setDefaultAddress(@RequestBody @Valid DefaultAddressRequest request) {
         userService.setDefaultAddress(request);
         return ApiResponse.<Void>builder().build();
@@ -82,7 +82,7 @@ public class UserController {
     }
 
     @Operation(summary = "Create password", description = "Api for create password")
-    @PostMapping("/create-password")
+    @PutMapping("/create-password")
     ApiResponse<Void> createPassword(@RequestBody @Valid PasswordCreationRequest request) {
         userService.createPassword(request);
         return ApiResponse.<Void>builder().build();
