@@ -34,6 +34,18 @@ public class CloudinaryService {
         }
     }
 
+    public Map<String, Object> uploadVideo(MultipartFile file, String folder) {
+        try {
+            Map<String, Object> options = Map.of("resource_type", "video", "folder", folder);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> upload = cloudinary.uploader().upload(file.getBytes(), options);
+            return upload;
+        } catch (IOException io) {
+            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+        }
+    }
+
     public void deleteImage(String imageUrl) throws IOException {
         log.info("Attempting to delete image with URL: {}", imageUrl);
         String publicId = extractPublicId(imageUrl);
@@ -47,6 +59,23 @@ public class CloudinaryService {
             log.info("Image successfully deleted: {}", publicId);
         } else {
             log.warn("Failed to delete image with publicId: {}", publicId);
+        }
+    }
+
+    public void deleteVideo(String videoUrl) throws IOException {
+        log.info("Attempting to delete video with URL: {}", videoUrl);
+        String publicId = extractPublicId(videoUrl);
+        log.info("Extracted publicId: {}", publicId);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = cloudinary.uploader().destroy(publicId, Map.of("resource_type", "video"));
+        log.info("Cloudinary response after deleting video: {}", result);
+
+        if ("ok".equals(result.get("result"))) {
+            log.info("Video successfully deleted: {}", publicId);
+        } else {
+            log.warn("Failed to delete video with publicId: {}", publicId);
+            throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
 

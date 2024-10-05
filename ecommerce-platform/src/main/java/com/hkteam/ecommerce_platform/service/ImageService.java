@@ -4,22 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
-import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
-import com.hkteam.ecommerce_platform.entity.image.ProductImage;
-import com.hkteam.ecommerce_platform.repository.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hkteam.ecommerce_platform.constant.ImageAttribute;
+import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
+import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
+import com.hkteam.ecommerce_platform.entity.image.ProductImage;
 import com.hkteam.ecommerce_platform.entity.product.Brand;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.ImageUtils;
 
@@ -72,13 +73,13 @@ public class ImageService {
                 }
 
                 imageResponse = ImageResponse.builder()
-                        .format(img.get("format").toString())
-                        .secureUrl(img.get("secure_url").toString())
-                        .createdAt(img.get("created_at").toString())
-                        .url(img.get("url").toString())
-                        .bytes((int) img.get("bytes"))
-                        .width((int) img.get("width"))
-                        .height((int) img.get("height"))
+                        .format(img.get(ImageAttribute.FORMAT).toString())
+                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
+                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
+                        .url(img.get(ImageAttribute.URL).toString())
+                        .bytes((int) img.get(ImageAttribute.BYTES))
+                        .width((int) img.get(ImageAttribute.WIDTH))
+                        .height((int) img.get(ImageAttribute.HEIGHT))
                         .build();
             }
 
@@ -96,7 +97,7 @@ public class ImageService {
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
         if (category.getImageUrl() == null) {
-            throw new AppException(ErrorCode.IMAGE_NULL);
+            throw new AppException(ErrorCode.FILE_NULL);
         }
 
         try {
@@ -144,13 +145,13 @@ public class ImageService {
                 }
 
                 imageResponse = ImageResponse.builder()
-                        .format(img.get("format").toString())
-                        .secureUrl(img.get("secure_url").toString())
-                        .createdAt(img.get("created_at").toString())
-                        .url(img.get("url").toString())
-                        .bytes((int) img.get("bytes"))
-                        .width((int) img.get("width"))
-                        .height((int) img.get("height"))
+                        .format(img.get(ImageAttribute.FORMAT).toString())
+                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
+                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
+                        .url(img.get(ImageAttribute.URL).toString())
+                        .bytes((int) img.get(ImageAttribute.BYTES))
+                        .width((int) img.get(ImageAttribute.WIDTH))
+                        .height((int) img.get(ImageAttribute.HEIGHT))
                         .build();
             }
 
@@ -164,8 +165,8 @@ public class ImageService {
     public void deleteUserImage() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
-        if(user.getImageUrl() == null){
-            throw new AppException(ErrorCode.IMAGE_NULL);
+        if (user.getImageUrl() == null) {
+            throw new AppException(ErrorCode.FILE_NULL);
         }
 
         try {
@@ -189,9 +190,7 @@ public class ImageService {
     public ImageResponse uploadBrandLogo(MultipartFile image, Long brandId) {
         ImageUtils.validateImage(image);
 
-        Brand brand = brandRepository
-                .findById(brandId)
-                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+        Brand brand = brandRepository.findById(brandId).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
         ImageResponse imageResponse;
 
@@ -216,13 +215,13 @@ public class ImageService {
                 }
 
                 imageResponse = ImageResponse.builder()
-                        .format(img.get("format").toString())
-                        .secureUrl(img.get("secure_url").toString())
-                        .createdAt(img.get("created_at").toString())
-                        .url(img.get("url").toString())
-                        .bytes((int) img.get("bytes"))
-                        .width((int) img.get("width"))
-                        .height((int) img.get("height"))
+                        .format(img.get(ImageAttribute.FORMAT).toString())
+                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
+                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
+                        .url(img.get(ImageAttribute.URL).toString())
+                        .bytes((int) img.get(ImageAttribute.BYTES))
+                        .width((int) img.get(ImageAttribute.WIDTH))
+                        .height((int) img.get(ImageAttribute.HEIGHT))
                         .build();
             }
 
@@ -238,7 +237,7 @@ public class ImageService {
         Brand brand = brandRepository.findById(brandId).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
         if (brand.getLogoUrl() == null) {
-            throw new AppException(ErrorCode.IMAGE_NULL);
+            throw new AppException(ErrorCode.FILE_NULL);
         }
 
         try {
@@ -266,9 +265,8 @@ public class ImageService {
 
         ImageResponse imageResponse;
 
-        Product product = productRepository
-                .findById(productId)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var product =
+                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
         var store = product.getStore();
 
@@ -302,13 +300,13 @@ public class ImageService {
                 }
 
                 imageResponse = ImageResponse.builder()
-                        .format(img.get("format").toString())
-                        .secureUrl(img.get("secure_url").toString())
-                        .createdAt(img.get("created_at").toString())
-                        .url(img.get("url").toString())
-                        .bytes((int) img.get("bytes"))
-                        .width((int) img.get("width"))
-                        .height((int) img.get("height"))
+                        .format(img.get(ImageAttribute.FORMAT).toString())
+                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
+                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
+                        .url(img.get(ImageAttribute.URL).toString())
+                        .bytes((int) img.get(ImageAttribute.BYTES))
+                        .width((int) img.get(ImageAttribute.WIDTH))
+                        .height((int) img.get(ImageAttribute.HEIGHT))
                         .build();
             }
 
@@ -337,7 +335,7 @@ public class ImageService {
         }
 
         if (product.getMainImageUrl() == null) {
-            throw new AppException(ErrorCode.IMAGE_NULL);
+            throw new AppException(ErrorCode.FILE_NULL);
         }
 
         try {
@@ -359,33 +357,61 @@ public class ImageService {
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductImageResponse uploadProductListImage(ProductImageUploadRequest request, Long productId) {
-//        // Validate image list from request
-//        if (request == null || request.getImages() == null || request.getImages().isEmpty()) {
-//            throw new AppException(ErrorCode.IMAGE_NULL);
-//        }
-//
-//        // Validate each image in the list
-//        request.getImages().forEach(ImageUtils::validateImage);
-//
-//        var user = authenticatedUserUtil.getAuthenticatedUser();
-//
-//        // Retrieve the product
-//        Product product = productRepository
-//                .findById(productId)
-//                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-//
-//        var store = product.getStore();
-//
-//        // Check if product belongs to a store
-//        if (store == null) {
-//            throw new AppException(ErrorCode.STORE_NOT_FOUND);
-//        }
-//
-//        // Check if the authenticated user owns the store associated with the product
-//        if (!store.getUser().getId().equals(user.getId())) {
-//            throw new AppException(ErrorCode.UNAUTHORIZED);
-//        }
-        return null;
-    }
+        request.getImages().forEach(ImageUtils::validateImage);
 
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        ImageResponse imageResponse;
+
+        Product product =
+                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        var store = product.getStore();
+
+        if (store == null) {
+            throw new AppException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        if (!store.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        List<ImageResponse> imageResponses = new ArrayList<>();
+
+        for (MultipartFile image : request.getImages()) {
+            try {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> img = cloudinaryService.uploadImage(
+                        image, TypeImage.MAIN_IMAGE_OF_PRODUCT.name().toLowerCase());
+
+                if (img.get("url") == null) {
+                    throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+                } else {
+                    ProductImage productImage = ProductImage.builder()
+                            .product(product)
+                            .url(img.get("url").toString())
+                            .build();
+
+                    productImageRepository.save(productImage);
+
+                    imageResponse = ImageResponse.builder()
+                            .format(img.get(ImageAttribute.FORMAT).toString())
+                            .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
+                            .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
+                            .url(img.get(ImageAttribute.URL).toString())
+                            .bytes((int) img.get(ImageAttribute.BYTES))
+                            .width((int) img.get(ImageAttribute.WIDTH))
+                            .height((int) img.get(ImageAttribute.HEIGHT))
+                            .build();
+
+                    imageResponses.add(imageResponse);
+                }
+            } catch (Exception e) {
+                log.info("Error while uploading image for product ID {}: {}", productId, e.getMessage());
+                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+            }
+        }
+
+        return ProductImageResponse.builder().images(imageResponses).build();
+    }
 }

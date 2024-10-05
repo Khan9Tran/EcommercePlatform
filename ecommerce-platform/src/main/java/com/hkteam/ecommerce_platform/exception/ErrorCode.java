@@ -41,12 +41,12 @@ public enum ErrorCode {
     NEW_PASSWORD_SAME_OLD_PASSWORD(
             1029, "The new password cannot be the same as the old password.", HttpStatus.BAD_REQUEST),
     LIST_COMPONENT_NOT_BLANK(1030, "List of components must not be empty", HttpStatus.BAD_REQUEST),
-    IMAGE_NULL(1031, "Image is null", HttpStatus.BAD_REQUEST),
+    FILE_NULL(1031, "File is null", HttpStatus.BAD_REQUEST),
     BRAND_EXISTED(1032, "Brand already exists", HttpStatus.BAD_REQUEST),
     BRAND_NOT_FOUND(1033, "Brand not found", HttpStatus.NOT_FOUND),
     BRAND_DUPLICATE(1034, "Brand name is duplicated with another name", HttpStatus.BAD_REQUEST),
     FILE_LIMIT_OF_1MB(1035, "File size exceeds the maximum limit of 1MB", HttpStatus.BAD_REQUEST),
-    ACCEPTED_FILE_TYPES(1036, "Invalid file type only JPG, PNG, JPEG, GIF are accepted", HttpStatus.BAD_REQUEST),
+    ACCEPTED_IMAGE_TYPES(1036, "Invalid file type only JPG, PNG, JPEG, GIF are accepted", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_BLANK(1037, "Email must not be empty", HttpStatus.BAD_REQUEST),
     INVALID_EMAIL_FORMAT(1038, "Please provide a valid email address", HttpStatus.BAD_REQUEST),
     NEW_EMAIL_SAME_CURRENT_EMAIL(
@@ -75,7 +75,12 @@ public enum ErrorCode {
     STORE_NOT_FOUND(1061, "Store not found", HttpStatus.NOT_FOUND),
     DELETE_FILE_FAILED(1062, "Delete file failed", HttpStatus.INTERNAL_SERVER_ERROR),
     PASSWORD_INCORRECT(1058, "Password incorrect", HttpStatus.BAD_REQUEST),
-    EMAIL_NOT_VERIFIED(1059, "Email not verified", HttpStatus.BAD_REQUEST);
+    EMAIL_NOT_VERIFIED(1059, "Email not verified", HttpStatus.BAD_REQUEST),
+    FILE_LIMIT_OF_50MB(1060, "File size exceeds maximum limit of 50MB", HttpStatus.BAD_REQUEST),
+    ACCEPTED_VIDEO_TYPES(1061, "Invalid file type only mp4, avi, mov, mkv", HttpStatus.BAD_REQUEST),
+    PRODUCT_IMAGE_NOT_FOUND(1062, "Product image not found", HttpStatus.NOT_FOUND),
+    INVALID_PRODUCT_IMAGE_RELATION(1063, "Invalid product image relation", HttpStatus.BAD_REQUEST),
+    ;
 
     int code;
     String message;

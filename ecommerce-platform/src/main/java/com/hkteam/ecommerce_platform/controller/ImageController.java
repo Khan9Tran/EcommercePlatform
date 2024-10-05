@@ -1,13 +1,12 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
-import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
+import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
 import com.hkteam.ecommerce_platform.service.ImageService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,8 +15,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/images")
@@ -41,7 +38,9 @@ public class ImageController {
     @DeleteMapping(value = "/categories/{id}")
     public ApiResponse<Void> deleteCategoryImage(@PathVariable("id") Long categoryId) {
         imageService.deleteCategoryImage(categoryId);
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder()
+                .message("Deleted category image successfully")
+                .build();
     }
 
     @Operation(summary = "Upload User Image", description = "Api upload user image")
@@ -56,7 +55,9 @@ public class ImageController {
     @DeleteMapping(value = "/users")
     public ApiResponse<Void> deleteUserImage() {
         imageService.deleteUserImage();
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder()
+                .message("Deleted user image successfully")
+                .build();
     }
 
     @Operation(summary = "Upload Brand Logo", description = "Api upload brand logo")
@@ -72,7 +73,9 @@ public class ImageController {
     @DeleteMapping(value = "/brands/{id}")
     public ApiResponse<Void> deleteBrandLogo(@PathVariable("id") Long brandId) {
         imageService.deleteBrandLogo(brandId);
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder()
+                .message("Deleted brand logo successfully")
+                .build();
     }
 
     @Operation(summary = "Upload Product Main Image", description = "Api upload product main image")
@@ -88,7 +91,9 @@ public class ImageController {
     @DeleteMapping(value = "/products/{id}")
     public ApiResponse<Void> deleteProductMainImage(@PathVariable("id") Long productId) {
         imageService.deleteProductMainImage(productId);
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder()
+                .message("Deleted product main image successfully")
+                .build();
     }
 
     @Operation(summary = "Upload Product List Image", description = "Api upload product list image")

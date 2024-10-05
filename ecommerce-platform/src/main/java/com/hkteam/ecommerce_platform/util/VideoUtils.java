@@ -14,21 +14,21 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ImageUtils {
-    long MAX_FILE_SIZE = 1000L * 1024;
-    List<String> ACCEPTED_IMAGE_TYPES = Arrays.asList("jpg", "png", "jpeg", "gif");
+public class VideoUtils {
+    long MAX_VIDEO_SIZE = 50L * 1024 * 1024;
+    List<String> ACCEPTED_VIDEO_TYPES = Arrays.asList("mp4", "avi", "mov", "mkv");
 
-    public void validateImage(MultipartFile image) {
-        if (image.getSize() > MAX_FILE_SIZE) {
-            throw new AppException(ErrorCode.FILE_LIMIT_OF_1MB);
+    public void validateVideo(MultipartFile video) {
+        if (video.getSize() > MAX_VIDEO_SIZE) {
+            throw new AppException(ErrorCode.FILE_LIMIT_OF_50MB);
         }
 
-        String extension = getFileExtension(image.getOriginalFilename());
-        if (!ACCEPTED_IMAGE_TYPES.contains(extension)) {
-            throw new AppException(ErrorCode.ACCEPTED_IMAGE_TYPES);
+        String extension = getFileExtension(video.getOriginalFilename());
+        if (!ACCEPTED_VIDEO_TYPES.contains(extension)) {
+            throw new AppException(ErrorCode.ACCEPTED_VIDEO_TYPES);
         }
 
-        if (image.isEmpty()) {
+        if (video.isEmpty()) {
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
     }
