@@ -120,6 +120,8 @@ public class ExternalAuthService {
                 .findByEmail(userInfo.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
+        if (user.isBlocked()) throw new AppException(ErrorCode.USER_HAS_BEEN_BLOCKED);
+
         var token = authenticationService.generateToken(user);
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }

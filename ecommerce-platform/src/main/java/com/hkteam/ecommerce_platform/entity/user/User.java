@@ -62,6 +62,9 @@ public class User {
     LocalDate dateOfBirth;
     String imageUrl;
 
+    @Column(nullable = false)
+    boolean isBlocked = Boolean.FALSE;
+
     @ManyToMany
     Set<Role> roles;
 

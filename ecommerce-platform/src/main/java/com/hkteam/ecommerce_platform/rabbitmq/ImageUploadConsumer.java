@@ -22,6 +22,7 @@ public class ImageUploadConsumer {
     public void receiveFileUploadMessage(ImageMessageRequest message) {
         try {
             cloudinaryService.uploadImage(message.getImage(), message.getType().name().toLowerCase());
+
         } catch (Exception e) {
             log.error("Error uploading image {}", e.getMessage());
         }
