@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.dto.response.CustomerResponse;
 import org.mapstruct.*;
 
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
@@ -26,4 +27,6 @@ public interface UserMapper {
     void updateUserFromRequest(UserUpdateRequest request, @MappingTarget User user);
 
     UserUpdateResponse toUserUpdateResponse(User user);
+
+    CustomerResponse toCustomerResponse(User user);
 }

@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -94,4 +96,15 @@ public class UserController {
         userService.updatePassword(request);
         return ApiResponse.<Void>builder().build();
     }
+
+    @Operation(summary = "get customer", description = "Api get customer")
+    @GetMapping("/customers")
+    ApiResponse<PaginationResponse<CustomerResponse>> getAllCustomers(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        return ApiResponse.<PaginationResponse<CustomerResponse>>builder()
+                .result(userService.getAllCustomers(page, size))
+                .build();
+    }
+
 }
