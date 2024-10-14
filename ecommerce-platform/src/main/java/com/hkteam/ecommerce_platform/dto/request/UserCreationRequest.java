@@ -18,9 +18,11 @@ public class UserCreationRequest {
     @Size(min = 6, max = 20, message = "USERNAME_INVALID")
     String username;
 
+    @Size(min = 1, max = 30, message = "USERNAME_INVALID")
     @NotBlank(message = "NOT_BLANK")
     String firstName;
 
+    @Size(min = 1, max = 30, message = "USERNAME_INVALID")
     @NotBlank(message = "NOT_BLANK")
     String lastName;
 
