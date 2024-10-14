@@ -20,6 +20,7 @@ public interface UserMapper {
     @Mapping(target = "externalAuth", source = "externalAuth")
     UserResponse toUserResponse(User user);
 
+    @Mapping(target = "isBlocked", source = "blocked")
     UserDetailResponse toUserDetailResponse(User user);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

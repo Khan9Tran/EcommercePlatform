@@ -194,15 +194,41 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public PaginationResponse<CustomerResponse> getAllCustomers(String pageStr, String sizeStr)
+    public PaginationResponse<CustomerResponse> getAllCustomers(String pageStr, String sizeStr, String tab, String sortDate, String sortName)
     {
-        Sort sort = Sort.by("createdAt").descending();
+        Sort sort = Sort.unsorted();
+        if (sortDate.equals("newest"))
+            sort = Sort.by("createdAt").descending();
+        else if (sortDate.equals("oldest"))
+            sort = Sort.by("createdAt").ascending();
+        else if (!sortDate.equals(""))
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+
+        if (sortName.equals("za"))
+            sort = sort.and(Sort.by("name").descending());
+        else if (sortName.equals("az"))
+            sort = sort.and(Sort.by("name").ascending());
+        else if (!sortName.equals(""))
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+
+        log.info(sort.toString());
+
+
+
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
         Page<User> pageData = null;
+
         try {
             var role = roleRepository.findByName(RoleName.USER).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
-            pageData = userRepository.findByRoles(role, pageable);
+            if (tab.equals("all"))
+                pageData = userRepository.findByRoles(role, pageable);
+            else if (tab.equals("blocked"))
+                pageData = userRepository.findByRolesAndIsBlocked(role, true, pageable);
+            else if (tab.equals("active"))
+                pageData = userRepository.findByRolesAndIsBlocked(role, false, pageable);
+            else
+                throw new AppException(ErrorCode.INVALID_REQUEST);
         }
         catch (Exception e)
         {

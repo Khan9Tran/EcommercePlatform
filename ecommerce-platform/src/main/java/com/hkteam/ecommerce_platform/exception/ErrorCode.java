@@ -80,7 +80,8 @@ public enum ErrorCode {
     ACCEPTED_VIDEO_TYPES(1061, "Invalid file type only mp4, avi, mov, mkv", HttpStatus.BAD_REQUEST),
     PRODUCT_IMAGE_NOT_FOUND(1062, "Product image not found", HttpStatus.NOT_FOUND),
     INVALID_PRODUCT_IMAGE_RELATION(1063, "Invalid product image relation", HttpStatus.BAD_REQUEST),
-    USER_HAS_BEEN_BLOCKED(1064,"Account is locked. Please contact support" , HttpStatus.FORBIDDEN);
+    USER_HAS_BEEN_BLOCKED(1064,"Account is locked. Please contact support" , HttpStatus.FORBIDDEN),
+    ;
 
     int code;
     String message;
