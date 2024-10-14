@@ -1,9 +1,7 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.hkteam.ecommerce_platform.dto.request.BrandCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.BrandUpdateRequest;
@@ -16,6 +14,5 @@ public interface BrandMapper {
 
     BrandResponse toBrandResponse(Brand brand);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateBrandFromRequest(BrandUpdateRequest request, @MappingTarget Brand brand);
 }

@@ -3,8 +3,6 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.HashSet;
 import java.util.List;
 
-import com.hkteam.ecommerce_platform.dto.response.*;
-import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.hkteam.ecommerce_platform.dto.request.*;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.exception.AppException;
@@ -30,7 +29,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -194,18 +192,17 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public PaginationResponse<CustomerResponse> getAllCustomers(String pageStr, String sizeStr)
-    {
+    public PaginationResponse<CustomerResponse> getAllCustomers(String pageStr, String sizeStr) {
         Sort sort = Sort.by("createdAt").descending();
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
         Page<User> pageData = null;
         try {
-            var role = roleRepository.findByName(RoleName.USER).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+            var role = roleRepository
+                    .findByName(RoleName.USER)
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
             pageData = userRepository.findByRoles(role, pageable);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.error(e.getMessage());
         }
         int page = Integer.parseInt(pageStr);

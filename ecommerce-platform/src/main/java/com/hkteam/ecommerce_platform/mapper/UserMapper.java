@@ -1,10 +1,10 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.response.CustomerResponse;
 import org.mapstruct.*;
 
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.CustomerResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.dto.response.UserUpdateResponse;
@@ -22,8 +22,6 @@ public interface UserMapper {
 
     UserDetailResponse toUserDetailResponse(User user);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "name", expression = "java(request.getFirstName() + \" \" + request.getLastName())")
     void updateUserFromRequest(UserUpdateRequest request, @MappingTarget User user);
 
     UserUpdateResponse toUserUpdateResponse(User user);
