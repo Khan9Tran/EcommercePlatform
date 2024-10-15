@@ -21,7 +21,9 @@ public class ImageUploadConsumer {
     @RabbitListener(queues = RabbitMQConfig.IMAGE_QUEUE)
     public void receiveFileUploadMessage(ImageMessageRequest message) {
         try {
-            cloudinaryService.uploadImage(message.getImage(), message.getType().name().toLowerCase());
+            cloudinaryService.uploadImage(
+                    message.getImage(), message.getType().name().toLowerCase());
+
         } catch (Exception e) {
             log.error("Error uploading image {}", e.getMessage());
         }

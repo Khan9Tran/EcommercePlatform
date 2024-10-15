@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 import com.hkteam.ecommerce_platform.constant.TokenPurpose;
 import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.EmailResponse;
+import com.hkteam.ecommerce_platform.dto.response.PhoneResponse;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.EmailValidationStatus;
+import com.hkteam.ecommerce_platform.enums.PhoneValidationStatus;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.EmailMapper;
+import com.hkteam.ecommerce_platform.mapper.PhoneMapper;
 import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
@@ -37,6 +40,7 @@ public class EmailService {
 
     UserRepository userRepository;
     EmailMapper emailMapper;
+    PhoneMapper phoneMapper;
 
     UserService userService;
 
@@ -68,6 +72,30 @@ public class EmailService {
         return emailMapper.toEmailResponse(user);
     }
 
+    public PhoneResponse updatePhone(PhoneRequest request) {
+
+        String newPhone = request.getPhone();
+        var user = authenticationUtil.getAuthenticatedUser();
+
+        if (!user.getId().equals(request.getUserId())) throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        if (user.getPhone() != null && user.getPhone().equals(newPhone))
+            throw new AppException(ErrorCode.NEW_PHONE_SAME_CURRENT_PHONE);
+
+        user.setPhone(newPhone);
+        user.setPhoneValidationStatus(PhoneValidationStatus.UNVERIFIED.name());
+        user.setPhoneTokenGeneratedAt(null);
+        user.setPhoneValidationToken(null);
+
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.PHONE_EXISTED);
+        }
+
+        return phoneMapper.toPhoneResponse(user);
+    }
+
     public void sendMailValidation() throws JOSEException {
         var user = authenticationUtil.getAuthenticatedUser();
 
@@ -96,7 +124,7 @@ public class EmailService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        String tokenUrl = "http://localhost:8080/emails/verify?token=" + token;
+        String tokenUrl = "http://localhost:3000/verify?token=" + token;
         try {
             sendMailValidation(user.getEmail(), "Xác thực email", tokenUrl, "email-validation");
         } catch (Exception e) {

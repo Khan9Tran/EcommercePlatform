@@ -1,7 +1,5 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-import java.time.Instant;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,11 +8,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BrandResponse {
-    Long id;
-    String name;
-    String description;
-    String logoUrl;
-    boolean isDeleted;
-    Instant createdAt;
+public class PhoneResponse {
+    String userId;
+    String phone;
 }

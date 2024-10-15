@@ -70,7 +70,6 @@ public class AuthenticationService {
         return IntrospectResponse.builder().valid(isValid).build();
     }
 
-
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository
                 .findByUsername(request.getUsername())

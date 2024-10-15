@@ -12,11 +12,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class CustomerResponse {
+public class StoreResponse {
     String id;
-    String username;
     String name;
     String createdAt;
-    Boolean isBlocked;
-    String imageUrl;
+    Float rating;
+    String username;
 }

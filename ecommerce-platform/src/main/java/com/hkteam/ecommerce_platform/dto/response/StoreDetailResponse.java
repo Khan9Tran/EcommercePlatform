@@ -10,11 +10,14 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BrandResponse {
-    Long id;
+public class StoreDetailResponse {
+    String id;
     String name;
-    String description;
-    String logoUrl;
-    boolean isDeleted;
+    String bio;
+    Float rating;
+    String username;
+    String defaultAddress;
+    Integer totalProduct;
+    Integer totalFollower;
     Instant createdAt;
 }

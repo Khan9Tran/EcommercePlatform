@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import com.hkteam.ecommerce_platform.enums.Gender;
 
@@ -22,18 +21,12 @@ import lombok.experimental.FieldDefaults;
 public class UserUpdateRequest {
 
     @NotBlank(message = "NOT_BLANK")
-    String firstName;
-
-    @NotBlank(message = "NOT_BLANK")
-    String lastName;
-
-    Gender gender;
+    String name;
 
     String bio;
-
-    @Pattern(regexp = "^0\\d{9}$", message = "PHONE_START_0")
-    @Size(min = 10, max = 10, message = "PHONE_10_DIGITS")
-    String phone;
-
     LocalDate dateOfBirth;
+    Gender gender;
+
+    @Pattern(regexp = "^0\\d{9}$", message = "INVALID_PHONE")
+    String phone;
 }

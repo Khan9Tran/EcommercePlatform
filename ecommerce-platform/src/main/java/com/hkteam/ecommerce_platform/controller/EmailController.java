@@ -6,12 +6,10 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.hkteam.ecommerce_platform.dto.request.ConfirmResetPassordRequest;
-import com.hkteam.ecommerce_platform.dto.request.EmailRequest;
-import com.hkteam.ecommerce_platform.dto.request.ResetPasswordRequest;
-import com.hkteam.ecommerce_platform.dto.request.VerifyEmailRequest;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.EmailResponse;
+import com.hkteam.ecommerce_platform.dto.response.PhoneResponse;
 import com.hkteam.ecommerce_platform.service.EmailService;
 import com.nimbusds.jose.JOSEException;
 
@@ -30,10 +28,17 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailController {
     EmailService emailService;
 
-    @PostMapping("/user/")
+    @PutMapping("/user/email")
     ApiResponse<EmailResponse> updateEmail(@RequestBody @Valid EmailRequest request) {
         return ApiResponse.<EmailResponse>builder()
                 .result(emailService.updateEmail(request))
+                .build();
+    }
+
+    @PutMapping("/user/phone")
+    ApiResponse<PhoneResponse> updatePhone(@RequestBody @Valid PhoneRequest request) {
+        return ApiResponse.<PhoneResponse>builder()
+                .result(emailService.updatePhone(request))
                 .build();
     }
 

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.user.Store;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -22,4 +23,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @NotNull
     List<Product> findAllById(@NotNull Iterable<Long> ids);
+
+    Integer countByStore(Store store);
 }
