@@ -78,9 +78,14 @@ public enum ErrorCode {
     EMAIL_NOT_VERIFIED(1059, "Email not verified", HttpStatus.BAD_REQUEST),
     FILE_LIMIT_OF_50MB(1060, "File size exceeds maximum limit of 50MB", HttpStatus.BAD_REQUEST),
     ACCEPTED_VIDEO_TYPES(1061, "Invalid file type only mp4, avi, mov, mkv", HttpStatus.BAD_REQUEST),
-    PRODUCT_IMAGE_NOT_FOUND(1062, "Product image not found", HttpStatus.NOT_FOUND),
-    INVALID_PRODUCT_IMAGE_RELATION(1063, "Invalid product image relation", HttpStatus.BAD_REQUEST),
-    USER_HAS_BEEN_BLOCKED(1064,"Account is locked. Please contact support" , HttpStatus.FORBIDDEN),
+    LIST_PRODUCT_IMAGE_NOT_BLANK(1062, "List product image must be not blank", HttpStatus.NOT_FOUND),
+    IMAGE_DOES_NOT_BELONG_TO_PRODUCT(
+            1063, "There are product image in list that does not belong to product", HttpStatus.BAD_REQUEST),
+    DUPLICATE_PRODUCT_IMAGE_IDS(1064, "Duplicate product image id", HttpStatus.BAD_REQUEST),
+    LIST_PRODUCT_IMAGE_NOT_FOUND(1065, "There are product image in list that can't be found", HttpStatus.NOT_FOUND),
+    PRODUCT_IMAGE_NOT_FOUND(1066, "Product image not found", HttpStatus.NOT_FOUND),
+    INVALID_PRODUCT_IMAGE_RELATION(1067, "Invalid product image relation", HttpStatus.BAD_REQUEST),
+    USER_HAS_BEEN_BLOCKED(1068,"Account is locked. Please contact support" , HttpStatus.FORBIDDEN),
     ;
 
     int code;

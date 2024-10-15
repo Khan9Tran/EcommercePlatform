@@ -18,7 +18,7 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public  Queue imageQueue() {
+    public Queue imageQueue() {
         return new Queue(IMAGE_QUEUE, true);
     }
 

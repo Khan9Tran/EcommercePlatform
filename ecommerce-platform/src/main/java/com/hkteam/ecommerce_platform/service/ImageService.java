@@ -1,8 +1,6 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.constant.ImageAttribute;
+import com.hkteam.ecommerce_platform.dto.request.DeleteProductImageRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
@@ -65,12 +64,7 @@ public class ImageService {
                 }
 
                 category.setImageUrl(img.get("url").toString());
-                try {
-                    categoryRepository.save(category);
-                } catch (DataIntegrityViolationException e) {
-                    log.info("Error while saving at upload category image");
-                    throw new AppException(ErrorCode.UNKNOWN_ERROR);
-                }
+                saveCategoryUpload(category);
 
                 imageResponse = ImageResponse.builder()
                         .format(img.get(ImageAttribute.FORMAT).toString())
@@ -90,6 +84,15 @@ public class ImageService {
         }
     }
 
+    private void saveCategoryUpload(Category category) {
+        try {
+            categoryRepository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while saving at upload category image");
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteCategoryImage(Long categoryId) {
         Category category = categoryRepository
@@ -105,15 +108,19 @@ public class ImageService {
 
             category.setImageUrl(null);
 
-            try {
-                categoryRepository.save(category);
-            } catch (DataIntegrityViolationException e) {
-                log.info("Error while saving at delete category image: {}", e.getMessage());
-                throw new AppException(ErrorCode.UNKNOWN_ERROR);
-            }
+            saveCategoryDelete(category);
         } catch (Exception e) {
             log.info("Error while deleting at delete category image: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
+        }
+    }
+
+    private void saveCategoryDelete(Category category) {
+        try {
+            categoryRepository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while saving at delete category image: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
@@ -413,5 +420,43 @@ public class ImageService {
         }
 
         return ProductImageResponse.builder().images(imageResponses).build();
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    public void deleteProductListImage(Long productId, DeleteProductImageRequest request) {
+        var product =
+                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        var store = product.getStore();
+        if (store == null || !store.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        var imageIds = request.getListImageIds();
+        if (imageIds == null || imageIds.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_PRODUCT_IMAGE_NOT_BLANK);
+        }
+
+        Set<Long> uniqueImageIds = new HashSet<>(imageIds);
+        if (uniqueImageIds.size() < imageIds.size()) {
+            throw new AppException(ErrorCode.DUPLICATE_PRODUCT_IMAGE_IDS);
+        }
+
+        List<ProductImage> productImages = productImageRepository.findAllById(uniqueImageIds);
+
+        if (productImages.size() != uniqueImageIds.size()) {
+            throw new AppException(ErrorCode.LIST_PRODUCT_IMAGE_NOT_FOUND);
+        }
+
+        for (ProductImage image : productImages) {
+            if (!image.getProduct().getId().equals(product.getId())) {
+                throw new AppException(ErrorCode.IMAGE_DOES_NOT_BELONG_TO_PRODUCT);
+            }
+        }
+
+        productImages.forEach(image -> image.setDeleted(true));
+        productImageRepository.saveAll(productImages);
     }
 }
