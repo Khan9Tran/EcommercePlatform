@@ -17,6 +17,7 @@ public interface UserMapper {
     @Mapping(target = "name", expression = "java(request.getFirstName() + \" \" + request.getLastName())")
     User toUser(UserCreationRequest request);
 
+    @Mapping(target = "isBlocked", source = "blocked")
     @Mapping(target = "externalAuth", source = "externalAuth")
     UserResponse toUserResponse(User user);
 
@@ -29,5 +30,6 @@ public interface UserMapper {
 
     UserUpdateResponse toUserUpdateResponse(User user);
 
+    @Mapping(target = "isBlocked", source = "blocked")
     CustomerResponse toCustomerResponse(User user);
 }

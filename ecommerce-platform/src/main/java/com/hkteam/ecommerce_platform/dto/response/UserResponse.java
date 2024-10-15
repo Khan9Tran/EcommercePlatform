@@ -14,6 +14,7 @@ public class UserResponse {
     String username;
     String id;
     String name;
+    Boolean isBlocked;
     List<RoleResponse> roles;
     List<ExternalAuthResponse> externalAuth;
 }

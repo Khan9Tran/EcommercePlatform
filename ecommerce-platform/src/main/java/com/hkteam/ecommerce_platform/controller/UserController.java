@@ -110,4 +110,13 @@ public class UserController {
                 .build();
     }
 
+
+    @PutMapping("/customers")
+    ApiResponse<Void> changeStatusAccount( @RequestBody @Valid UserAccountRequest request){
+        userService.changeStatusAccount(request);
+        return ApiResponse.<Void>builder()
+                .build();
+
+    }
+
 }

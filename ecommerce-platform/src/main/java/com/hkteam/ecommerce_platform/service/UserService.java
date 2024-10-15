@@ -252,4 +252,22 @@ public class UserService {
                         .toList())
                 .build();
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void changeStatusAccount(UserAccountRequest request) {
+        if (!passwordEncoder.matches(request.getPassword(), authenticatedUserUtil.getAuthenticatedUser().getPasswordDigest()))
+            throw  new AppException(ErrorCode.PASSWORD_INCORRECT);
+
+        var customer = userRepository.findById(request.getId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        customer.setBlocked(!customer.isBlocked());
+
+        try {
+            userRepository.save(customer);
+        }
+        catch (DataIntegrityViolationException e)
+        {
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
 }
