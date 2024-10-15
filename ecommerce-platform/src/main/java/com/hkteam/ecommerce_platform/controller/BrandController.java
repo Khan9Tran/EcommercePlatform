@@ -65,7 +65,7 @@ public class BrandController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get one brand by id", description = "Api get one brand by id")
-    public ApiResponse<BrandResponse> getOneBrandtById(@PathVariable Long id) {
+    public ApiResponse<BrandResponse> getOneBrandById(@PathVariable Long id) {
         BrandResponse brandResponse = brandService.getOneBrandById(id);
 
         return ApiResponse.<BrandResponse>builder().result(brandResponse).build();

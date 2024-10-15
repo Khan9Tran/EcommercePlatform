@@ -4,10 +4,7 @@ import org.mapstruct.*;
 
 import com.hkteam.ecommerce_platform.dto.request.UserCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.UserUpdateRequest;
-import com.hkteam.ecommerce_platform.dto.response.CustomerResponse;
-import com.hkteam.ecommerce_platform.dto.response.UserDetailResponse;
-import com.hkteam.ecommerce_platform.dto.response.UserResponse;
-import com.hkteam.ecommerce_platform.dto.response.UserUpdateResponse;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.user.User;
 
 @Mapper(componentModel = "spring")

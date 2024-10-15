@@ -80,7 +80,11 @@ public enum ErrorCode {
     ACCEPTED_VIDEO_TYPES(1061, "Invalid file type only mp4, avi, mov, mkv", HttpStatus.BAD_REQUEST),
     PRODUCT_IMAGE_NOT_FOUND(1062, "Product image not found", HttpStatus.NOT_FOUND),
     INVALID_PRODUCT_IMAGE_RELATION(1063, "Invalid product image relation", HttpStatus.BAD_REQUEST),
-    USER_HAS_BEEN_BLOCKED(1064,"Account is locked. Please contact support" , HttpStatus.FORBIDDEN);
+    USER_HAS_BEEN_BLOCKED(1064, "Account is locked. Please contact support", HttpStatus.FORBIDDEN),
+    NEW_PHONE_SAME_CURRENT_PHONE(
+            1065, "The new phone cannot be the same as the current phone.", HttpStatus.BAD_REQUEST),
+    PHONE_EXISTED(1066, "Phone existed", HttpStatus.BAD_REQUEST),
+    ;
 
     int code;
     String message;

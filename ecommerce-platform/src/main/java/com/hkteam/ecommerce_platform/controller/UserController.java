@@ -98,9 +98,9 @@ public class UserController {
     @Operation(summary = "get customer", description = "Api get customer")
     @GetMapping("/customers")
     ApiResponse<PaginationResponse<CustomerResponse>> getAllCustomers(
-            @RequestParam(value="date", required = false, defaultValue = "") String sortDate,
-            @RequestParam(value="name", required = false, defaultValue = "") String sortName,
-            @RequestParam(value="tab", required = false, defaultValue = "all") String tab,
+            @RequestParam(value = "date", required = false, defaultValue = "") String sortDate,
+            @RequestParam(value = "name", required = false, defaultValue = "") String sortName,
+            @RequestParam(value = "tab", required = false, defaultValue = "all") String tab,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
         return ApiResponse.<PaginationResponse<CustomerResponse>>builder()
