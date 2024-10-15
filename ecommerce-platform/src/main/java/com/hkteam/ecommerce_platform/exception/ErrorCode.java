@@ -84,6 +84,11 @@ public enum ErrorCode {
     NEW_PHONE_SAME_CURRENT_PHONE(
             1065, "The new phone cannot be the same as the current phone.", HttpStatus.BAD_REQUEST),
     PHONE_EXISTED(1066, "Phone existed", HttpStatus.BAD_REQUEST),
+    LIST_PRODUCT_IMAGE_NOT_BLANK(1062, "List product image must be not blank", HttpStatus.NOT_FOUND),
+    IMAGE_DOES_NOT_BELONG_TO_PRODUCT(
+            1063, "There are product image in list that does not belong to product", HttpStatus.BAD_REQUEST),
+    DUPLICATE_PRODUCT_IMAGE_IDS(1064, "Duplicate product image id", HttpStatus.BAD_REQUEST),
+    LIST_PRODUCT_IMAGE_NOT_FOUND(1065, "There are product image in list that can't be found", HttpStatus.NOT_FOUND),
     ;
 
     int code;

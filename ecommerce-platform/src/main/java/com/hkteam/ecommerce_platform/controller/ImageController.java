@@ -1,8 +1,11 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hkteam.ecommerce_platform.dto.request.DeleteProductImageRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
@@ -26,17 +29,17 @@ public class ImageController {
     ImageService imageService;
 
     @Operation(summary = "Upload Category Image", description = "Api upload category image")
-    @PostMapping(value = "/categories/{id}", consumes = "multipart/form-data")
+    @PostMapping(value = "/categories/{categoryId}", consumes = "multipart/form-data")
     public ApiResponse<ImageResponse> uploadCategoryImage(
-            @RequestParam("image") MultipartFile image, @PathVariable("id") Long categoryId) {
+            @RequestParam("image") MultipartFile image, @PathVariable("categoryId") Long categoryId) {
         return ApiResponse.<ImageResponse>builder()
                 .result(imageService.uploadCategoryImage(image, categoryId))
                 .build();
     }
 
     @Operation(summary = "Delete Category Image", description = "Api delete category image")
-    @DeleteMapping(value = "/categories/{id}")
-    public ApiResponse<Void> deleteCategoryImage(@PathVariable("id") Long categoryId) {
+    @DeleteMapping(value = "/categories/{categoryId}")
+    public ApiResponse<Void> deleteCategoryImage(@PathVariable("categoryId") Long categoryId) {
         imageService.deleteCategoryImage(categoryId);
         return ApiResponse.<Void>builder()
                 .message("Deleted category image successfully")
@@ -61,17 +64,17 @@ public class ImageController {
     }
 
     @Operation(summary = "Upload Brand Logo", description = "Api upload brand logo")
-    @PostMapping(value = "/brands/{id}", consumes = "multipart/form-data")
+    @PostMapping(value = "/brands/{brandId}", consumes = "multipart/form-data")
     public ApiResponse<ImageResponse> uploadBrandLogo(
-            @RequestParam("logo") MultipartFile logo, @PathVariable("id") Long brandId) {
+            @RequestParam("logo") MultipartFile logo, @PathVariable("brandId") Long brandId) {
         return ApiResponse.<ImageResponse>builder()
                 .result(imageService.uploadBrandLogo(logo, brandId))
                 .build();
     }
 
     @Operation(summary = "Delete Brand Logo", description = "Api delete brand logo")
-    @DeleteMapping(value = "/brands/{id}")
-    public ApiResponse<Void> deleteBrandLogo(@PathVariable("id") Long brandId) {
+    @DeleteMapping(value = "/brands/{brandId}")
+    public ApiResponse<Void> deleteBrandLogo(@PathVariable("brandId") Long brandId) {
         imageService.deleteBrandLogo(brandId);
         return ApiResponse.<Void>builder()
                 .message("Deleted brand logo successfully")
@@ -79,17 +82,17 @@ public class ImageController {
     }
 
     @Operation(summary = "Upload Product Main Image", description = "Api upload product main image")
-    @PostMapping(value = "/products/{id}", consumes = "multipart/form-data")
+    @PostMapping(value = "/products/{productId}", consumes = "multipart/form-data")
     public ApiResponse<ImageResponse> uploadProductMainImage(
-            @RequestParam("mainImage") MultipartFile mainImage, @PathVariable("id") Long productId) {
+            @RequestParam("mainImage") MultipartFile mainImage, @PathVariable("productId") Long productId) {
         return ApiResponse.<ImageResponse>builder()
                 .result(imageService.uploadProductMainImage(mainImage, productId))
                 .build();
     }
 
     @Operation(summary = "Delete Product Main Image", description = "Api delete product main image")
-    @DeleteMapping(value = "/products/{id}")
-    public ApiResponse<Void> deleteProductMainImage(@PathVariable("id") Long productId) {
+    @DeleteMapping(value = "/products/{productId}")
+    public ApiResponse<Void> deleteProductMainImage(@PathVariable("productId") Long productId) {
         imageService.deleteProductMainImage(productId);
         return ApiResponse.<Void>builder()
                 .message("Deleted product main image successfully")
@@ -97,11 +100,21 @@ public class ImageController {
     }
 
     @Operation(summary = "Upload Product List Image", description = "Api upload product list image")
-    @PostMapping(value = "/products/{id}/list", consumes = "multipart/form-data")
+    @PostMapping(value = "/products/{productId}/list", consumes = "multipart/form-data")
     public ApiResponse<ProductImageResponse> uploadProductListImage(
-            @ModelAttribute ProductImageUploadRequest request, @PathVariable("id") Long productId) {
+            @ModelAttribute ProductImageUploadRequest request, @PathVariable("productId") Long productId) {
         return ApiResponse.<ProductImageResponse>builder()
                 .result(imageService.uploadProductListImage(request, productId))
+                .build();
+    }
+
+    @Operation(summary = "Delete Product List Image", description = "Api delete product list image")
+    @DeleteMapping("/products/{productId}/list")
+    public ApiResponse<Void> deleteProductListImage(
+            @PathVariable("productId") Long productId, @RequestBody @Valid DeleteProductImageRequest request) {
+        imageService.deleteProductListImage(productId, request);
+        return ApiResponse.<Void>builder()
+                .message("Deleted product list image successfully")
                 .build();
     }
 }

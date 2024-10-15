@@ -40,7 +40,7 @@ spring:
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
-  valid-duration: 3600 # in second
+  valid-duration: 7200 # in second
   refreshable-duration: 360000 # seconds
 
 mail:
