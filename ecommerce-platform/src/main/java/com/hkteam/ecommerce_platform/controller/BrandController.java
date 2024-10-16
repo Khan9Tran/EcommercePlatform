@@ -54,13 +54,12 @@ public class BrandController {
     @Operation(summary = "Get all brands", description = "Api get all brands")
     @GetMapping()
     ApiResponse<PaginationResponse<BrandResponse>> getAllBrands(
-            @RequestParam(value = "date", required = false, defaultValue = "") String sortDate,
-            @RequestParam(value = "name", required = false, defaultValue = "") String sortName,
+            @RequestParam(value = "sort", required = false, defaultValue = "") String sort,
             @RequestParam(value = "tab", required = false, defaultValue = "all") String tab,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
         return ApiResponse.<PaginationResponse<BrandResponse>>builder()
-                .result(brandService.getAllBrands(page, size, tab, sortDate, sortName))
+                .result(brandService.getAllBrands(page, size, tab, sort))
                 .build();
     }
 

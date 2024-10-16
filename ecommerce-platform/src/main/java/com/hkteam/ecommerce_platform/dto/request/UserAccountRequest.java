@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 public class UserAccountRequest {
     @NonNull
     String password;
+
     @NonNull
     String id;
 }
