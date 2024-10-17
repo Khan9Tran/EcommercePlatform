@@ -27,4 +27,7 @@ public interface UserMapper {
 
     @Mapping(target = "isBlocked", source = "blocked")
     CustomerResponse toCustomerResponse(User user);
+
+    @Mapping(target = "isBlocked", source = "blocked")
+    AdminResponse toAdminResponse(User user);
 }
