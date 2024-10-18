@@ -15,6 +15,7 @@ public interface CategoryMapper {
 
     @Mapping(source = "parent.id", target = "parentId")
     @Mapping(target = "listComponent", source = "components")
+    @Mapping(source = "parent.name", target = "parentName")
     CategoryResponse toCategoryResponse(Category category);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

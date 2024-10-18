@@ -19,6 +19,7 @@ public class CategoryResponse {
     String iconUrl;
     String slug;
     Long parentId;
+    String parentName;
     Instant createdAt;
     Instant lastUpdatedAt;
     List<ComponentResponse> listComponent;
