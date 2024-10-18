@@ -15,6 +15,5 @@ public class BrandResponse {
     String name;
     String description;
     String logoUrl;
-    boolean isDeleted;
     Instant createdAt;
 }

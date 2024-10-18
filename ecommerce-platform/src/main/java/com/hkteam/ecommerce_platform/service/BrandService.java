@@ -76,11 +76,20 @@ public class BrandService {
         brandRepository.delete(brand);
     }
 
-    public PaginationResponse<BrandResponse> getAllBrands(String pageStr, String sizeStr) {
-        Sort sort = Sort.by("createdAt").descending();
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+    @PreAuthorize("hasRole('ADMIN')")
+    public PaginationResponse<BrandResponse> getAllBrands(String pageStr, String sizeStr, String tab, String sort) {
+        Sort sortable =
+                switch (sort) {
+                    case "newest" -> Sort.by("createdAt").descending();
+                    case "oldest" -> Sort.by("createdAt").ascending();
+                    case "az" -> Sort.by("name").ascending();
+                    case "za" -> Sort.by("name").descending();
+                    default -> Sort.unsorted();
+                };
 
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
         var pageData = brandRepository.findAll(pageable);
+
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);

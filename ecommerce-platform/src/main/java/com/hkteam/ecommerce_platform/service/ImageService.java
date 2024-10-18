@@ -194,8 +194,8 @@ public class ImageService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ImageResponse uploadBrandLogo(MultipartFile image, Long brandId) {
-        ImageUtils.validateImage(image);
+    public ImageResponse uploadBrandLogo(MultipartFile logoUrl, Long brandId) {
+        ImageUtils.validateImage(logoUrl);
 
         Brand brand = brandRepository.findById(brandId).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
@@ -204,7 +204,7 @@ public class ImageService {
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
-                    image, TypeImage.MAIN_LOGO_OF_BRAND.name().toLowerCase()));
+                    logoUrl, TypeImage.MAIN_LOGO_OF_BRAND.name().toLowerCase()));
 
             if (img.get("url") == null) {
                 throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);

@@ -66,9 +66,9 @@ public class ImageController {
     @Operation(summary = "Upload Brand Logo", description = "Api upload brand logo")
     @PostMapping(value = "/brands/{brandId}", consumes = "multipart/form-data")
     public ApiResponse<ImageResponse> uploadBrandLogo(
-            @RequestParam("logo") MultipartFile logo, @PathVariable("brandId") Long brandId) {
+            @RequestParam("logoUrl") MultipartFile logoUrl, @PathVariable("brandId") Long brandId) {
         return ApiResponse.<ImageResponse>builder()
-                .result(imageService.uploadBrandLogo(logo, brandId))
+                .result(imageService.uploadBrandLogo(logoUrl, brandId))
                 .build();
     }
 
