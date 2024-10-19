@@ -2,10 +2,7 @@ package com.hkteam.ecommerce_platform.dto.request;
 
 import com.hkteam.ecommerce_platform.validator.ValidSpace;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
@@ -14,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class CategoryUpdateRequest {
+    @NonNull
     @ValidSpace
     String name;
 

@@ -257,7 +257,7 @@ public class CategoryService {
     {
         List categories;
         try {
-            categories = categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponse).toList();
+            categories = categoryRepository.findAll(Sort.by("name").ascending()).stream().map(categoryMapper::toCategoryResponse).toList();
         }
         catch (Exception e)
         {

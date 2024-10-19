@@ -112,6 +112,8 @@ public class ComponentService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<ComponentResponse> getAllComponents() {
-        return componentRepository.findAll().stream().map(componentMapper::toComponentResponse).toList();
+        return componentRepository.findAll(
+                Sort.by("name").ascending()
+        ).stream().map(componentMapper::toComponentResponse).toList();
     }
 }
