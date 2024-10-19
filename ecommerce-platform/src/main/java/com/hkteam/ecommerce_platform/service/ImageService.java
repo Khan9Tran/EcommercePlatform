@@ -84,6 +84,49 @@ public class ImageService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public ImageResponse uploadCategoryIcon(MultipartFile image, Long categoryId) {
+        ImageUtils.validateImage(image);
+
+        Category category = categoryRepository
+                .findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        ImageResponse imageResponse;
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> img = (cloudinaryService.uploadImage(
+                    image, TypeImage.CATEGORY_ICON.name().toLowerCase()));
+
+            if (img.get("url") == null) {
+                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+            } else {
+                if (category.getIconUrl() != null) {
+                    cloudinaryService.deleteImage(category.getIconUrl());
+                }
+
+                category.setIconUrl(img.get("url").toString());
+                saveCategoryUpload(category);
+
+                imageResponse = ImageResponse.builder()
+                        .format(img.get(ImageAttribute.FORMAT).toString())
+                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
+                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
+                        .url(img.get(ImageAttribute.URL).toString())
+                        .bytes((int) img.get(ImageAttribute.BYTES))
+                        .width((int) img.get(ImageAttribute.WIDTH))
+                        .height((int) img.get(ImageAttribute.HEIGHT))
+                        .build();
+            }
+
+            return imageResponse;
+        } catch (Exception e) {
+            log.info("Error while uploading at upload category icon: {}", e.getMessage());
+            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+        }
+    }
+
     private void saveCategoryUpload(Category category) {
         try {
             categoryRepository.save(category);
@@ -111,6 +154,28 @@ public class ImageService {
             saveCategoryDelete(category);
         } catch (Exception e) {
             log.info("Error while deleting at delete category image: {}", e.getMessage());
+            throw new AppException(ErrorCode.DELETE_FILE_FAILED);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteCategoryIcon(Long categoryId) {
+        Category category = categoryRepository
+                .findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        if (category.getIconUrl() == null) {
+            throw new AppException(ErrorCode.FILE_NULL);
+        }
+
+        try {
+            cloudinaryService.deleteImage(category.getIconUrl());
+
+            category.setIconUrl(null);
+
+            saveCategoryDelete(category);
+        } catch (Exception e) {
+            log.info("Error while deleting at delete category icon: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
