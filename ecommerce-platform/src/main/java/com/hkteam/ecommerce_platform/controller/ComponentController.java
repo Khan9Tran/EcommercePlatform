@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/components")
 @RequiredArgsConstructor
@@ -77,6 +79,16 @@ public class ComponentController {
 
         return ApiResponse.<ComponentResponse>builder()
                 .result(componentResponse)
+                .build();
+    }
+
+    @Operation(summary = "Get all components", description = "Api get all components")
+    @GetMapping("/all")
+    public ApiResponse<List<ComponentResponse>> getAllComponents() {
+        var result = componentService.getAllComponents();
+
+        return ApiResponse.<List<ComponentResponse>>builder()
+                .result(result)
                 .build();
     }
 }
