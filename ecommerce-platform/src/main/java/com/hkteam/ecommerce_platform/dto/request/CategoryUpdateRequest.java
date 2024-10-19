@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.dto.request;
 
 import com.hkteam.ecommerce_platform.validator.ValidSpace;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class CategoryUpdateRequest {
-    @NonNull
+    @NotBlank(message = "NOT_BLANK")
     @ValidSpace
     String name;
 
