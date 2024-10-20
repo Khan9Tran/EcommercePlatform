@@ -113,4 +113,16 @@ public class UserController {
         userService.changeStatusAccount(request);
         return ApiResponse.<Void>builder().build();
     }
+
+    @Operation(summary = "Get all admin", description = "Api get all admin")
+    @GetMapping("/manages")
+    ApiResponse<PaginationResponse<AdminResponse>> getAllAdmins(
+            @RequestParam(value = "sort", required = false, defaultValue = "") String sort,
+            @RequestParam(value = "tab", required = false, defaultValue = "all") String tab,
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+        return ApiResponse.<PaginationResponse<AdminResponse>>builder()
+                .result(userService.getAllAdmins(page, size, tab, sort))
+                .build();
+    }
 }

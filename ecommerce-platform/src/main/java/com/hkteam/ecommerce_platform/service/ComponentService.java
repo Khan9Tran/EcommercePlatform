@@ -22,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -106,5 +108,12 @@ public class ComponentService {
         Component component =
                 componentRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
         componentRepository.delete(component);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<ComponentResponse> getAllComponents() {
+        return componentRepository.findAll(
+                Sort.by("name").ascending()
+        ).stream().map(componentMapper::toComponentResponse).toList();
     }
 }

@@ -251,4 +251,18 @@ public class CategoryService {
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CategoryResponse> getAll()
+    {
+        List categories;
+        try {
+            categories = categoryRepository.findAll(Sort.by("name").ascending()).stream().map(categoryMapper::toCategoryResponse).toList();
+        }
+        catch (Exception e)
+        {
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+        return  categories;
+    }
 }

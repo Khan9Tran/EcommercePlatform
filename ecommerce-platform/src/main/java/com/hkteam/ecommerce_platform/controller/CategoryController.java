@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
@@ -75,6 +77,7 @@ public class CategoryController {
         return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
 
+
     @Operation(summary = "Add components to category", description = "Api add components to a category")
     @PostMapping("/{categoryId}/components")
     public ApiResponse<CategoryResponse> addComponentToCategory(
@@ -103,5 +106,13 @@ public class CategoryController {
         return ApiResponse.<Void>builder()
                 .message("One component deleted from category successfully")
                 .build();
+
+
+    }
+
+    @GetMapping("/all")
+    public ApiResponse<List<CategoryResponse>> findAll()
+    {
+        return  ApiResponse.<List<CategoryResponse>>builder().result(categoryService.getAll()).build();
     }
 }

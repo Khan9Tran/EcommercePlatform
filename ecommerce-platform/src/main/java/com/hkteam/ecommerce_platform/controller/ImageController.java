@@ -46,6 +46,24 @@ public class ImageController {
                 .build();
     }
 
+    @Operation(summary = "Upload Category Icon", description = "Api upload category image")
+    @PostMapping(value = "/category-icons/{categoryId}", consumes = "multipart/form-data")
+    public ApiResponse<ImageResponse> uploadCategoryIcon(
+            @RequestParam("image") MultipartFile image, @PathVariable("categoryId") Long categoryId) {
+        return ApiResponse.<ImageResponse>builder()
+                .result(imageService.uploadCategoryIcon(image, categoryId))
+                .build();
+    }
+
+    @Operation(summary = "Delete Category Icon", description = "Api delete category image")
+    @DeleteMapping(value = "/category-icons/{categoryId}")
+    public ApiResponse<Void> deleteCategoryIcon(@PathVariable("categoryId") Long categoryId) {
+        imageService.deleteCategoryIcon(categoryId);
+        return ApiResponse.<Void>builder()
+                .message("Deleted category image successfully")
+                .build();
+    }
+
     @Operation(summary = "Upload User Image", description = "Api upload user image")
     @PostMapping(value = "/users", consumes = "multipart/form-data")
     public ApiResponse<ImageResponse> uploadUserImage(@RequestParam("image") MultipartFile image) {
