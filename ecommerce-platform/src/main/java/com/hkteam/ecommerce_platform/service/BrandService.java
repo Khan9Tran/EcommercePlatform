@@ -42,7 +42,7 @@ public class BrandService {
             brandRepository.save(brand);
         } catch (DataIntegrityViolationException e) {
             log.info("Error while creating brand: {}", e.getMessage());
-            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+            throw new AppException(ErrorCode.BRAND_LATER_EXISTED);
         }
 
         return brandMapper.toBrandResponse(brand);
