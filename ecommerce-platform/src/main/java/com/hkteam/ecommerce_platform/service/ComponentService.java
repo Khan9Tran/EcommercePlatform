@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.util.List;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,8 +23,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -112,8 +112,8 @@ public class ComponentService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<ComponentResponse> getAllComponents() {
-        return componentRepository.findAll(
-                Sort.by("name").ascending()
-        ).stream().map(componentMapper::toComponentResponse).toList();
+        return componentRepository.findAll(Sort.by("name").ascending()).stream()
+                .map(componentMapper::toComponentResponse)
+                .toList();
     }
 }

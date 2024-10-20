@@ -90,6 +90,7 @@ public enum ErrorCode {
     DUPLICATE_PRODUCT_IMAGE_IDS(1064, "Duplicate product image id", HttpStatus.BAD_REQUEST),
     LIST_PRODUCT_IMAGE_NOT_FOUND(1065, "There are product image in list that can't be found", HttpStatus.NOT_FOUND),
     BRAND_LATER_EXISTED(1066, "Brand already exists or a similar copy has been deleted", HttpStatus.BAD_REQUEST),
+    CATEGORY_LATER_EXISTED(1067, "Category already exists or a similar copy has been deleted", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

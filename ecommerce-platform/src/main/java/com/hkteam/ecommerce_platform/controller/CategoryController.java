@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +21,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
@@ -60,12 +60,12 @@ public class CategoryController {
     @Operation(summary = "Get all categories", description = "Api get all categories")
     @GetMapping()
     public ApiResponse<PaginationResponse<CategoryResponse>> getAllCategories(
+            @RequestParam(value = "sort", required = false, defaultValue = "") String sort,
+            @RequestParam(value = "tab", required = false, defaultValue = "all") String tab,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
-        PaginationResponse<CategoryResponse> paginationResponse = categoryService.getAllCategories(page, size);
-
         return ApiResponse.<PaginationResponse<CategoryResponse>>builder()
-                .result(paginationResponse)
+                .result(categoryService.getAllCategories(page, size, tab, sort))
                 .build();
     }
 
@@ -76,7 +76,6 @@ public class CategoryController {
 
         return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
     }
-
 
     @Operation(summary = "Add components to category", description = "Api add components to a category")
     @PostMapping("/{categoryId}/components")
@@ -106,13 +105,12 @@ public class CategoryController {
         return ApiResponse.<Void>builder()
                 .message("One component deleted from category successfully")
                 .build();
-
-
     }
 
     @GetMapping("/all")
-    public ApiResponse<List<CategoryResponse>> findAll()
-    {
-        return  ApiResponse.<List<CategoryResponse>>builder().result(categoryService.getAll()).build();
+    public ApiResponse<List<CategoryResponse>> findAll() {
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .result(categoryService.getAll())
+                .build();
     }
 }
