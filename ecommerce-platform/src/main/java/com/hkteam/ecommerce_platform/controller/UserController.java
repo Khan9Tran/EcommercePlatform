@@ -121,9 +121,7 @@ public class UserController {
             @RequestParam(value = "tab", required = false, defaultValue = "all") String tab,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
-            @RequestParam(value = "search", required = false, defaultValue = "") String search
-    )
-    {
+            @RequestParam(value = "search", required = false, defaultValue = "") String search) {
         return ApiResponse.<PaginationResponse<AdminResponse>>builder()
                 .result(userService.getAllAdmins(page, size, tab, sort, search))
                 .build();
