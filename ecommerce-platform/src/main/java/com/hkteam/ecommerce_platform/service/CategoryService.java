@@ -62,7 +62,7 @@ public class CategoryService {
             category = categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
             log.info("Error while creating category: {}", e.getMessage());
-            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+            throw new AppException(ErrorCode.CATEGORY_LATER_EXISTED);
         }
 
         return categoryMapper.toCategoryResponse(category);
@@ -99,7 +99,7 @@ public class CategoryService {
             categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
             log.info("Error while updating category: {}", e.getMessage());
-            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+            throw new AppException(ErrorCode.CATEGORY_LATER_EXISTED);
         }
 
         return categoryMapper.toCategoryResponse(category);
@@ -112,11 +112,20 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    public PaginationResponse<CategoryResponse> getAllCategories(String pageStr, String sizeStr) {
-        Sort sort = Sort.by("createdAt").descending();
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+    public PaginationResponse<CategoryResponse> getAllCategories(
+            String pageStr, String sizeStr, String tab, String sort) {
+        Sort sortable =
+                switch (sort) {
+                    case "newest" -> Sort.by("createdAt").descending();
+                    case "oldest" -> Sort.by("createdAt").ascending();
+                    case "az" -> Sort.by("name").ascending();
+                    case "za" -> Sort.by("name").descending();
+                    default -> Sort.unsorted();
+                };
 
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
         var pageData = categoryRepository.findAll(pageable);
+
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);
