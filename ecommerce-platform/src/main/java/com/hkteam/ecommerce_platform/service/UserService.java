@@ -193,35 +193,33 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<CustomerResponse> getAllCustomers(
-            String pageStr, String sizeStr, String tab, String sortDate, String sortName) {
-        Sort sort = Sort.unsorted();
-        if (sortDate.equals("newest")) sort = Sort.by("createdAt").descending();
-        else if (sortDate.equals("oldest")) sort = Sort.by("createdAt").ascending();
-        else if (!sortDate.equals("")) throw new AppException(ErrorCode.INVALID_REQUEST);
+            String pageStr, String sizeStr, String tab, String sort, String search) {
+        Sort sortable =
+                switch (sort) {
+                    case "newest" -> Sort.by("createdAt").descending();
+                    case "oldest" -> Sort.by("createdAt").ascending();
+                    case "az" -> Sort.by("name").ascending();
+                    case "za" -> Sort.by("name").descending();
+                    default -> Sort.unsorted();
+                };
 
-        if (sortName.equals("za")) sort = sort.and(Sort.by("name").descending());
-        else if (sortName.equals("az")) sort = sort.and(Sort.by("name").ascending());
-        else if (!sortName.equals("")) throw new AppException(ErrorCode.INVALID_REQUEST);
-
-        log.info(sort.toString());
-
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
         Page<User> pageData = null;
 
         try {
-            var role = roleRepository
-                    .findByName(RoleName.USER)
-                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-
-            if (tab.equals("all")) pageData = userRepository.findByRoles(role, pageable);
-            else if (tab.equals("blocked")) pageData = userRepository.findByRolesAndIsBlocked(role, true, pageable);
-            else if (tab.equals("active")) pageData = userRepository.findByRolesAndIsBlocked(role, false, pageable);
-            else throw new AppException(ErrorCode.INVALID_REQUEST);
+            pageData = switch (tab) {
+                case "all" -> userRepository.search(List.of(RoleName.USER), search, search, pageable);
+                case "blocked" -> userRepository.searchByBlocked(
+                        List.of(RoleName.USER), List.of(true), search, search, pageable);
+                case "active" -> userRepository.searchByBlocked(
+                        List.of(RoleName.USER), List.of(false), search, search, pageable);
+                default -> throw new AppException(ErrorCode.INVALID_REQUEST);};
         } catch (Exception e) {
             log.error(e.getMessage());
         }
         int page = Integer.parseInt(pageStr);
 
+        assert pageData != null;
         PageUtils.validatePageBounds(page, pageData);
 
         return PaginationResponse.<CustomerResponse>builder()
@@ -259,53 +257,6 @@ public class UserService {
         }
     }
 
-    //    @PreAuthorize("hasRole('ADMIN')")
-    //    public PaginationResponse<AdminResponse> getAllAdmins(String pageStr, String sizeStr, String tab, String sort)
-    // {
-    //        Sort sortable =
-    //                switch (sort) {
-    //                    case "newest" -> Sort.by("createdAt").descending();
-    //                    case "oldest" -> Sort.by("createdAt").ascending();
-    //                    case "az" -> Sort.by("name").ascending();
-    //                    case "za" -> Sort.by("name").descending();
-    //                    default -> Sort.unsorted();
-    //                };
-    //
-    //        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-    //        Page<User> pageData = null;
-    //
-    //        try {
-    //            var role = roleRepository
-    //                    .findByName(RoleName.ADMIN)
-    //                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-    //
-    //            pageData = switch (tab) {
-    //                case "all" -> userRepository.findByRoles(role, pageable);
-    //                case "blocked" -> userRepository.findByRolesAndIsBlocked(role, true, pageable);
-    //                case "active" -> userRepository.findByRolesAndIsBlocked(role, false, pageable);
-    //                default -> throw new AppException(ErrorCode.INVALID_REQUEST);};
-    //        } catch (Exception e) {
-    //            log.error(e.getMessage());
-    //        }
-    //        int page = Integer.parseInt(pageStr);
-    //
-    //        PageUtils.validatePageBounds(page, pageData);
-    //
-    //        return PaginationResponse.<AdminResponse>builder()
-    //                .currentPage(Integer.parseInt(pageStr))
-    //                .pageSize(pageData.getSize())
-    //                .totalPages(pageData.getTotalPages())
-    //                .totalElements(pageData.getTotalElements())
-    //                .hasNext(pageData.hasNext())
-    //                .hasPrevious(pageData.hasPrevious())
-    //                .nextPage(pageData.hasNext() ? page + 1 : null)
-    //                .previousPage(pageData.hasPrevious() ? page - 1 : null)
-    //                .data(pageData.getContent().stream()
-    //                        .map(userMapper::toAdminResponse)
-    //                        .toList())
-    //                .build();
-    //    }
-
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<AdminResponse> getAllAdmins(
             String pageStr, String sizeStr, String tab, String sort, String search) {
@@ -334,6 +285,7 @@ public class UserService {
         }
         int page = Integer.parseInt(pageStr);
 
+        assert pageData != null;
         PageUtils.validatePageBounds(page, pageData);
 
         return PaginationResponse.<AdminResponse>builder()
