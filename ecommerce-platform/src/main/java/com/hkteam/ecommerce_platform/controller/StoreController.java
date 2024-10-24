@@ -1,7 +1,10 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 
+import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.service.StoreService;
 
@@ -41,6 +44,14 @@ public class StoreController {
 
         return ApiResponse.<StoreDetailResponse>builder()
                 .result(storeDetailResponse)
+                .build();
+    }
+
+    @Operation(summary = "Register store", description = "Api register store")
+    @PostMapping("/register-store")
+    ApiResponse<StoreRegistrationResponse> registerStore(@RequestBody @Valid StoreRegistrationRequest request) {
+        return ApiResponse.<StoreRegistrationResponse>builder()
+                .result(storeService.registerStore(request))
                 .build();
     }
 }

@@ -1,22 +1,29 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.util.Objects;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.dto.response.StoreDetailResponse;
+import com.hkteam.ecommerce_platform.dto.response.StoreRegistrationResponse;
 import com.hkteam.ecommerce_platform.dto.response.StoreResponse;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.enums.RoleName;
+import com.hkteam.ecommerce_platform.enums.TypeSlug;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.StoreMapper;
-import com.hkteam.ecommerce_platform.repository.AddressRepository;
-import com.hkteam.ecommerce_platform.repository.ProductRepository;
-import com.hkteam.ecommerce_platform.repository.StoreRepository;
+import com.hkteam.ecommerce_platform.repository.*;
+import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
+import com.hkteam.ecommerce_platform.util.SlugUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +39,8 @@ public class StoreService {
     StoreMapper storeMapper;
     AddressRepository addressRepository;
     ProductRepository productRepository;
+    AuthenticatedUserUtil authenticatedUserUtil;
+    RoleRepository roleRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<StoreResponse> getAllStores(
@@ -90,5 +99,32 @@ public class StoreService {
         response.setTotalFollower(totalFollower);
 
         return response;
+    }
+
+    public StoreRegistrationResponse registerStore(StoreRegistrationRequest request) {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!Objects.isNull(user.getStore())) {
+            throw new AppException(ErrorCode.SELLER_ALREADY_REGISTER);
+        }
+
+        var sellerRole = roleRepository
+                .findByName(RoleName.SELLER)
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+        user.getRoles().add(sellerRole);
+
+        Store store = storeMapper.toStore(request);
+        store.setSlug(SlugUtils.getSlug(request.getName(), TypeSlug.STORE));
+        store.setUser(user);
+
+        try {
+            storeRepository.save(store);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while creating category: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return storeMapper.toStoreRegistrationResponse(store);
     }
 }
