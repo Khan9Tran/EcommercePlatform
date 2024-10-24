@@ -72,7 +72,7 @@ public class Product {
     @ManyToOne
     Store store;
 
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     Set<ProductComponentValue> productComponentValues;
 
     @OneToMany(mappedBy = "product")

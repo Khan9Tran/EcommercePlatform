@@ -11,10 +11,7 @@ import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.ComponentMapper;
 import com.hkteam.ecommerce_platform.mapper.ProductMapper;
-import com.hkteam.ecommerce_platform.repository.BrandRepository;
-import com.hkteam.ecommerce_platform.repository.CategoryRepository;
-import com.hkteam.ecommerce_platform.repository.ComponentRepository;
-import com.hkteam.ecommerce_platform.repository.ProductRepository;
+import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
 import lombok.AccessLevel;
@@ -42,6 +39,7 @@ public class ProductService {
     ProductRepository productRepository;
     ComponentRepository componentRepository;
     AuthenticatedUserUtil authenticatedUserUtil;
+    ProductComponentValueRepository productComponentValueRepository;
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request){
@@ -68,6 +66,7 @@ public class ProductService {
 
         Set<Component> components = new HashSet<>();
         product.setProductComponentValues(new HashSet<>());
+
         componentRequest.forEach((component) -> {
             var cp = componentRepository.findById(component.getId()).orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
             product.getProductComponentValues()
@@ -75,6 +74,7 @@ public class ProductService {
                         .builder()
                         .value(component.getValue())
                         .component(cp)
+                            .product(product)
                         .build()
                     );
             components.add(cp);
