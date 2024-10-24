@@ -18,6 +18,5 @@ public class StoreDetailResponse {
     String username;
     String defaultAddress;
     Integer totalProduct;
-    Integer totalFollower;
     Instant createdAt;
 }

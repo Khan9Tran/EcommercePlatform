@@ -95,4 +95,7 @@ public class Product {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
+    @Column(nullable = false)
+    boolean isBlocked = Boolean.FALSE;
 }

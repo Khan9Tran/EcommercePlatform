@@ -46,9 +46,6 @@ public class Store {
     @OneToOne
     User user;
 
-    @ManyToMany(mappedBy = "followingStores")
-    Set<User> followers;
-
     @OneToMany(mappedBy = "store")
     Set<Cart> carts;
 

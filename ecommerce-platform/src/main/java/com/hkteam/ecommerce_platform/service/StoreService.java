@@ -44,18 +44,20 @@ public class StoreService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<StoreResponse> getAllStores(
-            String pageStr, String sizeStr, String tab, String sort, String search) {
-        Sort sortable =
-                switch (sort) {
-                    case "newest" -> Sort.by("createdAt").descending();
-                    case "oldest" -> Sort.by("createdAt").ascending();
-                    case "az" -> Sort.by("name").ascending();
-                    case "za" -> Sort.by("name").descending();
-                    default -> Sort.unsorted();
-                };
+            String pageStr, String sizeStr, String tab, String sortDate, String sortName) {
+        Sort sort = Sort.unsorted();
+        if (sortDate.equals("newest")) sort = Sort.by("createdAt").descending();
+        else if (sortDate.equals("oldest")) sort = Sort.by("createdAt").ascending();
+        else if (!sortDate.isEmpty()) throw new AppException(ErrorCode.INVALID_REQUEST);
 
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = storeRepository.searchAllStore(search, search, pageable);
+        if (sortName.equals("za")) sort = sort.and(Sort.by("name").descending());
+        else if (sortName.equals("az")) sort = sort.and(Sort.by("name").ascending());
+        else if (!sortName.isEmpty()) throw new AppException(ErrorCode.INVALID_REQUEST);
+
+        log.info(sort.toString());
+
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+        var pageData = storeRepository.findAll(pageable);
 
         int page = Integer.parseInt(pageStr);
 
@@ -79,8 +81,6 @@ public class StoreService {
     public StoreDetailResponse getOneStoreById(String id) {
         Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
-        Integer totalFollower = store.getFollowers().size();
-
         Address defaultAddress = addressRepository
                 .findById(store.getDefaultAddressId())
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
@@ -96,7 +96,6 @@ public class StoreService {
         StoreDetailResponse response = storeMapper.toStoreDetailResponse(store);
         response.setDefaultAddress(defaultAddressStr);
         response.setTotalProduct(totalProduct);
-        response.setTotalFollower(totalFollower);
 
         return response;
     }

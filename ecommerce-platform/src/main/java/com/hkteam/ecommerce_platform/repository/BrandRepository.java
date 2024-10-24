@@ -19,6 +19,4 @@ public interface BrandRepository extends JpaRepository<Brand, Long> {
 
     @NotNull
     Page<Brand> findAll(@NotNull Pageable pageable);
-
-    Page<Brand> findByNameContainingIgnoreCase(@NotNull String name, @NotNull Pageable pageable);
 }

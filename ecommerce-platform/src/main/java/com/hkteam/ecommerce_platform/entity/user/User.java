@@ -91,13 +91,6 @@ public class User {
 
     @ManyToMany
     @JoinTable(
-            name = "user_store_following",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "store_id"))
-    Set<Store> followingStores;
-
-    @ManyToMany
-    @JoinTable(
             name = "user_product_following",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id"))
