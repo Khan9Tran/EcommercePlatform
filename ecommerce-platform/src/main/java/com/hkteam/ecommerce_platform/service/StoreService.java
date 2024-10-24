@@ -72,8 +72,6 @@ public class StoreService {
     public StoreDetailResponse getOneStoreById(String id) {
         Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
-        Integer totalFollower = store.getFollowers().size();
-
         Address defaultAddress = addressRepository
                 .findById(store.getDefaultAddressId())
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
@@ -89,7 +87,6 @@ public class StoreService {
         StoreDetailResponse response = storeMapper.toStoreDetailResponse(store);
         response.setDefaultAddress(defaultAddressStr);
         response.setTotalProduct(totalProduct);
-        response.setTotalFollower(totalFollower);
 
         return response;
     }
