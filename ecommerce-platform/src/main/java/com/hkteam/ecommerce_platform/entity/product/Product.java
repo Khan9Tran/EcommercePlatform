@@ -7,6 +7,7 @@ import java.util.Set;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
@@ -44,6 +45,8 @@ public class Product {
     @Column(nullable = false)
     String description;
 
+    @Size(max = 2000, message = "Details must not exceed 2000 characters")
+    @Column(length = 2000)
     String details;
     String videoUrl;
     String mainImageUrl;

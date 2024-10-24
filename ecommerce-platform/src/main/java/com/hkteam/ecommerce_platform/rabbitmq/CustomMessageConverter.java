@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.rabbitmq;
 
 import java.io.IOException;
 
+import com.hkteam.ecommerce_platform.dto.request.ImageMessageRequest;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.support.converter.MessageConversionException;
@@ -30,13 +31,28 @@ public class CustomMessageConverter implements MessageConverter {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+
+        if (object instanceof EmailMessageRequest) {
+            messageProperties.setHeader("messageType", "email");
+        } else if (object instanceof ImageMessageRequest) {
+            messageProperties.setHeader("messageType", "image");
+        }
+
+
         return new Message(bytes, messageProperties);
     }
 
     @Override
     public Object fromMessage(Message message) throws MessageConversionException {
         try {
-            return objectMapper.readValue(message.getBody(), EmailMessageRequest.class);
+            String messageType = message.getMessageProperties().getHeader("messageType");
+            if ("email".equals(messageType)) {
+                return objectMapper.readValue(message.getBody(), EmailMessageRequest.class);
+            } else if ("image".equals(messageType)) {
+                return objectMapper.readValue(message.getBody(), ImageMessageRequest.class);
+            } else {
+                throw new MessageConversionException("Unknown message type");
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
