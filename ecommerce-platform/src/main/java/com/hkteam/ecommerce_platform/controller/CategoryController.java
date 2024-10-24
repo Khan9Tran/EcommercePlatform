@@ -63,9 +63,10 @@ public class CategoryController {
             @RequestParam(value = "sort", required = false, defaultValue = "") String sort,
             @RequestParam(value = "tab", required = false, defaultValue = "all") String tab,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
-            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search) {
         return ApiResponse.<PaginationResponse<CategoryResponse>>builder()
-                .result(categoryService.getAllCategories(page, size, tab, sort))
+                .result(categoryService.getAllCategories(page, size, tab, sort, search))
                 .build();
     }
 

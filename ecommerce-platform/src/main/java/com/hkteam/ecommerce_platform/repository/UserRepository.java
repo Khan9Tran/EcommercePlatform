@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 
@@ -24,10 +23,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByEmailValidationToken(String token);
 
     Optional<User> findByEmail(String email);
-
-    Page<User> findByRoles(Role role, @NotNull Pageable pageable);
-
-    Page<User> findByRolesAndIsBlocked(Role role, boolean isBlocked, @NotNull Pageable pageable);
 
     @Query(
             """
