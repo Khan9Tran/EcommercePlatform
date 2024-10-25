@@ -18,5 +18,4 @@ import lombok.experimental.FieldDefaults;
 public class ImageMessageRequest {
     MultipartFile image;
     TypeImage type;
-
 }

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.hkteam.ecommerce_platform.entity.category.Category;
@@ -22,4 +23,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @NotNull
     List<Category> findAllById(@NotNull Iterable<Long> ids);
+
+    @Query("""
+			select c from Category c
+			where lower(c.name) like lower(concat('%', ?1, '%'))""")
+    Page<Category> searchAllCategory(String name, Pageable pageable);
 }

@@ -44,20 +44,17 @@ public class StoreService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<StoreResponse> getAllStores(
-            String pageStr, String sizeStr, String tab, String sortDate, String sortName) {
-        Sort sort = Sort.unsorted();
-        if (sortDate.equals("newest")) sort = Sort.by("createdAt").descending();
-        else if (sortDate.equals("oldest")) sort = Sort.by("createdAt").ascending();
-        else if (!sortDate.isEmpty()) throw new AppException(ErrorCode.INVALID_REQUEST);
-
-        if (sortName.equals("za")) sort = sort.and(Sort.by("name").descending());
-        else if (sortName.equals("az")) sort = sort.and(Sort.by("name").ascending());
-        else if (!sortName.isEmpty()) throw new AppException(ErrorCode.INVALID_REQUEST);
-
-        log.info(sort.toString());
-
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
-        var pageData = storeRepository.findAll(pageable);
+            String pageStr, String sizeStr, String tab, String sort, String search) {
+        Sort sortable =
+                switch (sort) {
+                    case "newest" -> Sort.by("createdAt").descending();
+                    case "oldest" -> Sort.by("createdAt").ascending();
+                    case "az" -> Sort.by("name").ascending();
+                    case "za" -> Sort.by("name").descending();
+                    default -> Sort.unsorted();
+                };
+        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
+        var pageData = storeRepository.searchAllStore(search, search, pageable);
 
         int page = Integer.parseInt(pageStr);
 

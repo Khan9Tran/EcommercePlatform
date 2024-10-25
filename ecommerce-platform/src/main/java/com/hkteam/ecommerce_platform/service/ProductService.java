@@ -1,11 +1,16 @@
 package com.hkteam.ecommerce_platform.service;
 
-import com.hkteam.ecommerce_platform.dto.request.ComponentOfProductRequest;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.ProductCreationResponse;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
-import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.enums.TypeSlug;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
@@ -14,18 +19,11 @@ import com.hkteam.ecommerce_platform.mapper.ProductMapper;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +40,7 @@ public class ProductService {
     ProductComponentValueRepository productComponentValueRepository;
 
     @PreAuthorize("hasRole('SELLER')")
-    public ProductCreationResponse createProduct(ProductCreationRequest request){
+    public ProductCreationResponse createProduct(ProductCreationRequest request) {
 
         var product = productMapper.toProduct(request);
 
@@ -50,17 +48,19 @@ public class ProductService {
 
         var owner = authenticatedUserUtil.getAuthenticatedUser();
 
-        if (Objects.isNull(owner.getStore()))
-            throw new AppException(ErrorCode.STORE_NOT_FOUND);
+        if (Objects.isNull(owner.getStore())) throw new AppException(ErrorCode.STORE_NOT_FOUND);
 
         product.setStore(owner.getStore());
 
-        var category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+        var category = categoryRepository
+                .findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
         product.setCategory(category);
 
-        var brand = brandRepository.findById(request.getBrandId()).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+        var brand = brandRepository
+                .findById(request.getBrandId())
+                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
         product.setBrand(brand);
-
 
         var componentRequest = request.getComponents();
 
@@ -68,34 +68,30 @@ public class ProductService {
         product.setProductComponentValues(new HashSet<>());
 
         componentRequest.forEach((component) -> {
-            var cp = componentRepository.findById(component.getId()).orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
+            var cp = componentRepository
+                    .findById(component.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
             product.getProductComponentValues()
-                    .add(ProductComponentValue
-                        .builder()
-                        .value(component.getValue())
-                        .component(cp)
+                    .add(ProductComponentValue.builder()
+                            .value(component.getValue())
+                            .component(cp)
                             .product(product)
-                        .build()
-                    );
+                            .build());
             components.add(cp);
         });
 
         if (!Objects.isNull(category.getComponents()) && components.isEmpty())
             throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
-        if (!category.getComponents().equals(components))
-            throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
+        if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
         try {
             productRepository.save(product);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
-        return  productMapper.toProductCreationResponse(product);
+        return productMapper.toProductCreationResponse(product);
     }
-
 }

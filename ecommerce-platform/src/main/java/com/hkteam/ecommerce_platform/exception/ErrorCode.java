@@ -94,7 +94,6 @@ public enum ErrorCode {
     SELLER_ALREADY_REGISTER(1068, "You registered store", HttpStatus.BAD_REQUEST),
     PRODUCT_INVALID(1679, "{field} be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
     PRICE_INVALID(1680, "Price must be greater than or equal to 0.", HttpStatus.BAD_REQUEST);
-
     ;
 
     int code;

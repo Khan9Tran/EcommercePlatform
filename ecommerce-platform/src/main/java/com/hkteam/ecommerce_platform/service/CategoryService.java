@@ -113,7 +113,7 @@ public class CategoryService {
     }
 
     public PaginationResponse<CategoryResponse> getAllCategories(
-            String pageStr, String sizeStr, String tab, String sort) {
+            String pageStr, String sizeStr, String tab, String sort, String search) {
         Sort sortable =
                 switch (sort) {
                     case "newest" -> Sort.by("createdAt").descending();
@@ -124,7 +124,7 @@ public class CategoryService {
                 };
 
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = categoryRepository.findAll(pageable);
+        var pageData = categoryRepository.searchAllCategory(search, pageable);
 
         int page = Integer.parseInt(pageStr);
 

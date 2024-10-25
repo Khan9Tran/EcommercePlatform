@@ -1,13 +1,14 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
+import java.math.BigDecimal;
+import java.util.Set;
+
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
-import java.util.Set;
 
 @Data
 @Builder

@@ -77,7 +77,8 @@ public class BrandService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public PaginationResponse<BrandResponse> getAllBrands(String pageStr, String sizeStr, String tab, String sort) {
+    public PaginationResponse<BrandResponse> getAllBrands(
+            String pageStr, String sizeStr, String tab, String sort, String search) {
         Sort sortable =
                 switch (sort) {
                     case "newest" -> Sort.by("createdAt").descending();
@@ -88,7 +89,7 @@ public class BrandService {
                 };
 
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = brandRepository.findAll(pageable);
+        var pageData = brandRepository.findByNameContainingIgnoreCase(search, pageable);
 
         int page = Integer.parseInt(pageStr);
 

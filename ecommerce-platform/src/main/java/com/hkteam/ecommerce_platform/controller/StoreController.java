@@ -27,13 +27,13 @@ public class StoreController {
     @Operation(summary = "Get all store", description = "Api get all store")
     @GetMapping()
     ApiResponse<PaginationResponse<StoreResponse>> getAllStores(
-            @RequestParam(value = "date", required = false, defaultValue = "") String sortDate,
-            @RequestParam(value = "name", required = false, defaultValue = "") String sortName,
+            @RequestParam(value = "sort", required = false, defaultValue = "") String sort,
             @RequestParam(value = "tab", required = false, defaultValue = "all") String tab,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
-            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search) {
         return ApiResponse.<PaginationResponse<StoreResponse>>builder()
-                .result(storeService.getAllStores(page, size, tab, sortDate, sortName))
+                .result(storeService.getAllStores(page, size, tab, sort, search))
                 .build();
     }
 
