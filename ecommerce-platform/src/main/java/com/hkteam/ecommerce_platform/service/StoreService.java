@@ -78,16 +78,20 @@ public class StoreService {
     public StoreDetailResponse getOneStoreById(String id) {
         Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
-        Address defaultAddress = addressRepository
-                .findById(store.getDefaultAddressId())
-                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+        String defaultAddressStr = null;
+        if (store.getDefaultAddressId() != null) {
+            Address defaultAddress = addressRepository
+                    .findById(store.getDefaultAddressId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        String defaultAddressStr = String.join(
-                ", ",
-                defaultAddress.getDetailLocate(),
-                defaultAddress.getDetailAddress(),
-                defaultAddress.getDistrict(),
-                defaultAddress.getProvince());
+            defaultAddressStr = String.join(
+                    ", ",
+                    defaultAddress.getDetailLocate(),
+                    defaultAddress.getDetailAddress(),
+                    defaultAddress.getDistrict(),
+                    defaultAddress.getProvince());
+        }
+
         Integer totalProduct = productRepository.countByStore(store);
 
         StoreDetailResponse response = storeMapper.toStoreDetailResponse(store);
