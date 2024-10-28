@@ -8,6 +8,7 @@ import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.VariantOfProductResponse;
 import com.hkteam.ecommerce_platform.entity.product.Attribute;
+import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.mapper.*;
@@ -184,12 +185,16 @@ public class ProductService {
         return variants.stream().mapToInt(Variant::getQuantity).sum();
     }
 
+    @PreAuthorize("hasRole('SELLER')")
     public ProductDetailResponse updateProduct(String id, ProductUpdateRequest request) {
         var product = productRepository
                 .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        product = productMapper.toProduct(request);
+        if (!isOwner(product))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        productMapper.updateProductFromRequest(request, product);
 
         if (Objects.isNull(product.getVariants())) {
             product.setQuantity(request.getQuantity());
@@ -208,7 +213,11 @@ public class ProductService {
     }
 
     public ProductDetailResponse getProductBySlug(String slug) {
-        return null;
+        var product = productRepository
+                .findBySlug(slug)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        return map(product);
     }
 
     public ProductDetailResponse getProduct(String id) {
@@ -216,15 +225,40 @@ public class ProductService {
                 .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
+        return map(product);
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    public void deleteProduct(String id) {
+        var product = productRepository.findById(id).orElseThrow(() ->new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        if (!isOwner(product))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        try {
+            product.setDeleted(true);
+            productRepository.save(product);
+        }
+        catch (Exception e)
+        {
+            log.info("Has error when delete pro: " + e.getMessage());
+            throw  new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    private boolean isOwner(Product product)
+    {
+        return authenticatedUserUtil.getAuthenticatedUser().getStore().getId().equals(product.getStore().getId());
+    }
+
+    private  ProductDetailResponse map(Product product){
         var response = productMapper.toProductDetailResponse(product);
+
         response.setCategory(categoryMapper.toCategoryOfProductResponse(product.getCategory()));
         response.setBrand(brandMapper.toBrandOfProductResponse(product.getBrand()));
         response.setStore(storeMapper.toStoreOfProductResponse(product.getStore()));
         response.setComponents(product.getProductComponentValues().stream().map(productComponentValueMapper::toProductComponentValueOfProductResponse).collect(Collectors.toSet()));
+
         return response;
-    }
-
-    public void deleteProduct(String id) {
-
     }
 }
