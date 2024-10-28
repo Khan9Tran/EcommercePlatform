@@ -5,6 +5,7 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import jakarta.persistence.CascadeType;
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.user.User;
@@ -32,7 +33,7 @@ public class Attribute {
     @ManyToOne
     User createdBy;
 
-    @OneToMany(mappedBy = "attribute")
+    @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL)
     Set<Value> values;
 
     @CreationTimestamp(source = SourceType.DB)

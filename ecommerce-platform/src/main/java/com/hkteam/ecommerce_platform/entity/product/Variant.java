@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.entity.product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -41,7 +42,7 @@ public class Variant {
     Set<CartItem> cartItems;
 
     @ManyToMany
-    Set<Value> values;
+    List<Value> values;
 
     String imageUrl;
 

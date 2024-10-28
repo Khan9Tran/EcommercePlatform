@@ -1,9 +1,11 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
+import com.hkteam.ecommerce_platform.entity.product.Attribute;
+import com.hkteam.ecommerce_platform.entity.product.Value;
+import com.hkteam.ecommerce_platform.entity.product.Variant;
+import com.hkteam.ecommerce_platform.mapper.VariantMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,8 @@ public class ProductService {
     ComponentRepository componentRepository;
     AuthenticatedUserUtil authenticatedUserUtil;
     ProductComponentValueRepository productComponentValueRepository;
+    VariantMapper variantMapper;
+    AttributeRepository attributeRepository;
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
@@ -85,13 +89,70 @@ public class ProductService {
 
         if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
+        List<Attribute> attributes = new ArrayList<Attribute>();
+
+        List<Variant> variants = new ArrayList<>();
+
+        if (!Objects.isNull(request.getAttributesHasValues()) && !Objects.isNull(request.getVariantOfProducts()))
+        {
+            request.getAttributesHasValues().forEach((attribute) -> {
+                Set<Value> values = new HashSet<>();
+                var attr = Attribute.builder().name(attribute.getName()).createdBy(owner).build();
+                attribute.getValue().forEach((value) -> {
+                    values.add(Value.builder().value(value).createdBy(owner).attribute(attr).build());
+                });
+                attr.setValues(values);
+                attributes.add(attr);
+            });
+
+            request.getVariantOfProducts().forEach((variant) -> {
+                var vr = variantMapper.toVariant(variant);
+                vr.setSlug(SlugUtils.getSlug(product.getName(), TypeSlug.VARIANT));
+                vr.setValues(getValuesOfVariant(attributes, variant.getValues()));
+                vr.setProduct(product);
+                variants.add(vr);
+            });
+        }
+
+        product.setVariants(variants);
+
+        product.getVariants().forEach((variant) -> {
+            log.info("variant: " + variant.getQuantity( ));
+            variant.getValues().forEach(
+                    (value) -> {
+                        log.info("value: " + value.getValue());
+                    }
+            );
+        });
+
         try {
-            productRepository.save(product);
-        } catch (Exception e) {
+        attributes.forEach((attribute) -> {
+            attributeRepository.save(attribute);
+        });
+        productRepository.save(product);
+        }
+        catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
-        return productMapper.toProductCreationResponse(product);
+        return null;
     }
+
+    private List<Value> getValuesOfVariant(List<Attribute> attributes, List<String> values) {
+        List<Value> valueSet = new ArrayList<>();
+        int index = 0;
+        for (Attribute attribute : attributes) {
+            if (index < values.size()) {
+                for (Value value : attribute.getValues()) {
+                    if (value.getValue().equals(values.get(index))) {
+                        valueSet.add(value);
+                    }
+                }
+            }
+            index++;
+        }
+        return valueSet;
+    }
+
 }

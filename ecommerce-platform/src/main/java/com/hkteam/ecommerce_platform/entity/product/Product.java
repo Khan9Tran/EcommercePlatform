@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.entity.product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -76,8 +77,8 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     Set<ProductComponentValue> productComponentValues;
 
-    @OneToMany(mappedBy = "product")
-    Set<Variant> variants;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    List<Variant> variants;
 
     @OneToMany(mappedBy = "product")
     Set<Review> reviews;
