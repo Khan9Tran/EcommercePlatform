@@ -12,5 +12,6 @@ public interface ProductMapper {
     @Mapping(source = "available", target = "isAvailable")
     Product toProduct(ProductCreationRequest request);
 
+    @Mapping(target = "variants", source = "variants")
     ProductCreationResponse toProductCreationResponse(Product product);
 }

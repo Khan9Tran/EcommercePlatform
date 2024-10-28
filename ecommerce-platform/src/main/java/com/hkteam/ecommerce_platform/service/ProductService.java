@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.*;
 
+import com.hkteam.ecommerce_platform.dto.response.VariantOfProductResponse;
 import com.hkteam.ecommerce_platform.entity.product.Attribute;
 import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
@@ -136,7 +137,13 @@ public class ProductService {
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
-        return null;
+        ProductCreationResponse response = productMapper.toProductCreationResponse(product);
+        List<VariantOfProductResponse> variantOfProductResponses = new ArrayList<>();
+        product.getVariants().forEach((variant) -> {
+            variantOfProductResponses.add(variantMapper.toVariantOfProductResponse(variant));
+        });
+        response.setVariants(variantOfProductResponses);
+        return  response;
     }
 
     private List<Value> getValuesOfVariant(List<Attribute> attributes, List<String> values) {
