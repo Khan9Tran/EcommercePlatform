@@ -1,11 +1,10 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import jakarta.validation.Valid;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
@@ -31,6 +30,35 @@ public class ProductController {
     ApiResponse<ProductCreationResponse> createProduct(@RequestBody @Valid ProductCreationRequest request) {
         return ApiResponse.<ProductCreationResponse>builder()
                 .result(productService.createProduct(request))
+                .build();
+    }
+
+    @PatchMapping("/{id}")
+    ApiResponse<ProductDetailResponse> updateProduct(@PathVariable String id, @RequestBody @Valid ProductUpdateRequest request) {
+        return ApiResponse.<ProductDetailResponse>builder()
+                .result(productService.updateProduct(id, request))
+                .build();
+    }
+
+    @GetMapping("/slug/{slug}")
+    ApiResponse<ProductDetailResponse> getProductBySlug(@PathVariable String slug) {
+        return ApiResponse.<ProductDetailResponse>builder()
+                .result(productService.getProductBySlug(slug))
+                .build();
+    }
+
+    @GetMapping("/{id}")
+    ApiResponse<ProductDetailResponse> getProduct(@PathVariable String id) {
+        return ApiResponse.<ProductDetailResponse>builder()
+                .result(productService.getProduct(id))
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    ApiResponse<String> deleteProduct(@PathVariable String id) {
+        productService.deleteProduct(id);
+        return ApiResponse.<String>builder()
+                .result("Product deleted successfully")
                 .build();
     }
 }

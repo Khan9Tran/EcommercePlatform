@@ -25,4 +25,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAllById(@NotNull Iterable<Long> ids);
 
     Integer countByStore(Store store);
+
+    Optional<Product> findById(String id);
 }

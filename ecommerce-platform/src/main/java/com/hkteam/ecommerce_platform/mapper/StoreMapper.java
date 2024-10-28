@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.dto.response.StoreOfProductResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -23,4 +24,6 @@ public interface StoreMapper {
     StoreRegistrationResponse toStoreRegistrationResponse(Store store);
 
     void updateStore(@MappingTarget Store store, StoreRegistrationRequest request);
+
+    StoreOfProductResponse toStoreOfProductResponse(Store store);
 }

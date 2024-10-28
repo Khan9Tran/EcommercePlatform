@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.dto.response.CategoryOfProductResponse;
 import org.mapstruct.*;
 
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
@@ -20,4 +21,6 @@ public interface CategoryMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateCategoryFromRequest(CategoryUpdateRequest request, @MappingTarget Category category);
+
+    CategoryOfProductResponse toCategoryOfProductResponse(Category category);
 }

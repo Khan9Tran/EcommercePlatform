@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -14,4 +16,13 @@ public interface ProductMapper {
 
     @Mapping(target = "variants", source = "variants")
     ProductCreationResponse toProductCreationResponse(Product product);
+
+    @Mapping(source = "available", target = "isAvailable")
+    @Mapping(target = "quantity", ignore = true)
+    @Mapping(target = "originalPrice", ignore = true)
+    @Mapping(target = "salePrice", ignore = true)
+    Product toProduct(ProductUpdateRequest request);
+
+    @Mapping(source = "available", target = "isAvailable")
+    ProductDetailResponse toProductDetailResponse(Product product);
 }

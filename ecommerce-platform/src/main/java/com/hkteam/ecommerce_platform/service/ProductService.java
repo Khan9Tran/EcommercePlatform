@@ -1,12 +1,16 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.VariantOfProductResponse;
 import com.hkteam.ecommerce_platform.entity.product.Attribute;
 import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
-import com.hkteam.ecommerce_platform.mapper.VariantMapper;
+import com.hkteam.ecommerce_platform.mapper.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +21,6 @@ import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
 import com.hkteam.ecommerce_platform.enums.TypeSlug;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
-import com.hkteam.ecommerce_platform.mapper.ComponentMapper;
-import com.hkteam.ecommerce_platform.mapper.ProductMapper;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
@@ -33,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class ProductService {
+    private final CategoryMapper categoryMapper;
     private final ComponentMapper componentMapper;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
@@ -40,9 +43,11 @@ public class ProductService {
     ProductRepository productRepository;
     ComponentRepository componentRepository;
     AuthenticatedUserUtil authenticatedUserUtil;
-    ProductComponentValueRepository productComponentValueRepository;
     VariantMapper variantMapper;
     AttributeRepository attributeRepository;
+    BrandMapper brandMapper;
+    StoreMapper storeMapper;
+    ProductComponentValueMapper productComponentValueMapper;
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
@@ -113,6 +118,11 @@ public class ProductService {
                 vr.setProduct(product);
                 variants.add(vr);
             });
+
+
+            product.setQuantity(countTotalProductQuantity(variants));
+            product.setOriginalPrice(findMinOriginalPrice(variants));
+            product.setSalePrice(findMinSalePrice(variants));
         }
 
         product.setVariants(variants);
@@ -162,4 +172,59 @@ public class ProductService {
         return valueSet;
     }
 
+    private BigDecimal findMinSalePrice(List<Variant> variants) {
+        return variants.stream().map(Variant::getSalePrice).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+    }
+
+    private BigDecimal findMinOriginalPrice(List<Variant> variants) {
+        return variants.stream().map(Variant::getOriginalPrice).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+    }
+
+    private int countTotalProductQuantity(List<Variant> variants) {
+        return variants.stream().mapToInt(Variant::getQuantity).sum();
+    }
+
+    public ProductDetailResponse updateProduct(String id, ProductUpdateRequest request) {
+        var product = productRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        product = productMapper.toProduct(request);
+
+        if (Objects.isNull(product.getVariants())) {
+            product.setQuantity(request.getQuantity());
+            product.setOriginalPrice(request.getOriginalPrice());
+            product.setSalePrice(request.getSalePrice());
+        }
+
+        try {
+            productRepository.save(product);
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+        return null;
+    }
+
+    public ProductDetailResponse getProductBySlug(String slug) {
+        return null;
+    }
+
+    public ProductDetailResponse getProduct(String id) {
+        var product = productRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        var response = productMapper.toProductDetailResponse(product);
+        response.setCategory(categoryMapper.toCategoryOfProductResponse(product.getCategory()));
+        response.setBrand(brandMapper.toBrandOfProductResponse(product.getBrand()));
+        response.setStore(storeMapper.toStoreOfProductResponse(product.getStore()));
+        response.setComponents(product.getProductComponentValues().stream().map(productComponentValueMapper::toProductComponentValueOfProductResponse).collect(Collectors.toSet()));
+        return response;
+    }
+
+    public void deleteProduct(String id) {
+
+    }
 }
