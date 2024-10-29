@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
+import com.hkteam.ecommerce_platform.mapper.ValuesMapper;
+import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -20,14 +22,26 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ValueService {
     ValueRepository valueRepository;
+    AuthenticatedUserUtil authenticatedUserUtil;
+    ValuesMapper valuesMapper;
 
     @PreAuthorize("hasRole('SELLER')")
     public ValueDetailResponse updateValue(Long id, UpdateValueRequest request) {
 
         var value = valueRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.VALUE_NOT_FOUND));
-        return ValueDetailResponse.builder()
-                .id(request.getId())
-                .value(request.getValue())
-                .build();
+
+        if (!authenticatedUserUtil.isOwner(value)) throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        valuesMapper.updateValueFromRequest(request, value);
+
+        try {
+            valueRepository.save(value);
+        }
+        catch (Exception e) {
+            log.error("Error while updating value", e);
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return valuesMapper.toValueDetailResponse(valueRepository.save(value));
     }
 }

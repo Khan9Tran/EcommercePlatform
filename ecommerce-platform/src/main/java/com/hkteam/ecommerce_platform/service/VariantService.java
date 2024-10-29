@@ -12,7 +12,7 @@ import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.ProductMapper;
-import com.hkteam.ecommerce_platform.mapper.ValueMapper;
+import com.hkteam.ecommerce_platform.mapper.ValuesMapper;
 import com.hkteam.ecommerce_platform.mapper.VariantMapper;
 import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import com.hkteam.ecommerce_platform.repository.VariantRepository;
@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class VariantService {
     VariantMapper variantMapper;
     ProductMapper productMapper;
-    ValueMapper valueMapper;
+    ValuesMapper valueMapper;
     VariantRepository variantRepository;
     ProductRepository productRepository;
     ProductService productService;
