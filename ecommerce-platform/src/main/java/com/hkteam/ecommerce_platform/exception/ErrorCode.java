@@ -93,7 +93,9 @@ public enum ErrorCode {
     CATEGORY_LATER_EXISTED(1067, "Category already exists or a similar copy has been deleted", HttpStatus.BAD_REQUEST),
     SELLER_ALREADY_REGISTER(1068, "You registered store", HttpStatus.BAD_REQUEST),
     PRODUCT_INVALID(1679, "{field} be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
-    PRICE_INVALID(1680, "Price must be greater than or equal to 0.", HttpStatus.BAD_REQUEST);
+    PRICE_INVALID(1680, "Price must be greater than or equal to 0.", HttpStatus.BAD_REQUEST),
+    VARIANT_NOT_FOUND(1681, "Variant not found", HttpStatus.BAD_REQUEST),
+    VALUE_NOT_FOUND(1682, "Value not found", HttpStatus.BAD_REQUEST);
     ;
 
     int code;

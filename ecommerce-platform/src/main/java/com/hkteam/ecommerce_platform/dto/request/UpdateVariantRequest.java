@@ -1,7 +1,6 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import jakarta.validation.constraints.Min;
 
@@ -13,21 +12,20 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class VariantOfProductRequest {
-    @NonNull
-    List<String> values;
-
-    @NonNull
-    boolean isAvailable;
+public class UpdateVariantRequest {
 
     @NonNull
     @Min(value = 0, message = "PRICE_INVALID")
     BigDecimal originalPrice;
 
     @NonNull
+    @Min(value = 0, message = "PRICE_INVALID")
+    BigDecimal salePrice;
+
+    @NonNull
+    @Min(value = 0)
     int quantity;
 
     @NonNull
-    @Min(value = 0, message = "PRICE_INVALID")
-    BigDecimal salePrice;
+    boolean isAvailable;
 }

@@ -29,8 +29,6 @@ public class Value {
     @Column(nullable = false)
     String value;
 
-    String otherValue;
-
     @ManyToOne
     User createdBy;
 

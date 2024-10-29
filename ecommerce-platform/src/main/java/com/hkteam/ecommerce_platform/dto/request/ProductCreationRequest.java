@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-import com.hkteam.ecommerce_platform.entity.product.Variant;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -57,5 +56,4 @@ public class ProductCreationRequest {
     List<AttributeHasValuesRequest> attributesHasValues;
 
     List<VariantOfProductRequest> variantOfProducts;
-
 }

@@ -1,12 +1,12 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.response.StoreOfProductResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
 import com.hkteam.ecommerce_platform.dto.response.StoreDetailResponse;
+import com.hkteam.ecommerce_platform.dto.response.StoreOfProductResponse;
 import com.hkteam.ecommerce_platform.dto.response.StoreRegistrationResponse;
 import com.hkteam.ecommerce_platform.dto.response.StoreResponse;
 import com.hkteam.ecommerce_platform.entity.user.Store;

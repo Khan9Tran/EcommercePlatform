@@ -8,8 +8,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StoreOfProductResponse {
-    String id;
-    String name;
-    String slug;
+public class ValueDetailResponse {
+    Long id;
+    String value;
 }

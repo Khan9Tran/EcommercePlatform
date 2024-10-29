@@ -4,24 +4,24 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
-import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
-import com.hkteam.ecommerce_platform.dto.response.VariantOfProductResponse;
-import com.hkteam.ecommerce_platform.entity.product.Attribute;
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.entity.product.Value;
-import com.hkteam.ecommerce_platform.entity.product.Variant;
-import com.hkteam.ecommerce_platform.mapper.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ProductCreationResponse;
+import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
+import com.hkteam.ecommerce_platform.dto.response.VariantOfProductResponse;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
+import com.hkteam.ecommerce_platform.entity.product.Attribute;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.product.Value;
+import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.enums.TypeSlug;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.mapper.*;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
@@ -100,13 +100,19 @@ public class ProductService {
 
         List<Variant> variants = new ArrayList<>();
 
-        if (!Objects.isNull(request.getAttributesHasValues()) && !Objects.isNull(request.getVariantOfProducts()))
-        {
+        if (!Objects.isNull(request.getAttributesHasValues()) && !Objects.isNull(request.getVariantOfProducts())) {
             request.getAttributesHasValues().forEach((attribute) -> {
                 Set<Value> values = new HashSet<>();
-                var attr = Attribute.builder().name(attribute.getName()).createdBy(owner).build();
+                var attr = Attribute.builder()
+                        .name(attribute.getName())
+                        .createdBy(owner)
+                        .build();
                 attribute.getValue().forEach((value) -> {
-                    values.add(Value.builder().value(value).createdBy(owner).attribute(attr).build());
+                    values.add(Value.builder()
+                            .value(value)
+                            .createdBy(owner)
+                            .attribute(attr)
+                            .build());
                 });
                 attr.setValues(values);
                 attributes.add(attr);
@@ -120,30 +126,26 @@ public class ProductService {
                 variants.add(vr);
             });
 
-
             product.setQuantity(countTotalProductQuantity(variants));
-            product.setOriginalPrice(findMinOriginalPrice(variants));
+            product.setOriginalPrice(findMaxOriginalPrice(variants));
             product.setSalePrice(findMinSalePrice(variants));
         }
 
         product.setVariants(variants);
 
         product.getVariants().forEach((variant) -> {
-            log.info("variant: " + variant.getQuantity( ));
-            variant.getValues().forEach(
-                    (value) -> {
-                        log.info("value: " + value.getValue());
-                    }
-            );
+            log.info("variant: " + variant.getQuantity());
+            variant.getValues().forEach((value) -> {
+                log.info("value: " + value.getValue());
+            });
         });
 
         try {
-        attributes.forEach((attribute) -> {
-            attributeRepository.save(attribute);
-        });
-        productRepository.save(product);
-        }
-        catch (Exception e) {
+            attributes.forEach((attribute) -> {
+                attributeRepository.save(attribute);
+            });
+            productRepository.save(product);
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
@@ -154,7 +156,7 @@ public class ProductService {
             variantOfProductResponses.add(variantMapper.toVariantOfProductResponse(variant));
         });
         response.setVariants(variantOfProductResponses);
-        return  response;
+        return response;
     }
 
     private List<Value> getValuesOfVariant(List<Attribute> attributes, List<String> values) {
@@ -173,12 +175,18 @@ public class ProductService {
         return valueSet;
     }
 
-    private BigDecimal findMinSalePrice(List<Variant> variants) {
-        return variants.stream().map(Variant::getSalePrice).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+    public BigDecimal findMinSalePrice(List<Variant> variants) {
+        return variants.stream()
+                .map(Variant::getSalePrice)
+                .min(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
     }
 
-    private BigDecimal findMinOriginalPrice(List<Variant> variants) {
-        return variants.stream().map(Variant::getOriginalPrice).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+    public BigDecimal findMaxOriginalPrice(List<Variant> variants) {
+        return variants.stream()
+                .map(Variant::getOriginalPrice)
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
     }
 
     private int countTotalProductQuantity(List<Variant> variants) {
@@ -187,12 +195,9 @@ public class ProductService {
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductDetailResponse updateProduct(String id, ProductUpdateRequest request) {
-        var product = productRepository
-                .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!isOwner(product))
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         productMapper.updateProductFromRequest(request, product);
 
@@ -204,60 +209,50 @@ public class ProductService {
 
         try {
             productRepository.save(product);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
-        return null;
+        return map(product);
     }
 
     public ProductDetailResponse getProductBySlug(String slug) {
-        var product = productRepository
-                .findBySlug(slug)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var product =
+                productRepository.findBySlug(slug).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
         return map(product);
     }
 
     public ProductDetailResponse getProduct(String id) {
-        var product = productRepository
-                .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
         return map(product);
     }
 
     @PreAuthorize("hasRole('SELLER')")
     public void deleteProduct(String id) {
-        var product = productRepository.findById(id).orElseThrow(() ->new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!isOwner(product))
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         try {
             product.setDeleted(true);
             productRepository.save(product);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.info("Has error when delete pro: " + e.getMessage());
-            throw  new AppException(ErrorCode.UNKNOWN_ERROR);
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
-    private boolean isOwner(Product product)
-    {
-        return authenticatedUserUtil.getAuthenticatedUser().getStore().getId().equals(product.getStore().getId());
-    }
-
-    private  ProductDetailResponse map(Product product){
+    private ProductDetailResponse map(Product product) {
         var response = productMapper.toProductDetailResponse(product);
 
         response.setCategory(categoryMapper.toCategoryOfProductResponse(product.getCategory()));
         response.setBrand(brandMapper.toBrandOfProductResponse(product.getBrand()));
         response.setStore(storeMapper.toStoreOfProductResponse(product.getStore()));
-        response.setComponents(product.getProductComponentValues().stream().map(productComponentValueMapper::toProductComponentValueOfProductResponse).collect(Collectors.toSet()));
+        response.setComponents(product.getProductComponentValues().stream()
+                .map(productComponentValueMapper::toProductComponentValueOfProductResponse)
+                .collect(Collectors.toSet()));
 
         return response;
     }

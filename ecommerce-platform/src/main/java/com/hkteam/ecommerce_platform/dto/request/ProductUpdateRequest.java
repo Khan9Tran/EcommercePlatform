@@ -1,17 +1,13 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
-import com.hkteam.ecommerce_platform.dto.response.BrandOfProductResponse;
-import com.hkteam.ecommerce_platform.dto.response.CategoryOfProductResponse;
-import com.hkteam.ecommerce_platform.dto.response.StoreOfProductResponse;
-import com.hkteam.ecommerce_platform.entity.image.ProductImage;
+import java.math.BigDecimal;
+
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
 
 @Data
 @Builder

@@ -1,14 +1,15 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
-import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ProductCreationResponse;
+import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
+import com.hkteam.ecommerce_platform.dto.response.ProductOfVariantResponse;
 import com.hkteam.ecommerce_platform.entity.product.Product;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
@@ -26,4 +27,6 @@ public interface ProductMapper {
 
     @Mapping(source = "available", target = "isAvailable")
     ProductDetailResponse toProductDetailResponse(Product product);
+
+    ProductOfVariantResponse toProductOfVariantResponse(Product product);
 }

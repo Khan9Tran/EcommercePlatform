@@ -1,7 +1,5 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
-import java.util.List;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,10 +8,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class AttributeHasValuesRequest {
+public class UpdateValueRequest {
     @NonNull
-    String name;
+    Long id;
 
     @NonNull
-    List<String> value;
+    String value;
 }

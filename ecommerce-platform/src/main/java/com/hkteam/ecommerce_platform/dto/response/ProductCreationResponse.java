@@ -1,9 +1,9 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
+import java.util.List;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
 
 @Data
 @Builder

@@ -1,14 +1,14 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
-import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductCreationResponse;
+import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import com.hkteam.ecommerce_platform.service.ProductService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,7 +34,8 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    ApiResponse<ProductDetailResponse> updateProduct(@PathVariable String id, @RequestBody @Valid ProductUpdateRequest request) {
+    ApiResponse<ProductDetailResponse> updateProduct(
+            @PathVariable String id, @RequestBody @Valid ProductUpdateRequest request) {
         return ApiResponse.<ProductDetailResponse>builder()
                 .result(productService.updateProduct(id, request))
                 .build();
