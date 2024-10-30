@@ -16,8 +16,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@SQLDelete(sql = "UPDATE image SET is_deleted = true WHERE id=?")
-@SQLRestriction("is_deleted=false")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Image {
     @Id

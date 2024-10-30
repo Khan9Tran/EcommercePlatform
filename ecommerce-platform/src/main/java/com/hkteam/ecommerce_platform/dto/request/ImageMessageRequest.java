@@ -10,12 +10,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class ImageMessageRequest {
-    MultipartFile image;
+    List<byte[]> image;
     TypeImage type;
+    String id;
 }

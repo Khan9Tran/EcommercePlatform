@@ -102,7 +102,7 @@ public class ImageController {
     @Operation(summary = "Upload Product Main Image", description = "Api upload product main image")
     @PostMapping(value = "/products/{productId}", consumes = "multipart/form-data")
     public ApiResponse<ImageResponse> uploadProductMainImage(
-            @RequestParam("mainImage") MultipartFile mainImage, @PathVariable("productId") Long productId) {
+            @RequestParam("mainImage") MultipartFile mainImage, @PathVariable("productId") String productId) {
         return ApiResponse.<ImageResponse>builder()
                 .result(imageService.uploadProductMainImage(mainImage, productId))
                 .build();
@@ -110,7 +110,7 @@ public class ImageController {
 
     @Operation(summary = "Delete Product Main Image", description = "Api delete product main image")
     @DeleteMapping(value = "/products/{productId}")
-    public ApiResponse<Void> deleteProductMainImage(@PathVariable("productId") Long productId) {
+    public ApiResponse<Void> deleteProductMainImage(@PathVariable("productId") String productId) {
         imageService.deleteProductMainImage(productId);
         return ApiResponse.<Void>builder()
                 .message("Deleted product main image successfully")
@@ -120,7 +120,7 @@ public class ImageController {
     @Operation(summary = "Upload Product List Image", description = "Api upload product list image")
     @PostMapping(value = "/products/{productId}/list", consumes = "multipart/form-data")
     public ApiResponse<ProductImageResponse> uploadProductListImage(
-            @ModelAttribute ProductImageUploadRequest request, @PathVariable("productId") Long productId) {
+            @ModelAttribute ProductImageUploadRequest request, @PathVariable("productId") String productId) {
         return ApiResponse.<ProductImageResponse>builder()
                 .result(imageService.uploadProductListImage(request, productId))
                 .build();
@@ -129,10 +129,12 @@ public class ImageController {
     @Operation(summary = "Delete Product List Image", description = "Api delete product list image")
     @DeleteMapping("/products/{productId}/list")
     public ApiResponse<Void> deleteProductListImage(
-            @PathVariable("productId") Long productId, @RequestBody @Valid DeleteProductImageRequest request) {
+            @PathVariable("productId") String productId, @RequestBody @Valid DeleteProductImageRequest request) {
         imageService.deleteProductListImage(productId, request);
         return ApiResponse.<Void>builder()
                 .message("Deleted product list image successfully")
                 .build();
     }
+
+
 }

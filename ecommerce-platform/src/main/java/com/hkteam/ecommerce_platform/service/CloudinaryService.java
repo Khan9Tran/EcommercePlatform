@@ -34,6 +34,18 @@ public class CloudinaryService {
         }
     }
 
+    public Map<String, Object> uploadImage(byte[] file, String folder) {
+        try {
+            Map<String, Object> options = Map.of("folder", folder);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> upload = cloudinary.uploader().upload(file, options);
+            return upload;
+        } catch (IOException io) {
+            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+        }
+    }
+
     public Map<String, Object> uploadVideo(MultipartFile file, String folder) {
         try {
             Map<String, Object> options = Map.of("resource_type", "video", "folder", folder);

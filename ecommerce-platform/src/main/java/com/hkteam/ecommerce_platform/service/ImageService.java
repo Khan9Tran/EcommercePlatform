@@ -1,7 +1,12 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.io.IOException;
 import java.util.*;
 
+import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
+import com.hkteam.ecommerce_platform.dto.request.ImageMessageRequest;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -40,6 +45,8 @@ public class ImageService {
     BrandRepository brandRepository;
     ProductRepository productRepository;
     ProductImageRepository productImageRepository;
+
+    RabbitTemplate rabbitTemplate;
 
     @PreAuthorize("hasRole('ADMIN')")
     public ImageResponse uploadCategoryImage(MultipartFile image, Long categoryId) {
@@ -330,67 +337,29 @@ public class ImageService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public ImageResponse uploadProductMainImage(MultipartFile image, Long productId) {
+    public ImageResponse uploadProductMainImage(MultipartFile image, String productId) {
         ImageUtils.validateImage(image);
-
-        var user = authenticatedUserUtil.getAuthenticatedUser();
-
-        ImageResponse imageResponse;
-
-        var product =
-                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-
-        var store = product.getStore();
-
-        if (store == null) {
-            throw new AppException(ErrorCode.STORE_NOT_FOUND);
-        }
-
-        if (!store.getUser().getId().equals(user.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-        }
-
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> img = (cloudinaryService.uploadImage(
-                    image, TypeImage.MAIN_IMAGE_OF_PRODUCT.name().toLowerCase()));
+            var product =
+                    productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-            if (img.get("url") == null) {
-                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-            } else {
-                if (product.getMainImageUrl() != null) {
-                    cloudinaryService.deleteImage(product.getMainImageUrl());
-                }
-
-                product.setMainImageUrl(img.get("url").toString());
-
-                try {
-                    productRepository.save(product);
-                } catch (DataIntegrityViolationException e) {
-                    log.info("Error while saving at upload product main image url: {}", e.getMessage());
-                    throw new AppException(ErrorCode.UNKNOWN_ERROR);
-                }
-
-                imageResponse = ImageResponse.builder()
-                        .format(img.get(ImageAttribute.FORMAT).toString())
-                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
-                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
-                        .url(img.get(ImageAttribute.URL).toString())
-                        .bytes((int) img.get(ImageAttribute.BYTES))
-                        .width((int) img.get(ImageAttribute.WIDTH))
-                        .height((int) img.get(ImageAttribute.HEIGHT))
-                        .build();
+            if (!authenticatedUserUtil.isOwner(product)) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
             }
 
-            return imageResponse;
-        } catch (Exception e) {
-            log.info("Error while uploading at upload product main image url: {}", e.getMessage());
-            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+            addImageToQueue(productId, TypeImage.MAIN_IMAGE_OF_PRODUCT, convertImageToByteArray(image));
         }
+        catch (Exception e)
+        {
+            log.error("Error when upload image: " + e.getMessage());
+            throw  new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+        return ImageResponse.builder().url("https://res.cloudinary.com/dftaajyn6/image/upload/v1730254100/tmp/wdyphd3wjf1wzj7vit4m.webp").build();
+//
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public void deleteProductMainImage(Long productId) {
+    public void deleteProductMainImage(String productId) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Product product =
@@ -428,74 +397,42 @@ public class ImageService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public ProductImageResponse uploadProductListImage(ProductImageUploadRequest request, Long productId) {
+    public ProductImageResponse uploadProductListImage(ProductImageUploadRequest request, String productId) {
         request.getImages().forEach(ImageUtils::validateImage);
 
-        var user = authenticatedUserUtil.getAuthenticatedUser();
-
-        ImageResponse imageResponse;
 
         Product product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        var store = product.getStore();
+        if (!authenticatedUserUtil.isOwner(product)) throw  new AppException(ErrorCode.UNAUTHORIZED);
 
-        if (store == null) {
-            throw new AppException(ErrorCode.STORE_NOT_FOUND);
+        try {
+            addImageToQueue(productId, TypeImage.LIST_IMAGE_PRODUCT, convertImagesToByteArray(request.getImages()));
         }
-
-        if (!store.getUser().getId().equals(user.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        catch (Exception e) {
+            log.error("Error when upload list image: " + e.getMessage());
+            throw  new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         List<ImageResponse> imageResponses = new ArrayList<>();
+        int size = request.getImages().size();
 
-        for (MultipartFile image : request.getImages()) {
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> img = cloudinaryService.uploadImage(
-                        image, TypeImage.MAIN_IMAGE_OF_PRODUCT.name().toLowerCase());
-
-                if (img.get("url") == null) {
-                    throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-                } else {
-                    ProductImage productImage = ProductImage.builder()
-                            .product(product)
-                            .url(img.get("url").toString())
+        for (int i = 0; i< size; i++) {
+            var imageResponse = ImageResponse.builder()
+                            .url("https://res.cloudinary.com/dftaajyn6/image/upload/v1730254100/tmp/wdyphd3wjf1wzj7vit4m.webp")
                             .build();
-
-                    productImageRepository.save(productImage);
-
-                    imageResponse = ImageResponse.builder()
-                            .format(img.get(ImageAttribute.FORMAT).toString())
-                            .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
-                            .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
-                            .url(img.get(ImageAttribute.URL).toString())
-                            .bytes((int) img.get(ImageAttribute.BYTES))
-                            .width((int) img.get(ImageAttribute.WIDTH))
-                            .height((int) img.get(ImageAttribute.HEIGHT))
-                            .build();
-
-                    imageResponses.add(imageResponse);
-                }
-            } catch (Exception e) {
-                log.info("Error while uploading image for product ID {}: {}", productId, e.getMessage());
-                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-            }
+            imageResponses.add(imageResponse);
         }
 
         return ProductImageResponse.builder().images(imageResponses).build();
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public void deleteProductListImage(Long productId, DeleteProductImageRequest request) {
+    public void deleteProductListImage(String productId, DeleteProductImageRequest request) {
         var product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        var user = authenticatedUserUtil.getAuthenticatedUser();
-
-        var store = product.getStore();
-        if (store == null || !store.getUser().getId().equals(user.getId())) {
+        if (!authenticatedUserUtil.isOwner(product)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -503,6 +440,7 @@ public class ImageService {
         if (imageIds == null || imageIds.isEmpty()) {
             throw new AppException(ErrorCode.LIST_PRODUCT_IMAGE_NOT_BLANK);
         }
+
 
         Set<Long> uniqueImageIds = new HashSet<>(imageIds);
         if (uniqueImageIds.size() < imageIds.size()) {
@@ -521,7 +459,56 @@ public class ImageService {
             }
         }
 
-        productImages.forEach(image -> image.setDeleted(true));
-        productImageRepository.saveAll(productImages);
+        productImages.forEach(image -> {
+            try {
+                cloudinaryService.deleteImage(image.getUrl());
+            } catch (IOException e) {
+                throw new AppException(ErrorCode.DELETE_FILE_FAILED);
+            }
+            productImageRepository.delete(image);
+
+        });
     }
+
+
+    private void addImageToQueue(String id, TypeImage type, byte[] image) {
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.IMAGE_QUEUE,
+                ImageMessageRequest.builder()
+                        .id(id)
+                        .type(type)
+                        .image(List.of(image))
+                        .build());
+
+        log.info("Image sent to the queue for processing: {}", id);
+    }
+
+    private void addImageToQueue(String id, TypeImage type, List<byte[]> images) {
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.IMAGE_QUEUE,
+                ImageMessageRequest.builder()
+                        .id(id)
+                        .type(type)
+                        .image(images)
+                        .build());
+
+        log.info("Image sent to the queue for processing: {}", id);
+    }
+
+    private byte[] convertImageToByteArray(MultipartFile file) throws IOException {
+        return file.getBytes();
+    }
+
+    private List<byte[]> convertImagesToByteArray(List<MultipartFile> files) throws IOException {
+        List<byte[]> byteArrayList = new ArrayList<>();
+        for (MultipartFile file : files) {
+            byte[] bytes = file.getBytes();
+            byteArrayList.add(bytes);
+        }
+        return byteArrayList;
+    }
+
+
+
+
 }
