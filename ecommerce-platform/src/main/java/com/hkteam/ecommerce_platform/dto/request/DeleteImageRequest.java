@@ -15,8 +15,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class ImageMessageRequest {
-    List<byte[]> image;
-    TypeImage type;
+public class DeleteImageRequest {
+    List<String> url;
     String id;
+    TypeImage typeImage;
 }

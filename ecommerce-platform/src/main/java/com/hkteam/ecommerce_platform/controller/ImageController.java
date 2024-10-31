@@ -135,6 +135,4 @@ public class ImageController {
                 .message("Deleted product list image successfully")
                 .build();
     }
-
-
 }

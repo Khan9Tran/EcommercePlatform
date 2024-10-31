@@ -1,11 +1,11 @@
 package com.hkteam.ecommerce_platform.util;
 
-import com.hkteam.ecommerce_platform.entity.product.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.user.User;
@@ -28,8 +28,10 @@ public class AuthenticatedUserUtil {
     }
 
     public Boolean isOwner(Value value) {
-        return isOwner(value.getVariants().stream().findFirst().orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR)));
+        return isOwner(
+                value.getVariants().stream().findFirst().orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR)));
     }
+
     public Boolean isOwner(Variant variant) {
         return isOwner(variant.getProduct());
     }

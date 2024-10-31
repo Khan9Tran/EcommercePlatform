@@ -11,6 +11,7 @@ public class RabbitMQConfig {
 
     public static final String EMAIL_QUEUE = "emailQueue";
     public static final String IMAGE_QUEUE = "imageQueue";
+    public static final String DELETE_IMAGE_QUEUE = "deleteImageQueue";
 
     @Bean
     public Queue emailQueue() {
@@ -20,6 +21,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue imageQueue() {
         return new Queue(IMAGE_QUEUE, true);
+    }
+
+    @Bean
+    public Queue deleteImageQueue() {
+        return new Queue(DELETE_IMAGE_QUEUE, true);
     }
 
     @Bean

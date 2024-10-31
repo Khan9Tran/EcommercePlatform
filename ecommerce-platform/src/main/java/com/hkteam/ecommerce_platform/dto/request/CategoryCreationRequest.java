@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import com.hkteam.ecommerce_platform.validator.ValidSpace;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,10 +15,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class CategoryCreationRequest {
     @NotBlank(message = "NOT_BLANK")
-    @ValidSpace
+    @NonNull
     String name;
 
-    @ValidSpace
+    @NotNull
     String description;
 
     Long parentId;

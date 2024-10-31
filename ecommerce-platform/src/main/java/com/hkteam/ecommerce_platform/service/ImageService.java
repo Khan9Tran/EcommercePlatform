@@ -3,9 +3,6 @@ package com.hkteam.ecommerce_platform.service;
 import java.io.IOException;
 import java.util.*;
 
-import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
-import com.hkteam.ecommerce_platform.dto.request.ImageMessageRequest;
-import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,8 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.constant.ImageAttribute;
-import com.hkteam.ecommerce_platform.dto.request.DeleteProductImageRequest;
-import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
@@ -24,6 +20,7 @@ import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.ImageUtils;
@@ -56,8 +53,6 @@ public class ImageService {
                 .findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        ImageResponse imageResponse;
-
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
@@ -65,26 +60,22 @@ public class ImageService {
 
             if (img.get("url") == null) {
                 throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-            } else {
-                if (category.getImageUrl() != null) {
-                    cloudinaryService.deleteImage(category.getImageUrl());
-                }
-
-                category.setImageUrl(img.get("url").toString());
-                saveCategoryUpload(category);
-
-                imageResponse = ImageResponse.builder()
-                        .format(img.get(ImageAttribute.FORMAT).toString())
-                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
-                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
-                        .url(img.get(ImageAttribute.URL).toString())
-                        .bytes((int) img.get(ImageAttribute.BYTES))
-                        .width((int) img.get(ImageAttribute.WIDTH))
-                        .height((int) img.get(ImageAttribute.HEIGHT))
-                        .build();
             }
 
-            return imageResponse;
+            if (category.getImageUrl() != null) {
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.DELETE_IMAGE_QUEUE,
+                        DeleteImageRequest.builder()
+                                .id(categoryId.toString())
+                                .typeImage(TypeImage.MAIN_IMAGE_OF_CATEGORY)
+                                .url(List.of(category.getImageUrl()))
+                                .build());
+            }
+
+            category.setImageUrl(img.get("url").toString());
+            saveCategoryUpload(category);
+
+            return getResult(img);
         } catch (Exception e) {
             log.info("Error while uploading at upload category image: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
@@ -99,8 +90,6 @@ public class ImageService {
                 .findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        ImageResponse imageResponse;
-
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
@@ -108,30 +97,38 @@ public class ImageService {
 
             if (img.get("url") == null) {
                 throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-            } else {
-                if (category.getIconUrl() != null) {
-                    cloudinaryService.deleteImage(category.getIconUrl());
-                }
-
-                category.setIconUrl(img.get("url").toString());
-                saveCategoryUpload(category);
-
-                imageResponse = ImageResponse.builder()
-                        .format(img.get(ImageAttribute.FORMAT).toString())
-                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
-                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
-                        .url(img.get(ImageAttribute.URL).toString())
-                        .bytes((int) img.get(ImageAttribute.BYTES))
-                        .width((int) img.get(ImageAttribute.WIDTH))
-                        .height((int) img.get(ImageAttribute.HEIGHT))
-                        .build();
             }
 
-            return imageResponse;
+            if (category.getIconUrl() != null) {
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.DELETE_IMAGE_QUEUE,
+                        DeleteImageRequest.builder()
+                                .id(categoryId.toString())
+                                .typeImage(TypeImage.CATEGORY_ICON)
+                                .url(List.of(category.getIconUrl()))
+                                .build());
+            }
+
+            category.setIconUrl(img.get("url").toString());
+            saveCategoryUpload(category);
+
+            return getResult(img);
         } catch (Exception e) {
             log.info("Error while uploading at upload category icon: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
+    }
+
+    private ImageResponse getResult(Map<String, Object> img) {
+        return ImageResponse.builder()
+                .format(img.get(ImageAttribute.FORMAT).toString())
+                .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
+                .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
+                .url(img.get(ImageAttribute.URL).toString())
+                .bytes((int) img.get(ImageAttribute.BYTES))
+                .width((int) img.get(ImageAttribute.WIDTH))
+                .height((int) img.get(ImageAttribute.HEIGHT))
+                .build();
     }
 
     private void saveCategoryUpload(Category category) {
@@ -155,10 +152,10 @@ public class ImageService {
 
         try {
             cloudinaryService.deleteImage(category.getImageUrl());
-
             category.setImageUrl(null);
 
-            saveCategoryDelete(category);
+            categoryRepository.save(category);
+
         } catch (Exception e) {
             log.info("Error while deleting at delete category image: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
@@ -177,29 +174,16 @@ public class ImageService {
 
         try {
             cloudinaryService.deleteImage(category.getIconUrl());
-
             category.setIconUrl(null);
-
-            saveCategoryDelete(category);
+            categoryRepository.save(category);
         } catch (Exception e) {
             log.info("Error while deleting at delete category icon: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
 
-    private void saveCategoryDelete(Category category) {
-        try {
-            categoryRepository.save(category);
-        } catch (DataIntegrityViolationException e) {
-            log.info("Error while saving at delete category image: {}", e.getMessage());
-            throw new AppException(ErrorCode.UNKNOWN_ERROR);
-        }
-    }
-
     public ImageResponse uploadUserImage(MultipartFile image) {
         ImageUtils.validateImage(image);
-
-        ImageResponse imageResponse;
 
         try {
             @SuppressWarnings("unchecked")
@@ -208,33 +192,24 @@ public class ImageService {
 
             if (img.get("url") == null) {
                 throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-            } else {
-                var user = authenticatedUserUtil.getAuthenticatedUser();
-
-                if (user.getImageUrl() != null) {
-                    cloudinaryService.deleteImage(user.getImageUrl());
-                }
-
-                user.setImageUrl(img.get("url").toString());
-                try {
-                    userRepository.save(user);
-                } catch (DataIntegrityViolationException e) {
-                    log.info("Error while saving at upload user image");
-                    throw new AppException(ErrorCode.UNKNOWN_ERROR);
-                }
-
-                imageResponse = ImageResponse.builder()
-                        .format(img.get(ImageAttribute.FORMAT).toString())
-                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
-                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
-                        .url(img.get(ImageAttribute.URL).toString())
-                        .bytes((int) img.get(ImageAttribute.BYTES))
-                        .width((int) img.get(ImageAttribute.WIDTH))
-                        .height((int) img.get(ImageAttribute.HEIGHT))
-                        .build();
             }
 
-            return imageResponse;
+            var user = authenticatedUserUtil.getAuthenticatedUser();
+
+            if (user.getImageUrl() != null) {
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.DELETE_IMAGE_QUEUE,
+                        DeleteImageRequest.builder()
+                                .id(user.getId())
+                                .typeImage(TypeImage.MAIN_IMAGE_OF_USER)
+                                .url(List.of(user.getImageUrl()))
+                                .build());
+            }
+
+            user.setImageUrl(img.get("url").toString());
+            userRepository.save(user);
+
+            return getResult(img);
         } catch (Exception e) {
             log.error("Error while uploading at upload user image: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
@@ -271,8 +246,6 @@ public class ImageService {
 
         Brand brand = brandRepository.findById(brandId).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
-        ImageResponse imageResponse;
-
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
@@ -280,31 +253,23 @@ public class ImageService {
 
             if (img.get("url") == null) {
                 throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-            } else {
-                if (brand.getLogoUrl() != null) {
-                    cloudinaryService.deleteImage(brand.getLogoUrl());
-                }
-
-                brand.setLogoUrl(img.get("url").toString());
-                try {
-                    brandRepository.save(brand);
-                } catch (DataIntegrityViolationException e) {
-                    log.info("Error while saving at upload brand logo: {}", e.getMessage());
-                    throw new AppException(ErrorCode.UNKNOWN_ERROR);
-                }
-
-                imageResponse = ImageResponse.builder()
-                        .format(img.get(ImageAttribute.FORMAT).toString())
-                        .secureUrl(img.get(ImageAttribute.SECURE_URL).toString())
-                        .createdAt(img.get(ImageAttribute.CREATED_AT).toString())
-                        .url(img.get(ImageAttribute.URL).toString())
-                        .bytes((int) img.get(ImageAttribute.BYTES))
-                        .width((int) img.get(ImageAttribute.WIDTH))
-                        .height((int) img.get(ImageAttribute.HEIGHT))
-                        .build();
             }
 
-            return imageResponse;
+            if (brand.getLogoUrl() != null) {
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.DELETE_IMAGE_QUEUE,
+                        DeleteImageRequest.builder()
+                                .id(brandId.toString())
+                                .typeImage(TypeImage.MAIN_LOGO_OF_BRAND)
+                                .url(List.of(brand.getLogoUrl()))
+                                .build());
+            }
+
+            brand.setLogoUrl(img.get("url").toString());
+            brandRepository.save(brand);
+
+            return getResult(img);
+
         } catch (Exception e) {
             log.info("Error while uploading at upload brand logo: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
@@ -323,13 +288,8 @@ public class ImageService {
             cloudinaryService.deleteImage(brand.getLogoUrl());
 
             brand.setLogoUrl(null);
+            brandRepository.save(brand);
 
-            try {
-                brandRepository.save(brand);
-            } catch (DataIntegrityViolationException e) {
-                log.info("Error while saving at delete brand logo: {}", e.getMessage());
-                throw new AppException(ErrorCode.UNKNOWN_ERROR);
-            }
         } catch (Exception e) {
             log.info("Error while deleting at delete brand logo: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
@@ -340,56 +300,50 @@ public class ImageService {
     public ImageResponse uploadProductMainImage(MultipartFile image, String productId) {
         ImageUtils.validateImage(image);
         try {
-            var product =
-                    productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            var product = productRepository
+                    .findById(productId)
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
             if (!authenticatedUserUtil.isOwner(product)) {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
 
             addImageToQueue(productId, TypeImage.MAIN_IMAGE_OF_PRODUCT, convertImageToByteArray(image));
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.error("Error when upload image: " + e.getMessage());
-            throw  new AppException(ErrorCode.UNKNOWN_ERROR);
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
-        return ImageResponse.builder().url("https://res.cloudinary.com/dftaajyn6/image/upload/v1730254100/tmp/wdyphd3wjf1wzj7vit4m.webp").build();
-//
+        return ImageResponse.builder()
+                .url("https://res.cloudinary.com/dftaajyn6/image/upload/v1730254100/tmp/wdyphd3wjf1wzj7vit4m.webp")
+                .build();
     }
 
     @PreAuthorize("hasRole('SELLER')")
     public void deleteProductMainImage(String productId) {
-        var user = authenticatedUserUtil.getAuthenticatedUser();
-
         Product product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        var store = product.getStore();
-
-        if (store == null) {
-            throw new AppException(ErrorCode.STORE_NOT_FOUND);
-        }
-
-        if (!product.getStore().getUser().getId().equals(user.getId())) {
+        if (!authenticatedUserUtil.isOwner(product)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        if (product.getMainImageUrl() == null) {
+        if (Objects.isNull(product.getMainImageUrl())) {
             throw new AppException(ErrorCode.FILE_NULL);
         }
 
         try {
-            cloudinaryService.deleteImage(product.getMainImageUrl());
+
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.DELETE_IMAGE_QUEUE,
+                    DeleteImageRequest.builder()
+                            .id(productId)
+                            .typeImage(TypeImage.MAIN_IMAGE_OF_PRODUCT)
+                            .url(List.of(product.getMainImageUrl()))
+                            .build());
 
             product.setMainImageUrl(null);
+            productRepository.save(product);
 
-            try {
-                productRepository.save(product);
-            } catch (DataIntegrityViolationException e) {
-                log.info("Error while saving at delete product main image url: {}", e.getMessage());
-                throw new AppException(ErrorCode.UNKNOWN_ERROR);
-            }
         } catch (Exception e) {
             log.info("Error while deleting at delete product main image url: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
@@ -400,27 +354,25 @@ public class ImageService {
     public ProductImageResponse uploadProductListImage(ProductImageUploadRequest request, String productId) {
         request.getImages().forEach(ImageUtils::validateImage);
 
-
         Product product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!authenticatedUserUtil.isOwner(product)) throw  new AppException(ErrorCode.UNAUTHORIZED);
+        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         try {
             addImageToQueue(productId, TypeImage.LIST_IMAGE_PRODUCT, convertImagesToByteArray(request.getImages()));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error when upload list image: " + e.getMessage());
-            throw  new AppException(ErrorCode.UNKNOWN_ERROR);
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         List<ImageResponse> imageResponses = new ArrayList<>();
         int size = request.getImages().size();
 
-        for (int i = 0; i< size; i++) {
+        for (int i = 0; i < size; i++) {
             var imageResponse = ImageResponse.builder()
-                            .url("https://res.cloudinary.com/dftaajyn6/image/upload/v1730254100/tmp/wdyphd3wjf1wzj7vit4m.webp")
-                            .build();
+                    .url("https://res.cloudinary.com/dftaajyn6/image/upload/v1730254100/tmp/wdyphd3wjf1wzj7vit4m.webp")
+                    .build();
             imageResponses.add(imageResponse);
         }
 
@@ -441,7 +393,6 @@ public class ImageService {
             throw new AppException(ErrorCode.LIST_PRODUCT_IMAGE_NOT_BLANK);
         }
 
-
         Set<Long> uniqueImageIds = new HashSet<>(imageIds);
         if (uniqueImageIds.size() < imageIds.size()) {
             throw new AppException(ErrorCode.DUPLICATE_PRODUCT_IMAGE_IDS);
@@ -459,17 +410,20 @@ public class ImageService {
             }
         }
 
-        productImages.forEach(image -> {
-            try {
-                cloudinaryService.deleteImage(image.getUrl());
-            } catch (IOException e) {
-                throw new AppException(ErrorCode.DELETE_FILE_FAILED);
-            }
-            productImageRepository.delete(image);
+        DeleteImageRequest deleteImageRequest = DeleteImageRequest.builder()
+                .id(productId)
+                .typeImage(TypeImage.LIST_IMAGE_PRODUCT)
+                .url(productImages.stream().map(ProductImage::getUrl).toList())
+                .build();
 
-        });
+        rabbitTemplate.convertAndSend(RabbitMQConfig.DELETE_IMAGE_QUEUE, deleteImageRequest);
+        try {
+            productImageRepository.deleteAll(productImages);
+        } catch (Exception e) {
+            log.error("Error when delete list image: " + e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
     }
-
 
     private void addImageToQueue(String id, TypeImage type, byte[] image) {
         rabbitTemplate.convertAndSend(
@@ -486,11 +440,7 @@ public class ImageService {
     private void addImageToQueue(String id, TypeImage type, List<byte[]> images) {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.IMAGE_QUEUE,
-                ImageMessageRequest.builder()
-                        .id(id)
-                        .type(type)
-                        .image(images)
-                        .build());
+                ImageMessageRequest.builder().id(id).type(type).image(images).build());
 
         log.info("Image sent to the queue for processing: {}", id);
     }
@@ -507,8 +457,4 @@ public class ImageService {
         }
         return byteArrayList;
     }
-
-
-
-
 }
