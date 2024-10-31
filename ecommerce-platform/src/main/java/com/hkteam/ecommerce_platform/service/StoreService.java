@@ -1,6 +1,6 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.Objects;
+import java.util.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -9,10 +9,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
-import com.hkteam.ecommerce_platform.dto.response.StoreDetailResponse;
-import com.hkteam.ecommerce_platform.dto.response.StoreRegistrationResponse;
-import com.hkteam.ecommerce_platform.dto.response.StoreResponse;
+import com.hkteam.ecommerce_platform.dto.request.StoreUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.enums.RoleName;
@@ -75,8 +73,12 @@ public class StoreService {
                 .build();
     }
 
-    public StoreDetailResponse getOneStoreById(String id) {
-        Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+    public StoreDetailResponse getOneStoreById() {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        Store store = storeRepository
+                .findByUserId(user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
         String defaultAddressStr = null;
         if (store.getDefaultAddressId() != null) {
@@ -126,5 +128,82 @@ public class StoreService {
         }
 
         return storeMapper.toStoreRegistrationResponse(store);
+    }
+
+    public StoreDetailResponse updateStore(String userId, StoreUpdateRequest request) {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!user.getId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        Store store = storeRepository
+                .findByUserId(user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+
+        storeMapper.updateStore(request, store);
+
+        try {
+            store = storeRepository.save(store);
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        String defaultAddressStr = null;
+        if (store.getDefaultAddressId() != null) {
+            Address defaultAddress = addressRepository
+                    .findById(store.getDefaultAddressId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+
+            defaultAddressStr = String.join(
+                    ", ",
+                    defaultAddress.getDetailLocate(),
+                    defaultAddress.getDetailAddress(),
+                    defaultAddress.getDistrict(),
+                    defaultAddress.getProvince());
+        }
+
+        Integer totalProduct = productRepository.countByStore(store);
+
+        StoreDetailResponse response = storeMapper.toStoreDetailResponse(store);
+        response.setDefaultAddress(defaultAddressStr);
+        response.setTotalProduct(totalProduct);
+
+        return response;
+    }
+
+    public List<Map<String, Object>> getAllAddressOfStore(String userId) {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!user.getId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        Store store = user.getStore();
+        if (store == null) {
+            throw new AppException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        Set<Address> addresses = user.getAddresses();
+        if (addresses == null || addresses.isEmpty()) {
+            throw new AppException(ErrorCode.ADDRESS_NOT_FOUND);
+        }
+
+        return addresses.stream()
+                .map(address -> {
+                    Map<String, Object> addressMap = new HashMap<>();
+                    addressMap.put("defaultAddressId", address.getId());
+                    addressMap.put(
+                            "defaultAddressStr",
+                            String.join(
+                                    ", ",
+                                    address.getDetailLocate(),
+                                    address.getDetailAddress(),
+                                    address.getDistrict(),
+                                    address.getProvince()));
+                    return addressMap;
+                })
+                .toList();
     }
 }

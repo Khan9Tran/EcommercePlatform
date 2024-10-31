@@ -1,7 +1,5 @@
 package com.hkteam.ecommerce_platform.service;
 
-import com.hkteam.ecommerce_platform.mapper.ValuesMapper;
-import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +7,9 @@ import com.hkteam.ecommerce_platform.dto.request.UpdateValueRequest;
 import com.hkteam.ecommerce_platform.dto.response.ValueDetailResponse;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.mapper.ValuesMapper;
 import com.hkteam.ecommerce_platform.repository.ValueRepository;
+import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +36,7 @@ public class ValueService {
 
         try {
             valueRepository.save(value);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error while updating value", e);
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }

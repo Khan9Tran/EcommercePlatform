@@ -1,10 +1,14 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
+import com.hkteam.ecommerce_platform.dto.request.StoreUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.service.StoreService;
 
@@ -37,13 +41,11 @@ public class StoreController {
                 .build();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/information")
     @Operation(summary = "Get one store by id", description = "Api get one store by id")
-    public ApiResponse<StoreDetailResponse> getOneStoreById(@PathVariable String id) {
-        StoreDetailResponse storeDetailResponse = storeService.getOneStoreById(id);
-
+    public ApiResponse<StoreDetailResponse> getOneStoreById() {
         return ApiResponse.<StoreDetailResponse>builder()
-                .result(storeDetailResponse)
+                .result(storeService.getOneStoreById())
                 .build();
     }
 
@@ -52,6 +54,23 @@ public class StoreController {
     ApiResponse<StoreRegistrationResponse> registerStore(@RequestBody @Valid StoreRegistrationRequest request) {
         return ApiResponse.<StoreRegistrationResponse>builder()
                 .result(storeService.registerStore(request))
+                .build();
+    }
+
+    @Operation(summary = "Update store by userId", description = "Api update store by userId")
+    @PutMapping("/{userId}")
+    ApiResponse<StoreDetailResponse> updateStore(
+            @PathVariable("userId") String userId, @RequestBody @Valid StoreUpdateRequest request) {
+        return ApiResponse.<StoreDetailResponse>builder()
+                .result(storeService.updateStore(userId, request))
+                .build();
+    }
+
+    @Operation(summary = "Get all addresses by userId", description = "Api get all addresses by userId")
+    @GetMapping("/{userId}/addresses")
+    public ApiResponse<List<Map<String, Object>>> getAllAddressOfStore(@PathVariable String userId) {
+        return ApiResponse.<List<Map<String, Object>>>builder()
+                .result(storeService.getAllAddressOfStore(userId))
                 .build();
     }
 }

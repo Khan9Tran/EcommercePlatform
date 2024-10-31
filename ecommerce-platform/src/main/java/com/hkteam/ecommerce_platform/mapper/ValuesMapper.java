@@ -1,13 +1,13 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.request.UpdateValueRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
+import com.hkteam.ecommerce_platform.dto.request.UpdateValueRequest;
 import com.hkteam.ecommerce_platform.dto.response.ValueDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.ValueOfVariantResponse;
 import com.hkteam.ecommerce_platform.entity.product.Value;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface ValuesMapper {
