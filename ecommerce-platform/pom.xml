@@ -146,6 +146,16 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 			<version>3.3.4</version>
 		</dependency>
+		<!-- Spring Data ElasticSearch -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
+
+
+
+
+
 
 
 

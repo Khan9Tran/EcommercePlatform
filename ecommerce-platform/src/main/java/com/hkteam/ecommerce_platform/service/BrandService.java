@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.service;
 
+import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BrandService {
     BrandRepository brandRepository;
     BrandMapper brandMapper;
+    ProductElasticsearchRepository productElasticsearchRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
     public BrandResponse createBrand(BrandCreationRequest request) {
@@ -57,23 +59,47 @@ public class BrandService {
         if (isDuplicateName) {
             throw new AppException(ErrorCode.BRAND_DUPLICATE);
         }
-
+        String oldName = brand.getName();
         brandMapper.updateBrandFromRequest(request, brand);
+
 
         try {
             brandRepository.save(brand);
+            if (!brand.getName().equals(oldName)) {
+                var esPro = productElasticsearchRepository.findByBrandId(id);
+
+                if (esPro.isEmpty()) {
+                    return brandMapper.toBrandResponse(brand);
+                }
+
+                esPro.forEach(product -> {
+                    product.setBrandName(brand.getName());
+                });
+                productElasticsearchRepository.saveAll(esPro);
+
+            }
+            return brandMapper.toBrandResponse(brand);
         } catch (DataIntegrityViolationException e) {
             log.info("Error while updating brand {}", e.getMessage());
             throw new AppException(ErrorCode.BRAND_LATER_EXISTED);
         }
-
-        return brandMapper.toBrandResponse(brandRepository.save(brand));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteBrand(Long id) {
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
         brandRepository.delete(brand);
+
+        var esPro = productElasticsearchRepository.findByBrandId(id);
+        if (esPro.isEmpty()) {
+            return;
+        }
+        esPro.forEach(product -> {
+            product.setBrandName(null);
+            product.setBrandId(null);
+        });
+
+        productElasticsearchRepository.saveAll(esPro);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

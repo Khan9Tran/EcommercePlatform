@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -24,6 +25,12 @@ public interface ProductMapper {
     @Mapping(target = "originalPrice", ignore = true)
     @Mapping(target = "salePrice", ignore = true)
     void updateProductFromRequest(ProductUpdateRequest request, @MappingTarget Product product);
+
+    @Mapping(source = "available", target = "available")
+    @Mapping(target = "quantity", ignore = true)
+    @Mapping(target = "originalPrice", ignore = true)
+    @Mapping(target = "salePrice", ignore = true)
+    void updateProductFromRequest(ProductUpdateRequest request, @MappingTarget ProductElasticsearch product);
 
     @Mapping(source = "available", target = "isAvailable")
     ProductDetailResponse toProductDetailResponse(Product product);

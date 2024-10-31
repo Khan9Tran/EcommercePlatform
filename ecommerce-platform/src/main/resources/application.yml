@@ -24,6 +24,16 @@ spring:
     username: ${RABBITMQ_DEFAULT_USER}
     password: ${RABBITMQ_DEFAULT_PASS}
 
+  data:
+    elasticsearch:
+      cluster-nodes: localhost:9200
+      cluster-name: docker-cluster
+      repositories:
+        enabled: true
+
+
+
+
   mail:
     host: smtp.gmail.com
     port: 587
