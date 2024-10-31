@@ -19,6 +19,24 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
+  elasticsearch:
+    image: elasticsearch:8.15.3
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+
+    ulimits:
+        memlock:
+            soft: -1
+            hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+
 volumes:
   postgres_data:
   rabbitmq_data:
+  es_data:

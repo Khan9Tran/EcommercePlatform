@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hkteam.ecommerce_platform.dto.request.DeleteImageRequest;
 import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
 import com.hkteam.ecommerce_platform.dto.request.ImageMessageRequest;
 
@@ -36,6 +37,10 @@ public class CustomMessageConverter implements MessageConverter {
             messageProperties.setHeader("messageType", "email");
         } else if (object instanceof ImageMessageRequest) {
             messageProperties.setHeader("messageType", "image");
+        } else if (object instanceof DeleteImageRequest) {
+            messageProperties.setHeader("messageType", "deleteImage");
+        } else {
+            throw new MessageConversionException("Unknown message type");
         }
 
         return new Message(bytes, messageProperties);
@@ -49,6 +54,8 @@ public class CustomMessageConverter implements MessageConverter {
                 return objectMapper.readValue(message.getBody(), EmailMessageRequest.class);
             } else if ("image".equals(messageType)) {
                 return objectMapper.readValue(message.getBody(), ImageMessageRequest.class);
+            } else if ("deleteImage".equals(messageType)) {
+                return objectMapper.readValue(message.getBody(), DeleteImageRequest.class);
             } else {
                 throw new MessageConversionException("Unknown message type");
             }

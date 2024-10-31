@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +51,7 @@ public class ProductService {
     BrandMapper brandMapper;
     StoreMapper storeMapper;
     ProductComponentValueMapper productComponentValueMapper;
+    ProductElasticsearchRepository productElasticsearchRepository;
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
@@ -145,6 +148,30 @@ public class ProductService {
                 attributeRepository.save(attribute);
             });
             productRepository.save(product);
+            var productElasticsearch = ProductElasticsearch.builder()
+                    .id(product.getId())
+                    .name(product.getName())
+                    .description(product.getDescription())
+                    .details(product.getDetails())
+                    .originalPrice(product.getOriginalPrice())
+                    .salePrice(product.getSalePrice())
+                    .isAvailable(product.isAvailable())
+                    .quantity(product.getQuantity())
+                    .rating(product.getRating())
+                    .brandName(product.getBrand().getName())
+                    .brandId(product.getBrand().getId())
+                    .categoryName(product.getCategory().getName())
+                    .categoryId(product.getCategory().getId())
+                    .storeName(product.getStore().getName())
+                    .storeId(product.getStore().getId())
+                    .createdAt(product.getCreatedAt())
+                    .lastUpdatedAt(product.getLastUpdatedAt())
+                    .isBlocked(product.isBlocked())
+                    .productComponentValues(product.getProductComponentValues().stream()
+                            .map(ProductComponentValue::getValue)
+                            .collect(Collectors.toList()))
+                    .build();
+            productElasticsearchRepository.save(productElasticsearch);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
@@ -196,21 +223,35 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public ProductDetailResponse updateProduct(String id, ProductUpdateRequest request) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var esPro = productElasticsearchRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        Long brandId = esPro.getBrandId();
 
         if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         productMapper.updateProductFromRequest(request, product);
+        productMapper.updateProductFromRequest(request, esPro);
+
+        if (brandId!= null && esPro.getBrandId() != brandId) {
+            var brand = brandRepository.findById(request.getBrandId()).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+            esPro.setBrandName(brand.getName());
+        }
 
         if (Objects.isNull(product.getVariants())) {
             product.setQuantity(request.getQuantity());
             product.setOriginalPrice(request.getOriginalPrice());
             product.setSalePrice(request.getSalePrice());
+
+            esPro.setDescription(product.getDescription());
+            esPro.setDetails(product.getDetails());
+            esPro.setOriginalPrice(product.getOriginalPrice());
         }
 
         try {
+
             productRepository.save(product);
+            productElasticsearchRepository.save(esPro);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage() + "HAHAHA");
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
         return map(product);
@@ -232,12 +273,13 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public void deleteProduct(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-
         if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         try {
             product.setDeleted(true);
             productRepository.save(product);
+
+            productElasticsearchRepository.deleteById(product.getId());
         } catch (Exception e) {
             log.info("Has error when delete pro: " + e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
@@ -255,5 +297,10 @@ public class ProductService {
                 .collect(Collectors.toSet()));
 
         return response;
+    }
+
+    public PaginationResponse<ProductDetailResponse> getAllProducts(Long categoryId, Long brandId, String sortBy, String order, int page, int limit, String search, BigDecimal minPrice, BigDecimal maxPrice, int minRate) {
+        //var products = productRepository.findAllProducts(categoryId, brandId, sortBy, order, search, minPrice, maxPrice, minRate);
+        return null;
     }
 }

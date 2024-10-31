@@ -14,10 +14,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class CategoryUpdateRequest {
     @NotBlank(message = "NOT_BLANK")
-    @ValidSpace
+    @NonNull
     String name;
 
-    @ValidSpace
+    @NonNull
     String description;
 
     Long parentId;
