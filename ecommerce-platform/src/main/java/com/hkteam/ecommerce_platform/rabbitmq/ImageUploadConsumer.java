@@ -17,7 +17,6 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.ProductImageRepository;
 import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import com.hkteam.ecommerce_platform.service.CloudinaryService;
-import com.hkteam.ecommerce_platform.service.ImageService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

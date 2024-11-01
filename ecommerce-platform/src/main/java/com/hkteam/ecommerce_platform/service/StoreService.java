@@ -73,7 +73,31 @@ public class StoreService {
                 .build();
     }
 
-    public StoreDetailResponse getOneStoreById() {
+    public StoreDetailResponse getOneStoreById(String id) {
+        Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+
+        String defaultAddressStr = null;
+        if (store.getDefaultAddressId() != null) {
+            Address defaultAddress = addressRepository
+                    .findById(store.getDefaultAddressId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+            defaultAddressStr = String.join(
+                    ", ",
+                    defaultAddress.getDetailLocate(),
+                    defaultAddress.getDetailAddress(),
+                    defaultAddress.getDistrict(),
+                    defaultAddress.getProvince());
+        }
+        Integer totalProduct = productRepository.countByStore(store);
+
+        StoreDetailResponse response = storeMapper.toStoreDetailResponse(store);
+        response.setDefaultAddress(defaultAddressStr);
+        response.setTotalProduct(totalProduct);
+
+        return response;
+    }
+
+    public StoreDetailResponse getOneStoreByUserId() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Store store = storeRepository
@@ -130,12 +154,8 @@ public class StoreService {
         return storeMapper.toStoreRegistrationResponse(store);
     }
 
-    public StoreDetailResponse updateStore(String userId, StoreUpdateRequest request) {
+    public StoreDetailResponse updateStore(StoreUpdateRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-
-        if (!user.getId().equals(userId)) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
 
         Store store = storeRepository
                 .findByUserId(user.getId())

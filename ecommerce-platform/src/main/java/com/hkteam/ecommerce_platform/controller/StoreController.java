@@ -41,11 +41,19 @@ public class StoreController {
                 .build();
     }
 
-    @GetMapping("/information")
+    @GetMapping("/{storeId}")
     @Operation(summary = "Get one store by id", description = "Api get one store by id")
-    public ApiResponse<StoreDetailResponse> getOneStoreById() {
+    public ApiResponse<StoreDetailResponse> getOneStoreByUserId(@PathVariable String storeId) {
         return ApiResponse.<StoreDetailResponse>builder()
-                .result(storeService.getOneStoreById())
+                .result(storeService.getOneStoreById(storeId))
+                .build();
+    }
+
+    @GetMapping("/information")
+    @Operation(summary = "Get one store by userId", description = "Api get one store by userId")
+    public ApiResponse<StoreDetailResponse> getOneStoreByUserId() {
+        return ApiResponse.<StoreDetailResponse>builder()
+                .result(storeService.getOneStoreByUserId())
                 .build();
     }
 
@@ -58,11 +66,10 @@ public class StoreController {
     }
 
     @Operation(summary = "Update store by userId", description = "Api update store by userId")
-    @PutMapping("/{userId}")
-    ApiResponse<StoreDetailResponse> updateStore(
-            @PathVariable("userId") String userId, @RequestBody @Valid StoreUpdateRequest request) {
+    @PutMapping("/update-store")
+    ApiResponse<StoreDetailResponse> updateStore(@RequestBody @Valid StoreUpdateRequest request) {
         return ApiResponse.<StoreDetailResponse>builder()
-                .result(storeService.updateStore(userId, request))
+                .result(storeService.updateStore(request))
                 .build();
     }
 

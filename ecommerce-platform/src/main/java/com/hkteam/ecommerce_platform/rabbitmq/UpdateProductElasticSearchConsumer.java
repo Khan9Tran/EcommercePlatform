@@ -1,14 +1,16 @@
 package com.hkteam.ecommerce_platform.rabbitmq;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Service;
+
 import com.hkteam.ecommerce_platform.dto.request.UpdateBrandEsProductRequest;
 import com.hkteam.ecommerce_platform.dto.request.UpdateCategoryEsProductRequest;
 import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UpdateProductElasticSearchConsumer {
     ProductElasticsearchRepository productElasticsearchRepository;
+
     @RabbitListener(queues = RabbitMQConfig.CATE_ES_PRODUCT_QUEUE)
     public void receiveCategoryUpdateRequest(UpdateCategoryEsProductRequest message) {
         log.info("Receive message update category for product: {}", message.getId());
