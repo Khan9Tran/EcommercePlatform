@@ -66,11 +66,10 @@ public class StoreController {
     }
 
     @Operation(summary = "Update store by userId", description = "Api update store by userId")
-    @PutMapping("/{userId}")
-    ApiResponse<StoreDetailResponse> updateStore(
-            @PathVariable("userId") String userId, @RequestBody @Valid StoreUpdateRequest request) {
+    @PutMapping("/update-store")
+    ApiResponse<StoreDetailResponse> updateStore(@RequestBody @Valid StoreUpdateRequest request) {
         return ApiResponse.<StoreDetailResponse>builder()
-                .result(storeService.updateStore(userId, request))
+                .result(storeService.updateStore(request))
                 .build();
     }
 

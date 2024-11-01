@@ -154,12 +154,8 @@ public class StoreService {
         return storeMapper.toStoreRegistrationResponse(store);
     }
 
-    public StoreDetailResponse updateStore(String userId, StoreUpdateRequest request) {
+    public StoreDetailResponse updateStore(StoreUpdateRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-
-        if (!user.getId().equals(userId)) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
 
         Store store = storeRepository
                 .findByUserId(user.getId())
