@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.EsProComponentValue;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,9 +12,6 @@ import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
-import com.hkteam.ecommerce_platform.dto.response.ProductCreationResponse;
-import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
-import com.hkteam.ecommerce_platform.dto.response.VariantOfProductResponse;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
 import com.hkteam.ecommerce_platform.entity.product.Attribute;
@@ -302,8 +299,7 @@ public class ProductService {
         return response;
     }
 
-    public PaginationResponse<ProductDetailResponse> getAllProducts(Long categoryId, Long brandId, String sortBy, String order, int page, int limit, String search, BigDecimal minPrice, BigDecimal maxPrice, int minRate) {
-        //var products = productRepository.findAllProducts(categoryId, brandId, sortBy, order, search, minPrice, maxPrice, minRate);
-        return null;
+    public PaginationResponse<ProductResponse> getAllProducts(Long categoryId, Long brandId, String storeId, String sortBy, String order, int page, int limit, String search, BigDecimal minPrice, BigDecimal maxPrice, int minRate, Boolean isAvailable, Boolean isBlocked) {
+        return  null;
     }
 }

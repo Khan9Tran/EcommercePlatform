@@ -70,5 +70,6 @@ public class ProductElasticsearch {
     @Field(type = FieldType.Boolean)
     boolean isBlocked;
 
+    @Field(type = FieldType.Nested)
     List<EsProComponentValue> productComponentValues;
 }

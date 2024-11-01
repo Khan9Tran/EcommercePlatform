@@ -1,15 +1,12 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
-import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
-import com.hkteam.ecommerce_platform.dto.response.ProductCreationResponse;
-import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import com.hkteam.ecommerce_platform.service.ProductService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -67,21 +64,24 @@ public class ProductController {
     }
 
     @GetMapping("/")
-    ApiResponse<PaginationResponse<ProductDetailResponse>> getAllProducts(
-            @RequestParam(value = "category", required = false, defaultValue = "") Long categoryId,
-            @RequestParam(value = "brand", required = false, defaultValue = "") Long brandId,
-            @RequestParam(value = "sortBy", required = false, defaultValue = "") String sortBy,
-            @RequestParam(value = "order", required = false, defaultValue = "") String order,
+    ApiResponse<PaginationResponse<ProductResponse>> getAllProducts(
+            @RequestParam(value = "category", required = false) Long categoryId,
+            @RequestParam(value = "brand", required = false) Long brandId,
+            @RequestParam(value = "store", required = false) String storeId,
+            @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String order,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
-            @RequestParam(value = "search", required = false, defaultValue = "") String search,
-            @RequestParam(value = "minPrice", required = false, defaultValue = "0") BigDecimal  minPrice,
-            @RequestParam(value = "maxPrice", required = false, defaultValue = "0") BigDecimal maxPrice,
-            @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "minPrice", required = false) BigDecimal  minPrice,
+            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate,
+            @RequestParam(value = "isAvailable", required = false, defaultValue = "1") Boolean isAvailable,
+            @RequestParam(value = "isBlocked", required = false, defaultValue = "0") Boolean isBlocked
             )
     {
-        return ApiResponse.<PaginationResponse<ProductDetailResponse>>builder()
-                .result(productService.getAllProducts(categoryId, brandId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate))
+        return ApiResponse.<PaginationResponse<ProductResponse>>builder()
+                .result(productService.getAllProducts(categoryId, brandId, storeId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate, isAvailable, isBlocked))
                 .build();
     }
 
