@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface ProductElasticsearchRepository extends ElasticsearchRepository<ProductElasticsearch, String> {
     List<ProductElasticsearch> findByBrandId(Long brandId);
+    List<ProductElasticsearch> findByCategoryId(Long categoryId);
 }

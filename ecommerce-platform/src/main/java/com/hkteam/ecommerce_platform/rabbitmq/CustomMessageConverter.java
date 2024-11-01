@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.rabbitmq;
 
 import java.io.IOException;
 
+import com.hkteam.ecommerce_platform.dto.request.*;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.support.converter.MessageConversionException;
@@ -10,9 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hkteam.ecommerce_platform.dto.request.DeleteImageRequest;
-import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
-import com.hkteam.ecommerce_platform.dto.request.ImageMessageRequest;
 
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -39,7 +37,10 @@ public class CustomMessageConverter implements MessageConverter {
             messageProperties.setHeader("messageType", "image");
         } else if (object instanceof DeleteImageRequest) {
             messageProperties.setHeader("messageType", "deleteImage");
-        } else {
+        } else if (object instanceof UpdateCategoryEsProductRequest) {
+            messageProperties.setHeader("messageType", "updateCategoryEsProduct");
+        }
+        else {
             throw new MessageConversionException("Unknown message type");
         }
 
@@ -56,6 +57,13 @@ public class CustomMessageConverter implements MessageConverter {
                 return objectMapper.readValue(message.getBody(), ImageMessageRequest.class);
             } else if ("deleteImage".equals(messageType)) {
                 return objectMapper.readValue(message.getBody(), DeleteImageRequest.class);
+            }
+            else if ("updateCategoryEsProduct".equals(messageType)) {
+                return objectMapper.readValue(message.getBody(), UpdateCategoryEsProductRequest.class);
+            }
+            else if ("updateBrandEsProduct".equals(messageType)) {
+                return objectMapper.readValue(message.getBody(), UpdateBrandEsProductRequest.class);
+
             } else {
                 throw new MessageConversionException("Unknown message type");
             }

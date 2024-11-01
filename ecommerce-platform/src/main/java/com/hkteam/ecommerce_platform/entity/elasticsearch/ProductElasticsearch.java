@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.elasticsearch;
 
+import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -16,6 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 @Document(indexName = "products")
 public class ProductElasticsearch {
+    @Id
+    @Field(type = FieldType.Keyword)
     String id;
     @Field(type = FieldType.Text)
     String slug;
@@ -42,14 +45,20 @@ public class ProductElasticsearch {
 
     @Field(type = FieldType.Text)
     String brandName;
+
+    @Field(type = FieldType.Keyword)
     Long brandId;
 
     @Field(type = FieldType.Text)
     String categoryName;
+
+    @Field(type = FieldType.Keyword)
     Long categoryId;
 
     @Field(type = FieldType.Text)
     String storeName;
+
+    @Field(type = FieldType.Keyword)
     String storeId;
 
     @Field(type = FieldType.Date)
@@ -61,6 +70,5 @@ public class ProductElasticsearch {
     @Field(type = FieldType.Boolean)
     boolean isBlocked;
 
-    @Field(type = FieldType.Text)
-    List<String> productComponentValues;
+    List<EsProComponentValue> productComponentValues;
 }

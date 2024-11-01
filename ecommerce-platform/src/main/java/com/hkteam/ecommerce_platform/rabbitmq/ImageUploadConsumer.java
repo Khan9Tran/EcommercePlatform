@@ -30,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImageUploadConsumer {
     CloudinaryService cloudinaryService;
-    ImageService imageService;
     ProductRepository productRepository;
     ProductImageRepository productImageRepository;
 

@@ -1,6 +1,9 @@
 package com.hkteam.ecommerce_platform.service;
 
+import com.hkteam.ecommerce_platform.dto.request.UpdateBrandEsProductRequest;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BrandService {
     BrandRepository brandRepository;
     BrandMapper brandMapper;
-    ProductElasticsearchRepository productElasticsearchRepository;
+    RabbitTemplate rabbitTemplate;
 
     @PreAuthorize("hasRole('ADMIN')")
     public BrandResponse createBrand(BrandCreationRequest request) {
@@ -65,19 +68,11 @@ public class BrandService {
 
         try {
             brandRepository.save(brand);
+
             if (!brand.getName().equals(oldName)) {
-                var esPro = productElasticsearchRepository.findByBrandId(id);
-
-                if (esPro.isEmpty()) {
-                    return brandMapper.toBrandResponse(brand);
-                }
-
-                esPro.forEach(product -> {
-                    product.setBrandName(brand.getName());
-                });
-                productElasticsearchRepository.saveAll(esPro);
-
+                rabbitTemplate.convertAndSend(RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE, UpdateBrandEsProductRequest.builder().name(brand.getName()).id(brand.getId()).isDeleted(Boolean.FALSE));
             }
+
             return brandMapper.toBrandResponse(brand);
         } catch (DataIntegrityViolationException e) {
             log.info("Error while updating brand {}", e.getMessage());
@@ -88,18 +83,16 @@ public class BrandService {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteBrand(Long id) {
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
-        brandRepository.delete(brand);
 
-        var esPro = productElasticsearchRepository.findByBrandId(id);
-        if (esPro.isEmpty()) {
-            return;
+        try {
+            brandRepository.delete(brand);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE, UpdateBrandEsProductRequest.builder().isDeleted(Boolean.TRUE).id(id));
         }
-        esPro.forEach(product -> {
-            product.setBrandName(null);
-            product.setBrandId(null);
-        });
-
-        productElasticsearchRepository.saveAll(esPro);
+        catch (Exception e)
+        {
+            log.error("Error when delete brand: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")

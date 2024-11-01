@@ -2,16 +2,16 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.*;
 
+import com.hkteam.ecommerce_platform.dto.request.*;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
+import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
-import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
-import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
-import com.hkteam.ecommerce_platform.dto.request.UpdateComponentRequest;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
@@ -38,6 +38,8 @@ public class CategoryService {
     CategoryMapper categoryMapper;
     CategoryRepository categoryRepository;
     ComponentRepository componentRepository;
+    ProductElasticsearchRepository productElasticsearchRepository;
+    RabbitTemplate rabbitTemplate;
 
     @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse createCategory(CategoryCreationRequest request) {
@@ -90,13 +92,17 @@ public class CategoryService {
         if (!category.getName().equalsIgnoreCase(request.getName())) {
             category.setSlug(SlugUtils.getSlug(request.getName(), TypeSlug.CATEGORY));
         }
-
+        String oldName = category.getName();
         categoryMapper.updateCategoryFromRequest(request, category);
 
         category.setParent(parentCategory);
 
         try {
+
             categoryRepository.save(category);
+            if (!oldName.equals(category.getName())) {
+                rabbitTemplate.convertAndSend(RabbitMQConfig.CATE_ES_PRODUCT_QUEUE, UpdateCategoryEsProductRequest.builder().isDeleted(Boolean.FALSE).name(category.getName()).id(id).build());
+            }
         } catch (DataIntegrityViolationException e) {
             log.info("Error while updating category: {}", e.getMessage());
             throw new AppException(ErrorCode.CATEGORY_LATER_EXISTED);
@@ -109,7 +115,13 @@ public class CategoryService {
     public void deleteCategory(Long id) {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-        categoryRepository.delete(category);
+        try {
+            categoryRepository.delete(category);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.CATE_ES_PRODUCT_QUEUE, UpdateCategoryEsProductRequest.builder().isDeleted(Boolean.TRUE).id(id).build());
+        }
+        catch (Exception e) {
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
     }
 
     public PaginationResponse<CategoryResponse> getAllCategories(

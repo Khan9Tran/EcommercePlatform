@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.entity.elasticsearch.EsProComponentValue;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProductService {
     private final CategoryMapper categoryMapper;
-    private final ComponentMapper componentMapper;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
     BrandRepository brandRepository;
@@ -167,9 +167,12 @@ public class ProductService {
                     .createdAt(product.getCreatedAt())
                     .lastUpdatedAt(product.getLastUpdatedAt())
                     .isBlocked(product.isBlocked())
-                    .productComponentValues(product.getProductComponentValues().stream()
-                            .map(ProductComponentValue::getValue)
-                            .collect(Collectors.toList()))
+                    .productComponentValues(
+                            product.getProductComponentValues().stream()
+                                    .map(pc -> new EsProComponentValue(pc.getId(), pc.getValue()))
+                                    .collect(Collectors.toList())
+                    )
+
                     .build();
             productElasticsearchRepository.save(productElasticsearch);
         } catch (Exception e) {
@@ -251,7 +254,7 @@ public class ProductService {
             productRepository.save(product);
             productElasticsearchRepository.save(esPro);
         } catch (Exception e) {
-            log.error(e.getMessage() + "HAHAHA");
+            log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
         return map(product);
