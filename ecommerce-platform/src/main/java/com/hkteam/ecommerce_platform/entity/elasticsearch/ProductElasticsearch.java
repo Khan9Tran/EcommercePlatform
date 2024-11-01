@@ -1,14 +1,16 @@
 package com.hkteam.ecommerce_platform.entity.elasticsearch;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+
 import jakarta.persistence.Id;
-import lombok.*;
+
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
+import lombok.*;
 
 @Getter
 @Setter
@@ -20,19 +22,25 @@ public class ProductElasticsearch {
     @Id
     @Field(type = FieldType.Keyword)
     String id;
+
     @Field(type = FieldType.Text)
     String slug;
+
     @Field(type = FieldType.Text)
     String name;
+
     @Field(type = FieldType.Text)
     String description;
+
     @Field(type = FieldType.Text)
     String details;
+
     String videoUrl;
     String mainImageUrl;
 
     @Field(type = FieldType.Double)
     BigDecimal originalPrice;
+
     @Field(type = FieldType.Double)
     BigDecimal salePrice;
 
@@ -40,6 +48,7 @@ public class ProductElasticsearch {
     boolean isAvailable;
 
     int quantity;
+
     @Field(type = FieldType.Float)
     Float rating;
 

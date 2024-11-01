@@ -14,6 +14,9 @@ import com.hkteam.ecommerce_platform.entity.user.Store;
 @Repository
 public interface StoreRepository extends JpaRepository<Store, String> {
     @NotNull
+    Optional<Store> findById(@NotNull String id);
+
+    @NotNull
     Optional<Store> findByUserId(@NotNull String userId);
 
     @NotNull

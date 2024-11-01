@@ -1,8 +1,5 @@
 package com.hkteam.ecommerce_platform.service;
 
-import com.hkteam.ecommerce_platform.dto.request.UpdateBrandEsProductRequest;
-import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
-import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -12,12 +9,14 @@ import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.BrandCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.BrandUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.request.UpdateBrandEsProductRequest;
 import com.hkteam.ecommerce_platform.dto.response.BrandResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.product.Brand;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.BrandMapper;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.BrandRepository;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 
@@ -65,12 +64,16 @@ public class BrandService {
         String oldName = brand.getName();
         brandMapper.updateBrandFromRequest(request, brand);
 
-
         try {
             brandRepository.save(brand);
 
             if (!brand.getName().equals(oldName)) {
-                rabbitTemplate.convertAndSend(RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE, UpdateBrandEsProductRequest.builder().name(brand.getName()).id(brand.getId()).isDeleted(Boolean.FALSE));
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE,
+                        UpdateBrandEsProductRequest.builder()
+                                .name(brand.getName())
+                                .id(brand.getId())
+                                .isDeleted(Boolean.FALSE));
             }
 
             return brandMapper.toBrandResponse(brand);
@@ -86,10 +89,12 @@ public class BrandService {
 
         try {
             brandRepository.delete(brand);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE, UpdateBrandEsProductRequest.builder().isDeleted(Boolean.TRUE).id(id));
-        }
-        catch (Exception e)
-        {
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE,
+                    UpdateBrandEsProductRequest.builder()
+                            .isDeleted(Boolean.TRUE)
+                            .id(id));
+        } catch (Exception e) {
             log.error("Error when delete brand: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }

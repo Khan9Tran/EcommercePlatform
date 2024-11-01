@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import java.math.BigDecimal;
+
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductCreationResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductDetailResponse;
 import com.hkteam.ecommerce_platform.service.ProductService;
@@ -17,8 +19,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/products")
@@ -75,14 +75,12 @@ public class ProductController {
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
-            @RequestParam(value = "minPrice", required = false, defaultValue = "0") BigDecimal  minPrice,
+            @RequestParam(value = "minPrice", required = false, defaultValue = "0") BigDecimal minPrice,
             @RequestParam(value = "maxPrice", required = false, defaultValue = "0") BigDecimal maxPrice,
-            @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate
-            )
-    {
+            @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate) {
         return ApiResponse.<PaginationResponse<ProductDetailResponse>>builder()
-                .result(productService.getAllProducts(categoryId, brandId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate))
+                .result(productService.getAllProducts(
+                        categoryId, brandId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate))
                 .build();
     }
-
 }

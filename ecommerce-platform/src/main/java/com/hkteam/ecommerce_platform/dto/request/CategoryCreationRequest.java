@@ -1,10 +1,8 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-
-import com.hkteam.ecommerce_platform.validator.ValidSpace;
-
 import jakarta.validation.constraints.NotNull;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

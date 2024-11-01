@@ -1,6 +1,5 @@
 package com.hkteam.ecommerce_platform.repository;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +27,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Integer countByStore(Store store);
 
     Optional<Product> findById(String id);
-
-
 }
