@@ -32,6 +32,10 @@ public class SecurityConfig {
         "/emails/reset-password",
     };
 
+    private static final String[] SEARCH_ENDPOINTS = {
+            "/search/autoSuggest",
+    };
+
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {
         "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**"
     };
@@ -45,6 +49,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(requests -> requests.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, SEARCH_ENDPOINTS)
                 .permitAll()
                 .requestMatchers(SWAGGER_WHITELIST_ENDPOINTS)
                 .permitAll()

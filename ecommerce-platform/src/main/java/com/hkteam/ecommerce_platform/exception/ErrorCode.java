@@ -95,7 +95,9 @@ public enum ErrorCode {
     PRODUCT_INVALID(1679, "{field} be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
     PRICE_INVALID(1680, "Price must be greater than or equal to 0.", HttpStatus.BAD_REQUEST),
     VARIANT_NOT_FOUND(1681, "Variant not found", HttpStatus.BAD_REQUEST),
-    VALUE_NOT_FOUND(1682, "Value not found", HttpStatus.BAD_REQUEST);
+    VALUE_NOT_FOUND(1682, "Value not found", HttpStatus.BAD_REQUEST),
+    COMPONENT_VALUE_REQUIRED(1683, "Component value required", HttpStatus.BAD_REQUEST);
+    ;
     ;
 
     int code;

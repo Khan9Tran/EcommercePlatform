@@ -75,26 +75,34 @@ public class ProductService {
 
         var componentRequest = request.getComponents();
 
+
         Set<Component> components = new HashSet<>();
         product.setProductComponentValues(new HashSet<>());
 
-        componentRequest.forEach((component) -> {
-            var cp = componentRepository
-                    .findById(component.getId())
-                    .orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
-            product.getProductComponentValues()
-                    .add(ProductComponentValue.builder()
-                            .value(component.getValue())
-                            .component(cp)
-                            .product(product)
-                            .build());
-            components.add(cp);
-        });
 
-        if (!Objects.isNull(category.getComponents()) && components.isEmpty())
+        if (!Objects.isNull(componentRequest) && componentRequest.size() > 0)
+            componentRequest.forEach((component) -> {
+                var cp = componentRepository
+                        .findById(component.getId())
+                        .orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
+
+                if (cp.isRequired() && (Objects.isNull(component.getValue()) || component.getValue().isEmpty()))
+                    throw new AppException(ErrorCode.COMPONENT_VALUE_REQUIRED);
+
+                product.getProductComponentValues()
+                        .add(ProductComponentValue.builder()
+                                .value(component.getValue())
+                                .component(cp)
+                                .product(product)
+                                .build());
+                components.add(cp);
+            });
+
+
+        if (!category.getComponents().isEmpty() && components.isEmpty())
             throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
-        if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
+        //if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
         List<Attribute> attributes = new ArrayList<Attribute>();
 

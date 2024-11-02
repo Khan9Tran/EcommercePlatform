@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Id;
 
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -18,6 +19,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(indexName = "products")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductElasticsearch {
     @Id
     @Field(type = FieldType.Keyword)
