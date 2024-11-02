@@ -33,6 +33,7 @@ public class SecurityConfig {
     };
 
     private static final String[] SEARCH_ENDPOINTS = {
+            "/search",
             "/search/autoSuggest",
     };
 

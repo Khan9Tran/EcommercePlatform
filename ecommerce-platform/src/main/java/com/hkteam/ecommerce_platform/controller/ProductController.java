@@ -66,26 +66,4 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/")
-    ApiResponse<PaginationResponse<ProductResponse>> getAllProducts(
-            @RequestParam(value = "category", required = false) Long categoryId,
-            @RequestParam(value = "brand", required = false) Long brandId,
-            @RequestParam(value = "store", required = false) String storeId,
-            @RequestParam(value = "sortBy", required = false) String sortBy,
-            @RequestParam(value = "order", required = false) String order,
-            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-            @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
-            @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "minPrice", required = false) BigDecimal  minPrice,
-            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate,
-            @RequestParam(value = "isAvailable", required = false, defaultValue = "1") Boolean isAvailable,
-            @RequestParam(value = "isBlocked", required = false, defaultValue = "0") Boolean isBlocked
-            )
-    {
-        return ApiResponse.<PaginationResponse<ProductResponse>>builder()
-                .result(productService.getAllProducts(categoryId, brandId, storeId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate, isAvailable, isBlocked))
-                .build();
-    }
-
 }

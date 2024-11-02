@@ -12,7 +12,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PageUtils {
-    private int[] validateAndConvertPageAndSize(String pageStr, String sizeStr) {
+    public int[] validateAndConvertPageAndSize(String pageStr, String sizeStr) {
         int page;
         int size;
 

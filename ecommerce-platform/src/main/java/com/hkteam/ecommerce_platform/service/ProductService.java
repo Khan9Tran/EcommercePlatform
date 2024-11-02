@@ -108,7 +108,9 @@ public class ProductService {
 
         List<Variant> variants = new ArrayList<>();
 
-        if (!Objects.isNull(request.getAttributesHasValues()) && !Objects.isNull(request.getVariantOfProducts())) {
+        if (!Objects.isNull(request.getAttributesHasValues()) && !Objects.isNull(request.getVariantOfProducts())
+                && request.getAttributesHasValues().size() > 0 && request.getVariantOfProducts().size() > 0
+        ) {
             request.getAttributesHasValues().forEach((attribute) -> {
                 Set<Value> values = new HashSet<>();
                 var attr = Attribute.builder()
@@ -156,6 +158,7 @@ public class ProductService {
             var productElasticsearch = ProductElasticsearch.builder()
                     .id(product.getId())
                     .name(product.getName())
+                    .slug(product.getSlug())
                     .description(product.getDescription())
                     .details(product.getDetails())
                     .originalPrice(product.getOriginalPrice())
