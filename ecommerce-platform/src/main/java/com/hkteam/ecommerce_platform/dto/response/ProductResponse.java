@@ -16,6 +16,7 @@ public class ProductResponse {
     String slug;
     String name;
     String mainImageUrl;
+    String videoUrl;
     String originalPrice;
     String salePrice;
     String quantity;
