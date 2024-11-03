@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 import com.hkteam.ecommerce_platform.entity.product.Product;
@@ -27,4 +29,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Integer countByStore(Store store);
 
     Optional<Product> findById(String id);
+
+    Page<Product> findByIsAvailableAndIsBlockedAndStore_IdAndNameContainsIgnoreCase(@Nullable boolean isAvailable, boolean isBlocked, @Nullable String id, @Nullable String name, Pageable pageable);
+
+
 }

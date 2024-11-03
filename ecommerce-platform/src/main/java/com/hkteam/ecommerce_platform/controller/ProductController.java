@@ -66,4 +66,17 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/")
+    ApiResponse<PaginationResponse<ProductResponse>> getAllProducts(
+            @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String order,
+            @RequestParam(value = "tab", required = false, defaultValue = "available") String tab,
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search) {
+        return ApiResponse.<PaginationResponse<ProductResponse>>builder()
+                .result(productService.getAllProducts(sortBy, order, tab, page, size, search))
+                .build();
+    }
+
 }

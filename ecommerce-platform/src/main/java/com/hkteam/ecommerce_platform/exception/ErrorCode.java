@@ -96,8 +96,10 @@ public enum ErrorCode {
     PRICE_INVALID(1680, "Price must be greater than or equal to 0.", HttpStatus.BAD_REQUEST),
     VARIANT_NOT_FOUND(1681, "Variant not found", HttpStatus.BAD_REQUEST),
     VALUE_NOT_FOUND(1682, "Value not found", HttpStatus.BAD_REQUEST),
-    COMPONENT_VALUE_REQUIRED(1683, "Component value required", HttpStatus.BAD_REQUEST);
-    ;
+    COMPONENT_VALUE_REQUIRED(1683, "Component value required", HttpStatus.BAD_REQUEST),
+    SORT_BY_INVALID(1684, "Sort by is invalid", HttpStatus.BAD_REQUEST),
+    ORDER_INVALID(1685, "Order is invalid", HttpStatus.BAD_REQUEST),
+    TAB_INVALID(1686, "Tab is invalid", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

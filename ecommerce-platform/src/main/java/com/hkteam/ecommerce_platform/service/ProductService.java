@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.EsProComponentValue;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
+import com.hkteam.ecommerce_platform.util.PageUtils;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +52,10 @@ public class ProductService {
     StoreMapper storeMapper;
     ProductComponentValueMapper productComponentValueMapper;
     ProductElasticsearchRepository productElasticsearchRepository;
+
+    static String[] SORT_BY = { "name", "originalPrice", "salePrice", "rating", "createdAt" };
+    static String[] ORDER = { "asc", "desc" };
+    static String[] TAB = { "available", "unAvailable", "blocked" };
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
@@ -310,7 +317,42 @@ public class ProductService {
         return response;
     }
 
-    public PaginationResponse<ProductResponse> getAllProducts(Long categoryId, Long brandId, String storeId, String sortBy, String order, int page, int limit, String search, BigDecimal minPrice, BigDecimal maxPrice, int minRate, Boolean isAvailable, Boolean isBlocked) {
-        return  null;
+    @PreAuthorize("hasRole('SELLER')")
+    public PaginationResponse<ProductResponse> getAllProducts(String sortBy, String order, String tab, String page,
+                                                              String size, String search) {
+        if (!Arrays.asList(SORT_BY).contains(sortBy))
+            sortBy = null;
+        if (!Arrays.asList(ORDER).contains(order))
+            order = null;
+
+        if (!Arrays.asList(TAB).contains(tab)) throw new AppException(ErrorCode.TAB_INVALID);
+
+        Sort sortable = (sortBy == null || order == null) ? Sort.unsorted() :  Sort.by(Sort.Direction.fromString(order), sortBy);
+
+        Pageable pageable = PageUtils.createPageable(page, size, sortable);
+
+        var store = authenticatedUserUtil.getAuthenticatedUser().getStore();
+        if (Objects.isNull(store)) throw new AppException(ErrorCode.STORE_NOT_FOUND);
+
+        boolean isAvailable = tab.equals("available");
+        boolean isBlocked = tab.equals("blocked");
+        if (isBlocked) isAvailable = true;
+
+        var pageData = productRepository.findByIsAvailableAndIsBlockedAndStore_IdAndNameContainsIgnoreCase(isAvailable, isBlocked, store.getId(), search, pageable);
+        int pageInt = Integer.parseInt(page);
+
+        return PaginationResponse.<ProductResponse>builder()
+                .currentPage(pageInt)
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .hasNext(pageData.hasNext())
+                .hasPrevious(pageData.hasPrevious())
+                .nextPage(pageData.hasNext() ? pageInt + 1 : null)
+                .previousPage(pageData.hasPrevious() ? pageInt - 1 : null)
+                .data(pageData.getContent().stream()
+                        .map(productMapper::toProductResponse)
+                        .toList())
+                .build();
     }
 }
