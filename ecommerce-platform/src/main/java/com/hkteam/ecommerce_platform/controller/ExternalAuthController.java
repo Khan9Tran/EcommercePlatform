@@ -30,4 +30,12 @@ public class ExternalAuthController {
                 .result(externalAuthService.googleAuthenticate(code))
                 .build();
     }
+
+    @Operation(summary = "Facebook Register", description = "Api facebook register account")
+    @PostMapping("/authentication/facebook")
+    ApiResponse<AuthenticationResponse> facebookAuthenticate(@RequestParam("code") String code) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(externalAuthService.facebookAuthenticate(code))
+                .build();
+    }
 }

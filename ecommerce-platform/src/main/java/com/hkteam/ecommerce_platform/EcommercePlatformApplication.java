@@ -41,6 +41,11 @@ public class EcommercePlatformApplication {
         final String RABBITMQ_DEFAULT_USER = "RABBITMQ_DEFAULT_USER";
         final String RABBITMQ_DEFAULT_PASS = "RABBITMQ_DEFAULT_PASS";
 
+        // facebook
+        final String FACEBOOK_CLIENT_ID = "FACEBOOK_CLIENT_ID";
+        final String FACEBOOK_CLIENT_SECRET = "FACEBOOK_CLIENT_SECRET";
+        final String FACEBOOK_REDIRECT_URI = "FACEBOOK_REDIRECT_URI";
+
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
@@ -58,6 +63,9 @@ public class EcommercePlatformApplication {
         System.setProperty(GOOGLE_REDIRECT_URI, Objects.requireNonNull(dotenv.get(GOOGLE_REDIRECT_URI)));
         System.setProperty(RABBITMQ_DEFAULT_USER, Objects.requireNonNull(dotenv.get(RABBITMQ_DEFAULT_USER)));
         System.setProperty(RABBITMQ_DEFAULT_PASS, Objects.requireNonNull(dotenv.get(RABBITMQ_DEFAULT_PASS)));
+        System.setProperty(FACEBOOK_CLIENT_ID, Objects.requireNonNull(dotenv.get(FACEBOOK_CLIENT_ID)));
+        System.setProperty(FACEBOOK_CLIENT_SECRET, Objects.requireNonNull(dotenv.get(FACEBOOK_CLIENT_SECRET)));
+        System.setProperty(FACEBOOK_REDIRECT_URI, Objects.requireNonNull(dotenv.get(FACEBOOK_REDIRECT_URI)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }

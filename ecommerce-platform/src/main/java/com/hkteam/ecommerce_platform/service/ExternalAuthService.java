@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.repository.httpclient.OutboundFacebookUserClient;
+import com.hkteam.ecommerce_platform.repository.httpclient.OutboundIdentityFacebookClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,8 @@ public class ExternalAuthService {
 
     OutboundIdentityClient outboundIdentityClient;
     OutboundUserClient outboundUserClient;
+    OutboundFacebookUserClient outboundFacebookUserClient;
+    OutboundIdentityFacebookClient outboundIdentityFacebookClient;
     UserRepository userRepository;
     ExternalAuthRepository externalAuthRepository;
     RoleRepository roleRepository;
@@ -46,13 +50,25 @@ public class ExternalAuthService {
     @Value("${outbound.google.client-id}")
     String CLIENT_ID;
 
+    @NonFinal
+    @Value("${outbound.facebook.client-id}")
+    String FACEBOOK_CLIENT_ID;
+
     @Value("${outbound.google.client-secret}")
     @NonFinal
     String CLIENT_SECRET;
 
-    @Value("${outbound.google.redirect-uri}")
+    @Value("${outbound.facebook.client-secret}")
     @NonFinal
+    String FACEBOOK_CLIENT_SECRET;
+
+    @NonFinal
+    @Value("${outbound.google.redirect-uri}")
     String REDIRECT_URI;
+
+    @NonFinal
+    @Value("${outbound.facebook.redirect-uri}")
+    String FACEBOOK_REDIRECT_URI;
 
     @NonFinal
     String GRANT_TYPE = "authorization_code";
@@ -124,5 +140,75 @@ public class ExternalAuthService {
 
         var token = authenticationService.generateToken(user);
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
+    }
+
+
+    public AuthenticationResponse facebookAuthenticate(String code) {
+        log.info("code: {}", code);
+        try {
+            var response = outboundIdentityFacebookClient.exchangeToken(FACEBOOK_CLIENT_ID, FACEBOOK_REDIRECT_URI,FACEBOOK_CLIENT_SECRET, code);
+
+            var userInfo = outboundFacebookUserClient.getUserInfo(response.getAccessToken(), "id, name, email, picture");
+            var externalAuths = externalAuthRepository.findByProviderAndProviderID(Provider.FACEBOOK, userInfo.getId());
+            if (externalAuths.isEmpty()) {
+
+                if (userRepository.findByEmail(userInfo.getEmail()).isPresent()) {
+                    throw new AppException(ErrorCode.EMAIL_EXISTED);
+                }
+
+                var roles = roleRepository.findByName(RoleName.USER);
+                if (roles.isEmpty()) {
+                    throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+                }
+
+                String email = userInfo.getEmail();
+                int atIndex = email.indexOf("@");
+                String baseUsername = "F_" + (atIndex != -1 ? email.substring(0, atIndex) : email);
+
+                int counter = 1;
+                String username = baseUsername;
+
+                while (userRepository.findByUsername(username).isPresent()) {
+                    username = baseUsername + counter;
+                    counter++;
+                }
+
+                ExternalAuth externalAuth = ExternalAuth.builder()
+                        .provider(Provider.GOOGLE)
+                        .providerID(userInfo.getId())
+                        .user(User.builder()
+                                .email(userInfo.getEmail())
+                                .name(userInfo.getName())
+                                .emailValidationStatus(EmailValidationStatus.VERIFIED.name())
+                                .emailTokenGeneratedAt(Instant.now())
+                                .imageUrl(userInfo.getPicture().getData().getUrl())
+                                .roles(new HashSet<>(List.of(roles.get())))
+                                .gender(Gender.OTHER)
+                                .username(username)
+                                .build())
+                        .build();
+
+                try {
+                    externalAuthRepository.save(externalAuth);
+                } catch (Exception e) {
+                    log.info("Error: {}", e.getMessage());
+                    throw new AppException(ErrorCode.UNKNOWN_ERROR);
+                }
+            }
+
+            var user = userRepository
+                    .findByEmail(userInfo.getEmail())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+            if (user.isBlocked()) throw new AppException(ErrorCode.USER_HAS_BEEN_BLOCKED);
+
+            var token = authenticationService.generateToken(user);
+            return AuthenticationResponse.builder().token(token).authenticated(true).build();
+        }
+        catch (Exception e) {
+            log.info("Error: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
     }
 }
