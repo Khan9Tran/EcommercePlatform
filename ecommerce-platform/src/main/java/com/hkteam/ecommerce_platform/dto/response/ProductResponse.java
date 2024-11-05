@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,4 +22,7 @@ public class ProductResponse {
     String originalPrice;
     String salePrice;
     String quantity;
+    Instant createdAt;
+    Instant lastUpdatedAt;
+    Float rating;
 }

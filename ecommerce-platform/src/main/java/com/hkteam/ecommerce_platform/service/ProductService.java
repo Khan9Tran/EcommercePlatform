@@ -355,4 +355,20 @@ public class ProductService {
                         .toList())
                 .build();
     }
+
+    @PreAuthorize("hasRole('SELLER')")
+    public Void updateProductStatus(String id) {
+        var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
+        product.setAvailable(!product.isAvailable());
+
+        try {
+            productRepository.save(product);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return null;
+    }
 }

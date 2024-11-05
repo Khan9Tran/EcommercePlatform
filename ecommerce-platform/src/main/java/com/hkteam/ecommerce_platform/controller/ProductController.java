@@ -79,4 +79,11 @@ public class ProductController {
                 .build();
     }
 
+    @PatchMapping("/{id}/status")
+    ApiResponse<Void> updateProductStatus(@PathVariable String id) {
+        return ApiResponse.<Void>builder()
+                .result(productService.updateProductStatus(id))
+                .build();
+    }
+
 }
