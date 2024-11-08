@@ -32,5 +32,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByIsAvailableAndIsBlockedAndStore_IdAndNameContainsIgnoreCase(@Nullable boolean isAvailable, boolean isBlocked, @Nullable String id, @Nullable String name, Pageable pageable);
 
-
 }
