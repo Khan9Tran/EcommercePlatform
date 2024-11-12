@@ -87,7 +87,7 @@ public class ProductService {
         product.setProductComponentValues(new HashSet<>());
 
 
-        if (!Objects.isNull(componentRequest) && componentRequest.size() > 0)
+        if (!Objects.isNull(componentRequest) && !componentRequest.isEmpty())
             componentRequest.forEach((component) -> {
                 var cp = componentRepository
                         .findById(component.getId())
@@ -111,12 +111,12 @@ public class ProductService {
 
         //if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
-        List<Attribute> attributes = new ArrayList<Attribute>();
+        List<Attribute> attributes = new ArrayList<>();
 
         List<Variant> variants = new ArrayList<>();
 
         if (!Objects.isNull(request.getAttributesHasValues()) && !Objects.isNull(request.getVariantOfProducts())
-                && request.getAttributesHasValues().size() > 0 && request.getVariantOfProducts().size() > 0
+                && !request.getAttributesHasValues().isEmpty() && !request.getVariantOfProducts().isEmpty()
         ) {
             request.getAttributesHasValues().forEach((attribute) -> {
                 Set<Value> values = new HashSet<>();
@@ -124,13 +124,11 @@ public class ProductService {
                         .name(attribute.getName())
                         .createdBy(owner)
                         .build();
-                attribute.getValue().forEach((value) -> {
-                    values.add(Value.builder()
-                            .value(value)
-                            .createdBy(owner)
-                            .attribute(attr)
-                            .build());
-                });
+                attribute.getValue().forEach((value) -> values.add(Value.builder()
+                        .value(value)
+                        .createdBy(owner)
+                        .attribute(attr)
+                        .build()));
                 attr.setValues(values);
                 attributes.add(attr);
             });
@@ -151,16 +149,12 @@ public class ProductService {
         product.setVariants(variants);
 
         product.getVariants().forEach((variant) -> {
-            log.info("variant: " + variant.getQuantity());
-            variant.getValues().forEach((value) -> {
-                log.info("value: " + value.getValue());
-            });
+            log.info("variant: {}", variant.getQuantity());
+            variant.getValues().forEach((value) -> log.info("value: {}", value.getValue()));
         });
 
         try {
-            attributes.forEach((attribute) -> {
-                attributeRepository.save(attribute);
-            });
+            attributes.forEach(attributeRepository::save);
             productRepository.save(product);
             var productElasticsearch = ProductElasticsearch.builder()
                     .id(product.getId())
@@ -197,9 +191,7 @@ public class ProductService {
 
         ProductCreationResponse response = productMapper.toProductCreationResponse(product);
         List<VariantOfProductResponse> variantOfProductResponses = new ArrayList<>();
-        product.getVariants().forEach((variant) -> {
-            variantOfProductResponses.add(variantMapper.toVariantOfProductResponse(variant));
-        });
+        product.getVariants().forEach((variant) -> variantOfProductResponses.add(variantMapper.toVariantOfProductResponse(variant)));
         response.setVariants(variantOfProductResponses);
         return response;
     }
@@ -249,7 +241,7 @@ public class ProductService {
         productMapper.updateProductFromRequest(request, product);
         productMapper.updateProductFromRequest(request, esPro);
 
-        if (brandId!= null && esPro.getBrandId() != brandId) {
+        if (brandId!= null && !Objects.equals(esPro.getBrandId(), brandId)) {
             var brand = brandRepository.findById(request.getBrandId()).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
             esPro.setBrandName(brand.getName());
         }
@@ -299,7 +291,7 @@ public class ProductService {
 
             productElasticsearchRepository.deleteById(product.getId());
         } catch (Exception e) {
-            log.info("Has error when delete pro: " + e.getMessage());
+            log.info("Has error when delete pro: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
