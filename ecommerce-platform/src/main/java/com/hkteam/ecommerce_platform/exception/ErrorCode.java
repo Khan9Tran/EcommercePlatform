@@ -104,7 +104,8 @@ public enum ErrorCode {
     CART_ITEM_NOT_FOUND(1688, "Cart item not found", HttpStatus.NOT_FOUND),
     CART_NOT_FOUND(1689, "Cart  not found", HttpStatus.NOT_FOUND),
     PROUCT_COMPONENT_VALUE_NOT_FOUND(1690, "Product component value not found", HttpStatus.NOT_FOUND),
-    REQUIRED_NOT_EMPTY(1691, "Need fill value in this field", HttpStatus.BAD_REQUEST)
+    REQUIRED_NOT_EMPTY(1691, "Need fill value in this field", HttpStatus.BAD_REQUEST),
+    PAYMENT_FAILED(1692, "Payment failed", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

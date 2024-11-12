@@ -72,3 +72,13 @@ outbound:
     client-id: ${FACEBOOK_CLIENT_ID}
     client-secret: ${FACEBOOK_CLIENT_SECRET}
     redirect-uri: ${FACEBOOK_REDIRECT_URI}
+
+payment:
+  vnPay:
+    url: ${VN_PAY_PAY_URL}
+    tmnCode: ${VN_PAY_TMN_CODE}
+    secretKey: ${VN_PAY_SECRET_KEY}
+    returnUrl: ${VN_PAY_RETURN_URL}
+    version: ${VN_PAY_VERSION}
+    command: ${VN_PAY_COMMAND}
+    orderType: ${VN_PAY_ORDER_TYPE}

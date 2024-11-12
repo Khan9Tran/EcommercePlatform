@@ -46,6 +46,15 @@ public class EcommercePlatformApplication {
         final String FACEBOOK_CLIENT_SECRET = "FACEBOOK_CLIENT_SECRET";
         final String FACEBOOK_REDIRECT_URI = "FACEBOOK_REDIRECT_URI";
 
+        //VNPAY
+        final String VN_PAY_PAY_URL= "VN_PAY_PAY_URL";
+        final String VN_PAY_TMN_CODE="VN_PAY_TMN_CODE";
+        final String VN_PAY_SECRET_KEY="VN_PAY_SECRET_KEY";
+        final String VN_PAY_RETURN_URL="VN_PAY_RETURN_URL";
+        final String VN_PAY_VERSION="VN_PAY_VERSION";
+        final String VN_PAY_COMMAND="VN_PAY_COMMAND";
+        final String VN_PAY_ORDER_TYPE="VN_PAY_ORDER_TYPE";
+
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
@@ -66,6 +75,13 @@ public class EcommercePlatformApplication {
         System.setProperty(FACEBOOK_CLIENT_ID, Objects.requireNonNull(dotenv.get(FACEBOOK_CLIENT_ID)));
         System.setProperty(FACEBOOK_CLIENT_SECRET, Objects.requireNonNull(dotenv.get(FACEBOOK_CLIENT_SECRET)));
         System.setProperty(FACEBOOK_REDIRECT_URI, Objects.requireNonNull(dotenv.get(FACEBOOK_REDIRECT_URI)));
+        System.setProperty(VN_PAY_PAY_URL, Objects.requireNonNull(dotenv.get(VN_PAY_PAY_URL)));
+        System.setProperty(VN_PAY_TMN_CODE, Objects.requireNonNull(dotenv.get(VN_PAY_TMN_CODE)));
+        System.setProperty(VN_PAY_SECRET_KEY, Objects.requireNonNull(dotenv.get(VN_PAY_SECRET_KEY)));
+        System.setProperty(VN_PAY_RETURN_URL, Objects.requireNonNull(dotenv.get(VN_PAY_RETURN_URL)));
+        System.setProperty(VN_PAY_VERSION, Objects.requireNonNull(dotenv.get(VN_PAY_VERSION)));
+        System.setProperty(VN_PAY_COMMAND, Objects.requireNonNull(dotenv.get(VN_PAY_COMMAND)));
+        System.setProperty(VN_PAY_ORDER_TYPE, Objects.requireNonNull(dotenv.get(VN_PAY_ORDER_TYPE)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }
