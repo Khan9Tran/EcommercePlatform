@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.dto.response.ProductComponentValueResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,4 +14,6 @@ public interface ProductComponentValueMapper {
     @Mapping(source = "component.required", target = "required")
     ProductComponentValueOfProductResponse toProductComponentValueOfProductResponse(
             ProductComponentValue productComponentValue);
+
+    ProductComponentValueResponse toProductComponentValueResponse(ProductComponentValue productComponentValue);
 }

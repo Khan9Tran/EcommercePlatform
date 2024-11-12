@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
+import com.hkteam.ecommerce_platform.enums.PaymentMethod;
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -36,12 +37,9 @@ public class Transaction {
     @OneToMany(mappedBy = "transaction")
     Set<TransactionStatusHistory> transactionStatusHistories;
 
-    @OneToOne(mappedBy = "transaction")
+    @ManyToOne
     Payment payment;
-
     BigDecimal amount;
-    String transactionCode;
-    String paymentMethod;
 
     @CreationTimestamp
     Instant createdAt;

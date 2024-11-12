@@ -1,7 +1,10 @@
 package com.hkteam.ecommerce_platform.entity.payment;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Set;
 
+import com.hkteam.ecommerce_platform.enums.PaymentMethod;
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -26,14 +29,13 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @OneToOne
-    @JoinColumn(nullable = false)
-    Transaction transaction;
+    @OneToMany(mappedBy = "payment")
+    Set<Transaction> transactions;
 
+    BigDecimal amount;
+    PaymentMethod paymentMethod;
     String paymentDetails;
-    //    ...
-    //    Other fileds
-    //    ...
+
     @CreationTimestamp
     Instant createdAt;
 

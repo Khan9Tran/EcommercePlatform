@@ -102,7 +102,9 @@ public enum ErrorCode {
     TAB_INVALID(1686, "Tab is invalid", HttpStatus.BAD_REQUEST),
     QUANTITY_NOT_ENOUGH(1687, "Quantity is not enough", HttpStatus.BAD_REQUEST),
     CART_ITEM_NOT_FOUND(1688, "Cart item not found", HttpStatus.NOT_FOUND),
-    CART_NOT_FOUND(1689, "Cart  not found", HttpStatus.NOT_FOUND)
+    CART_NOT_FOUND(1689, "Cart  not found", HttpStatus.NOT_FOUND),
+    PROUCT_COMPONENT_VALUE_NOT_FOUND(1690, "Product component value not found", HttpStatus.NOT_FOUND),
+    REQUIRED_NOT_EMPTY(1691, "Need fill value in this field", HttpStatus.BAD_REQUEST)
     ;
 
     int code;
