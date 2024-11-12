@@ -3,17 +3,14 @@ package com.hkteam.ecommerce_platform.service;
 import com.hkteam.ecommerce_platform.dto.response.CartItemDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.CartResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
-import com.hkteam.ecommerce_platform.dto.response.UserResponse;
 import com.hkteam.ecommerce_platform.entity.cart.Cart;
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
+import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.CartItemMapper;
 import com.hkteam.ecommerce_platform.mapper.CartMapper;
-import com.hkteam.ecommerce_platform.repository.CartItemRepository;
 import com.hkteam.ecommerce_platform.repository.CartRepository;
-import com.hkteam.ecommerce_platform.repository.ProductRepository;
-import com.hkteam.ecommerce_platform.repository.VariantRepository;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 import lombok.AccessLevel;
@@ -93,7 +90,7 @@ public class CartService {
                             cartItemDetailResponse.setOriginalPrice(cartItem.getVariant().getOriginalPrice());
                             cartItemDetailResponse.setVariantId(cartItem.getVariant().getId());
                             cartItemDetailResponse.setVariantSlug(cartItem.getVariant().getSlug());
-                            cartItemDetailResponse.setValue(cartItem.getVariant().getValues().stream().map(value -> value.getValue()).collect(Collectors.toList()));
+                            cartItemDetailResponse.setValue(cartItem.getVariant().getValues().stream().map(Value::getValue).collect(Collectors.toList()));
                         }
                         return  cartItemDetailResponse;
 
@@ -110,13 +107,14 @@ public class CartService {
             return false;
         }
         if (Objects.isNull(cartItem.getVariant())) {
-            return  cartItem.getQuantity() >= cartItem.getVariant().getQuantity();
+            return  cartItem.getQuantity() >= cartItem.getProduct().getQuantity();
         }
-        return  cartItem.getQuantity() >= cartItem.getProduct().getQuantity();
+
+        return  cartItem.getQuantity() >= cartItem.getVariant().getQuantity();
     }
 
     @PreAuthorize("hasRole('USER')")
-    public Void deleteCart(Long id) {
+    public void deleteCart(Long id) {
         var cart = cartRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
 
         if (!cart.getUser().equals(authenticatedUserUtil.getAuthenticatedUser())) {
