@@ -100,6 +100,9 @@ public enum ErrorCode {
     SORT_BY_INVALID(1684, "Sort by is invalid", HttpStatus.BAD_REQUEST),
     ORDER_INVALID(1685, "Order is invalid", HttpStatus.BAD_REQUEST),
     TAB_INVALID(1686, "Tab is invalid", HttpStatus.BAD_REQUEST),
+    QUANTITY_NOT_ENOUGH(1687, "Quantity is not enough", HttpStatus.BAD_REQUEST),
+    CART_ITEM_NOT_FOUND(1688, "Cart item not found", HttpStatus.NOT_FOUND),
+    CART_NOT_FOUND(1689, "Cart  not found", HttpStatus.NOT_FOUND)
     ;
 
     int code;

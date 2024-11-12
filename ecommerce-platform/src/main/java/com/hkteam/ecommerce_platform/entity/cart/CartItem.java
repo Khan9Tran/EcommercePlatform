@@ -29,7 +29,7 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     Cart cart;
 
     @ManyToOne
@@ -48,4 +48,6 @@ public class CartItem {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
+    boolean isCheckout = Boolean.FALSE;
 }

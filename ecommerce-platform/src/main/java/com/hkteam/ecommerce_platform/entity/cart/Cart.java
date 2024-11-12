@@ -1,9 +1,11 @@
 package com.hkteam.ecommerce_platform.entity.cart;
 
+import java.time.Instant;
 import java.util.Set;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -12,6 +14,7 @@ import com.hkteam.ecommerce_platform.entity.user.User;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -33,6 +36,17 @@ public class Cart {
     @ManyToOne
     User user;
 
-    @OneToMany(mappedBy = "cart")
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<CartItem> cartItems;
+
+    @CreationTimestamp
+    Instant createdAt;
+
+    @UpdateTimestamp
+    Instant lastUpdatedAt;
+
+    @Column(nullable = false)
+    boolean isDeleted = Boolean.FALSE;
+
+    boolean isAvailable = Boolean.TRUE;
 }
