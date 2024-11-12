@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
 import com.hkteam.ecommerce_platform.dto.request.CartItemCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.CartItemUpdateQuantityRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.CartItemResponse;
 import com.hkteam.ecommerce_platform.service.CartItemService;
@@ -21,15 +22,20 @@ import org.springframework.web.bind.annotation.*;
 public class CartItemController {
     CartItemService cartItemService;
 
-    @DeleteMapping("/id")
+    @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteCartItem(@PathVariable Long id) {
-        return null;
+        cartItemService.deleteCartItem(id);
+        return ApiResponse.<Void>builder()
+                .message("Deleted cart item successfully")
+                .build();
     }
 
-//    @PutMapping("/{id}")
-//    public  ApiResponse<Void> changeQuantity(@PathVariable Long id, Integer newQuantity) {
-//        return null;
-//    }
+    @PutMapping("/{id}/change-quantity")
+    public  ApiResponse<CartItemResponse> changeQuantity(@RequestBody CartItemUpdateQuantityRequest request, @PathVariable Long id) {
+        return ApiResponse.<CartItemResponse>builder()
+                .result(cartItemService.changeQuantity(request, id))
+                .build();
+    }
 
     @PostMapping("")
     public  ApiResponse<CartItemResponse> addCartItem(@RequestBody @Valid CartItemCreationRequest request) {
@@ -38,4 +44,7 @@ public class CartItemController {
                 .result(cartItemService.addProductToCart(request))
                 .build();
     }
+
+
+
 }

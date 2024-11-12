@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
 import com.hkteam.ecommerce_platform.dto.request.CartItemCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.CartItemUpdateQuantityRequest;
 import com.hkteam.ecommerce_platform.dto.response.CartItemResponse;
 import com.hkteam.ecommerce_platform.entity.cart.Cart;
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
@@ -52,13 +53,13 @@ public class CartItemService {
             if (!variant.isAvailable()) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
         }
 
-        if (!isAvailableQuantity(product, variant, request.getQuantity()))
+        if (isAvailableQuantity(product, variant, request.getQuantity()))
             throw  new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
         CartItem cartItem;
 
         if (ci.isPresent()) {
-            cartItem = addQuantityForCartItem(ci.get(), product, variant, request.getQuantity());
+            cartItem = addQuantityForCartItem(ci.get(), request.getQuantity());
         }
         else {
                 var cart = cartRepository.findByUserAndStore(user, product.getStore()).orElse(
@@ -85,30 +86,79 @@ public class CartItemService {
 
     }
 
-    private boolean isAvailableQuantity(Product product, Variant variant, int quantity){
+    boolean isAvailableQuantity(Product product, Variant variant, int quantity){
         if (Objects.isNull(variant)) {
-            return  product.getQuantity() >= quantity;
+            return product.getQuantity() < quantity;
         }
-        return variant.getQuantity() >= quantity;
+        return variant.getQuantity() < quantity;
     }
 
     private CartItem addCartItemToCart(Cart cart, Product product, Variant variant, int quantity) {
-        CartItem cartItem = CartItem.builder()
+        return  CartItem.builder()
                 .cart(cart)
                 .variant(variant)
                 .product(product)
                 .quantity(quantity)
                 .isAvailable(Boolean.TRUE)
                 .build();
-
-        return cartItem;
     }
 
-    private CartItem addQuantityForCartItem(CartItem cartItem, Product product, Variant variant, int quantity) {
+    private CartItem addQuantityForCartItem(CartItem cartItem, int quantity) {
        cartItem.setQuantity(cartItem.getQuantity() + quantity);
-
        return  cartItem;
     }
+
+    @PreAuthorize("hasAuthority('PERMISSION_PURCHASE')")
+    public  CartItemResponse changeQuantity(CartItemUpdateQuantityRequest request, Long id) {
+        if (request.getQuantity() < 0) {
+            throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
+        }
+        else if (request.getQuantity() == 0) {
+            deleteCartItem(id);
+            return null;
+        }
+
+        var cartItem = cartItemRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+        if (!authenticatedUserUtil.getAuthenticatedUser().equals(cartItem.getCart().getUser()))
+        {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        int quantityChange = request.getQuantity() - cartItem.getQuantity();
+
+        if (isAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), quantityChange))
+            throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
+
+        cartItem.setQuantity(request.getQuantity());
+
+        try {
+            cartItemRepository.save(cartItem);
+        }
+        catch (Exception e)
+        {
+            log.error("Error when update item: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return cartItemMapper.toCartItemResponse(cartItem);
+    }
+
+
+    public void deleteCartItem(Long id) {
+        var cartItem = cartItemRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+        if (!authenticatedUserUtil.getAuthenticatedUser().equals(cartItem.getCart().getUser()))
+        {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        try {
+            cartItemRepository.delete(cartItem);
+        } catch (Exception e) {
+            log.error("Error when delete item: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+
 
 
 
