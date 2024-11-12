@@ -36,7 +36,7 @@ public class Cart {
     @ManyToOne
     User user;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<CartItem> cartItems;
 
     @CreationTimestamp
@@ -47,8 +47,6 @@ public class Cart {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
-
-    boolean isCheckout = Boolean.FALSE;
 
     boolean isAvailable = Boolean.TRUE;
 }

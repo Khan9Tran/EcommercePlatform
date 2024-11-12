@@ -99,7 +99,6 @@ public class CartItemService {
                 .variant(variant)
                 .product(product)
                 .quantity(quantity)
-                .isAvailable(Boolean.TRUE)
                 .build();
     }
 
@@ -157,9 +156,4 @@ public class CartItemService {
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
-
-
-
-
-
 }

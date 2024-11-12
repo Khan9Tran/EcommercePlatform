@@ -49,7 +49,5 @@ public class CartItem {
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
 
-    boolean isAvailable = Boolean.TRUE;
-
     boolean isCheckout = Boolean.FALSE;
 }
