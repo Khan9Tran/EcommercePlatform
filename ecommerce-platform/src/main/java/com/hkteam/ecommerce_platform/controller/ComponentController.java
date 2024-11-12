@@ -89,4 +89,12 @@ public class ComponentController {
 
         return ApiResponse.<List<ComponentResponse>>builder().result(result).build();
     }
+
+    @Operation(summary = "Get all components by category id", description = "Api get all components by category id")
+    @GetMapping("/category/{id}")
+    public ApiResponse<List<ComponentResponse>> getAllComponentsByCategoryId(@PathVariable Long id) {
+        var result = componentService.getAllComponentsByCategoryId(id);
+
+        return ApiResponse.<List<ComponentResponse>>builder().result(result).build();
+    }
 }

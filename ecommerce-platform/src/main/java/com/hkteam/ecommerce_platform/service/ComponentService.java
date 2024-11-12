@@ -116,4 +116,10 @@ public class ComponentService {
                 .map(componentMapper::toComponentResponse)
                 .toList();
     }
+
+    public List<ComponentResponse> getAllComponentsByCategoryId(Long id) {
+        return  componentRepository.findByCategoriesId(id).stream()
+                .map(componentMapper::toComponentResponse)
+                .toList();
+    }
 }
