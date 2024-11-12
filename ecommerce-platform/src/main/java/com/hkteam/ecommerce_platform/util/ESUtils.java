@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.util;
 
+import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.json.JsonData;
 import lombok.experimental.UtilityClass;
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class ESUtils {
@@ -32,7 +34,7 @@ public class ESUtils {
 
 
     public BoolQuery createSearchProducts(Long categoryId,
-                                          Long brandId,
+                                          List<Long> brandIds,
                                           String storeId,
                                           String search,
                                           BigDecimal minPrice,
@@ -43,8 +45,11 @@ public class ESUtils {
         if (categoryId != null) {
             queries.add(Query.of(q -> q.term(t -> t.field("categoryId").value(categoryId))));
         }
-        if (brandId != null) {
-            queries.add(Query.of(q -> q.term(t -> t.field("brandId").value(brandId))));
+        if (brandIds != null && !brandIds.isEmpty()) {
+            List<FieldValue> brandFieldValues = brandIds.stream()
+                    .map(FieldValue::of)
+                    .collect(Collectors.toList());
+            queries.add(Query.of(q -> q.terms(t -> t.field("brandId").terms(terms -> terms.value(brandFieldValues)))));
         }
         if (storeId != null) {
             queries.add(Query.of(q -> q.term(t -> t.field("storeId").value(storeId))));
@@ -76,12 +81,12 @@ public class ESUtils {
     }
 
     public Supplier<Query> createSupplierSearchProducts(Long categoryId,
-                                                        Long brandId,
+                                                        List<Long> brandIds,
                                                         String storeId,
                                                         String search,
                                                         BigDecimal minPrice,
                                                         BigDecimal maxPrice,
                                                         int minRate) {
-        return  () -> Query.of(q -> q.bool(createSearchProducts(categoryId, brandId, storeId, search, minPrice, maxPrice, minRate)));
+        return  () -> Query.of(q -> q.bool(createSearchProducts(categoryId, brandIds, storeId, search, minPrice, maxPrice, minRate)));
     }
 }

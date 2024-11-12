@@ -42,7 +42,7 @@ public class ElasticSearchService {
 
     public PaginationResponse<ProductResponse> getAllProducts(
             Long categoryId,
-            Long brandId,
+            List<Long> brandIds,
             String storeId,
             String sortBy,
             String order,
@@ -72,7 +72,7 @@ public class ElasticSearchService {
 
 
         Supplier<Query> supplier = ESUtils.createSupplierSearchProducts(
-                categoryId, brandId, storeId, search, minPrice, maxPrice, minRate
+                categoryId, brandIds, storeId, search, minPrice, maxPrice, minRate
         );
         try {
             SearchResponse<ProductElasticsearch> searchResponse = elasticsearchClient.search(

@@ -35,7 +35,7 @@ public class ElasticSearchController {
     @GetMapping()
     ApiResponse<PaginationResponse<ProductResponse>> getAutoSuggestProduct(
             @RequestParam(value = "category", required = false) Long categoryId,
-            @RequestParam(value = "brand", required = false) Long brandId,
+            @RequestParam(value = "brand", required = false) List<Long> brandIds,
             @RequestParam(value = "store", required = false) String storeId,
             @RequestParam(value = "sortBy", required = false) String sortBy,
             @RequestParam(value = "order", required = false) String order,
@@ -48,7 +48,7 @@ public class ElasticSearchController {
     ) {
         return ApiResponse.<PaginationResponse<ProductResponse>>builder()
                 .result(elasticSearchService
-                        .getAllProducts(categoryId, brandId, storeId,sortBy,
+                        .getAllProducts(categoryId, brandIds, storeId,sortBy,
                                 order, page, limit, search, minPrice, maxPrice, minRate))
                 .build();
     }

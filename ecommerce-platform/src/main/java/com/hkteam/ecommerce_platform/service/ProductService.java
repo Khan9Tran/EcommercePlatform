@@ -241,8 +241,9 @@ public class ProductService {
         productMapper.updateProductFromRequest(request, product);
         productMapper.updateProductFromRequest(request, esPro);
 
-        if (brandId!= null && !Objects.equals(esPro.getBrandId(), brandId)) {
+        if (brandId!= null && !Objects.equals(product.getBrand().getId(), brandId)) {
             var brand = brandRepository.findById(request.getBrandId()).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+            product.setBrand(brand);
             esPro.setBrandName(brand.getName());
         }
 
@@ -255,6 +256,7 @@ public class ProductService {
             esPro.setDetails(product.getDetails());
             esPro.setOriginalPrice(product.getOriginalPrice());
         }
+
 
         try {
 
