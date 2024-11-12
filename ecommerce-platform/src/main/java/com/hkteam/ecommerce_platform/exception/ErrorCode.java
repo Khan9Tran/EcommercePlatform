@@ -100,6 +100,10 @@ public enum ErrorCode {
     SORT_BY_INVALID(1684, "Sort by is invalid", HttpStatus.BAD_REQUEST),
     ORDER_INVALID(1685, "Order is invalid", HttpStatus.BAD_REQUEST),
     TAB_INVALID(1686, "Tab is invalid", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_FOUND(1687, "Order not found", HttpStatus.NOT_FOUND),
+    STATUS_NOT_FOUND(1688, "Status not found", HttpStatus.NOT_FOUND),
+    COMPLETED_ORDER(1689, "Completed order", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_BELONG_TO_STORE(1690, "This order doesn't belong to store", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

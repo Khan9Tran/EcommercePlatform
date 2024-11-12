@@ -1,13 +1,12 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.response.*;
-import com.hkteam.ecommerce_platform.service.ElasticSearchService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.service.ProductService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,10 +14,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -78,5 +73,4 @@ public class ProductController {
                 .result(productService.getAllProducts(sortBy, order, tab, page, size, search))
                 .build();
     }
-
 }

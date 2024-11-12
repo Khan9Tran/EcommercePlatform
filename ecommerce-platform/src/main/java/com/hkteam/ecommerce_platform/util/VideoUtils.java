@@ -15,7 +15,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class VideoUtils {
-    long MAX_VIDEO_SIZE = 50L * 1024 * 1024;
+    long MAX_VIDEO_SIZE = 100L * 1024 * 1024;
     List<String> ACCEPTED_VIDEO_TYPES = Arrays.asList("mp4", "avi", "mov", "mkv");
 
     public void validateVideo(MultipartFile video) {

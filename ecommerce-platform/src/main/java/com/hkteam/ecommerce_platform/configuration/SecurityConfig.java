@@ -33,8 +33,7 @@ public class SecurityConfig {
     };
 
     private static final String[] SEARCH_ENDPOINTS = {
-            "/search",
-            "/search/autoSuggest",
+        "/search", "/search/autoSuggest",
     };
 
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {
