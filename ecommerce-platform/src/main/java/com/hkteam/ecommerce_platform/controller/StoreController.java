@@ -43,7 +43,7 @@ public class StoreController {
 
     @GetMapping("/{storeId}")
     @Operation(summary = "Get one store by id", description = "Api get one store by id")
-    public ApiResponse<StoreDetailResponse> getOneStoreByUserId(@PathVariable String storeId) {
+    public ApiResponse<StoreDetailResponse> getOneStoreById(@PathVariable String storeId) {
         return ApiResponse.<StoreDetailResponse>builder()
                 .result(storeService.getOneStoreById(storeId))
                 .build();

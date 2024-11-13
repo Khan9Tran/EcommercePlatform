@@ -1,7 +1,6 @@
 package com.hkteam.ecommerce_platform.controller;
 
 import com.hkteam.ecommerce_platform.dto.response.*;
-import com.hkteam.ecommerce_platform.service.ElasticSearchService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/products")

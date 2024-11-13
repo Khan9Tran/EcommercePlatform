@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.cart.Cart;
+import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 
 import lombok.*;
@@ -45,6 +46,9 @@ public class Store {
 
     @OneToOne
     User user;
+
+    @OneToMany(mappedBy = "store")
+    Set<Order> orders;
 
     @OneToMany(mappedBy = "store")
     Set<Cart> carts;

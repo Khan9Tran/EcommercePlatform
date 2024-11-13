@@ -1,14 +1,16 @@
 package com.hkteam.ecommerce_platform.entity.order;
 
 import java.math.BigDecimal;
-import java.util.Set;
+import java.time.Instant;
+import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.payment.Transaction;
+import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.user.User;
 
 import lombok.*;
@@ -32,6 +34,9 @@ public class Order {
     @ManyToOne
     User user;
 
+    @ManyToOne
+    Store store;
+
     BigDecimal total;
     BigDecimal discount;
 
@@ -50,10 +55,26 @@ public class Order {
 
     BigDecimal grandTotal; // total - discount + shippingTotal
     BigDecimal promo; // discount + shippingDiscount
+    String note;
+
+    @Column(nullable = false, unique = true)
+    String code;
 
     @OneToMany(mappedBy = "order")
-    Set<OrderStatusHistory> orderStatusHistories;
+    List<OrderStatusHistory> orderStatusHistories;
+
+    @OneToMany(mappedBy = "order")
+    List<OrderItem> orderItems;
 
     @OneToOne(mappedBy = "order")
     Transaction transaction;
+
+    @CreationTimestamp(source = SourceType.DB)
+    private Instant createdAt;
+
+    @UpdateTimestamp(source = SourceType.DB)
+    private Instant lastUpdatedAt;
+
+    @Column(nullable = false)
+    boolean isDeleted = Boolean.FALSE;
 }
