@@ -4,10 +4,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.hkteam.ecommerce_platform.dto.response.*;
-import com.hkteam.ecommerce_platform.entity.elasticsearch.EsProComponentValue;
-import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
-import com.hkteam.ecommerce_platform.util.PageUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,8 +11,11 @@ import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
+import com.hkteam.ecommerce_platform.entity.elasticsearch.EsProComponentValue;
+import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
 import com.hkteam.ecommerce_platform.entity.product.Attribute;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.product.Value;
@@ -27,6 +26,7 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.*;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
+import com.hkteam.ecommerce_platform.util.PageUtils;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
 
 import lombok.AccessLevel;
@@ -53,9 +53,9 @@ public class ProductService {
     ProductComponentValueMapper productComponentValueMapper;
     ProductElasticsearchRepository productElasticsearchRepository;
 
-    static String[] SORT_BY = { "name", "originalPrice", "salePrice", "rating", "createdAt" };
-    static String[] ORDER = { "asc", "desc" };
-    static String[] TAB = { "available", "unAvailable", "blocked" };
+    static String[] SORT_BY = {"name", "originalPrice", "salePrice", "rating", "createdAt"};
+    static String[] ORDER = {"asc", "desc"};
+    static String[] TAB = {"available", "unAvailable", "blocked"};
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
@@ -82,10 +82,8 @@ public class ProductService {
 
         var componentRequest = request.getComponents();
 
-
         Set<Component> components = new HashSet<>();
         product.setProductComponentValues(new HashSet<>());
-
 
         if (!Objects.isNull(componentRequest) && !componentRequest.isEmpty())
             componentRequest.forEach((component) -> {
@@ -93,7 +91,9 @@ public class ProductService {
                         .findById(component.getId())
                         .orElseThrow(() -> new AppException(ErrorCode.COMPONENT_NOT_FOUND));
 
-                if (cp.isRequired() && (Objects.isNull(component.getValue()) || component.getValue().isEmpty()))
+                if (cp.isRequired()
+                        && (Objects.isNull(component.getValue())
+                                || component.getValue().isEmpty()))
                     throw new AppException(ErrorCode.COMPONENT_VALUE_REQUIRED);
 
                 product.getProductComponentValues()
@@ -105,30 +105,32 @@ public class ProductService {
                 components.add(cp);
             });
 
-
         if (!category.getComponents().isEmpty() && components.isEmpty())
             throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
-        //if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
+        // if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
         List<Attribute> attributes = new ArrayList<>();
 
         List<Variant> variants = new ArrayList<>();
 
-        if (!Objects.isNull(request.getAttributesHasValues()) && !Objects.isNull(request.getVariantOfProducts())
-                && !request.getAttributesHasValues().isEmpty() && !request.getVariantOfProducts().isEmpty()
-        ) {
+        if (!Objects.isNull(request.getAttributesHasValues())
+                && !Objects.isNull(request.getVariantOfProducts())
+                && !request.getAttributesHasValues().isEmpty()
+                && !request.getVariantOfProducts().isEmpty()) {
             request.getAttributesHasValues().forEach((attribute) -> {
                 Set<Value> values = new HashSet<>();
                 var attr = Attribute.builder()
                         .name(attribute.getName())
                         .createdBy(owner)
                         .build();
-                attribute.getValue().forEach((value) -> values.add(Value.builder()
-                        .value(value)
-                        .createdBy(owner)
-                        .attribute(attr)
-                        .build()));
+                attribute
+                        .getValue()
+                        .forEach((value) -> values.add(Value.builder()
+                                .value(value)
+                                .createdBy(owner)
+                                .attribute(attr)
+                                .build()));
                 attr.setValues(values);
                 attributes.add(attr);
             });
@@ -176,12 +178,9 @@ public class ProductService {
                     .createdAt(product.getCreatedAt())
                     .lastUpdatedAt(product.getLastUpdatedAt())
                     .isBlocked(product.isBlocked())
-                    .productComponentValues(
-                            product.getProductComponentValues().stream()
-                                    .map(pc -> new EsProComponentValue(pc.getId(), pc.getValue()))
-                                    .collect(Collectors.toList())
-                    )
-
+                    .productComponentValues(product.getProductComponentValues().stream()
+                            .map(pc -> new EsProComponentValue(pc.getId(), pc.getValue()))
+                            .collect(Collectors.toList()))
                     .build();
             productElasticsearchRepository.save(productElasticsearch);
         } catch (Exception e) {
@@ -191,7 +190,8 @@ public class ProductService {
 
         ProductCreationResponse response = productMapper.toProductCreationResponse(product);
         List<VariantOfProductResponse> variantOfProductResponses = new ArrayList<>();
-        product.getVariants().forEach((variant) -> variantOfProductResponses.add(variantMapper.toVariantOfProductResponse(variant)));
+        product.getVariants()
+                .forEach((variant) -> variantOfProductResponses.add(variantMapper.toVariantOfProductResponse(variant)));
         response.setVariants(variantOfProductResponses);
         return response;
     }
@@ -233,7 +233,9 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public ProductDetailResponse updateProduct(String id, ProductUpdateRequest request) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        var esPro = productElasticsearchRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var esPro = productElasticsearchRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         Long brandId = esPro.getBrandId();
 
         if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -241,8 +243,10 @@ public class ProductService {
         productMapper.updateProductFromRequest(request, product);
         productMapper.updateProductFromRequest(request, esPro);
 
-        if (brandId!= null && !Objects.equals(product.getBrand().getId(), brandId)) {
-            var brand = brandRepository.findById(request.getBrandId()).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+        if (brandId != null && !Objects.equals(product.getBrand().getId(), brandId)) {
+            var brand = brandRepository
+                    .findById(request.getBrandId())
+                    .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
             product.setBrand(brand);
             esPro.setBrandName(brand.getName());
         }
@@ -256,7 +260,6 @@ public class ProductService {
             esPro.setDetails(product.getDetails());
             esPro.setOriginalPrice(product.getOriginalPrice());
         }
-
 
         try {
 
@@ -312,16 +315,15 @@ public class ProductService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public PaginationResponse<ProductResponse> getAllProducts(String sortBy, String order, String tab, String page,
-                                                              String size, String search) {
-        if (!Arrays.asList(SORT_BY).contains(sortBy))
-            sortBy = null;
-        if (!Arrays.asList(ORDER).contains(order))
-            order = null;
+    public PaginationResponse<ProductResponse> getAllProducts(
+            String sortBy, String order, String tab, String page, String size, String search) {
+        if (!Arrays.asList(SORT_BY).contains(sortBy)) sortBy = null;
+        if (!Arrays.asList(ORDER).contains(order)) order = null;
 
         if (!Arrays.asList(TAB).contains(tab)) throw new AppException(ErrorCode.TAB_INVALID);
 
-        Sort sortable = (sortBy == null || order == null) ? Sort.unsorted() :  Sort.by(Sort.Direction.fromString(order), sortBy);
+        Sort sortable =
+                (sortBy == null || order == null) ? Sort.unsorted() : Sort.by(Sort.Direction.fromString(order), sortBy);
 
         Pageable pageable = PageUtils.createPageable(page, size, sortable);
 
@@ -332,7 +334,8 @@ public class ProductService {
         boolean isBlocked = tab.equals("blocked");
         if (isBlocked) isAvailable = true;
 
-        var pageData = productRepository.findByIsAvailableAndIsBlockedAndStore_IdAndNameContainsIgnoreCase(isAvailable, isBlocked, store.getId(), search, pageable);
+        var pageData = productRepository.findByIsAvailableAndIsBlockedAndStore_IdAndNameContainsIgnoreCase(
+                isAvailable, isBlocked, store.getId(), search, pageable);
         int pageInt = Integer.parseInt(page);
 
         return PaginationResponse.<ProductResponse>builder()

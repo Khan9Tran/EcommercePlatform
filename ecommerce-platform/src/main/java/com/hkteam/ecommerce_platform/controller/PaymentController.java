@@ -1,14 +1,15 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import org.springframework.web.bind.annotation.*;
+
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.service.PaymentService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/payment")
@@ -26,5 +27,4 @@ public class PaymentController {
                 .message("Payment callback successfully")
                 .build();
     }
-
 }

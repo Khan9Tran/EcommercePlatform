@@ -1,17 +1,18 @@
 package com.hkteam.ecommerce_platform.util;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.elasticsearch._types.query_dsl.*;
-import co.elastic.clients.json.JsonData;
-import lombok.experimental.UtilityClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import co.elastic.clients.json.JsonData;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ESUtils {
@@ -32,23 +33,22 @@ public class ESUtils {
         return supplier;
     }
 
-
-    public BoolQuery createSearchProducts(Long categoryId,
-                                          List<Long> brandIds,
-                                          String storeId,
-                                          String search,
-                                          BigDecimal minPrice,
-                                          BigDecimal maxPrice,
-                                          int minRate) {
+    public BoolQuery createSearchProducts(
+            Long categoryId,
+            List<Long> brandIds,
+            String storeId,
+            String search,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            int minRate) {
         List<Query> queries = new ArrayList<>();
 
         if (categoryId != null) {
             queries.add(Query.of(q -> q.term(t -> t.field("categoryId").value(categoryId))));
         }
         if (brandIds != null && !brandIds.isEmpty()) {
-            List<FieldValue> brandFieldValues = brandIds.stream()
-                    .map(FieldValue::of)
-                    .collect(Collectors.toList());
+            List<FieldValue> brandFieldValues =
+                    brandIds.stream().map(FieldValue::of).collect(Collectors.toList());
             queries.add(Query.of(q -> q.terms(t -> t.field("brandId").terms(terms -> terms.value(brandFieldValues)))));
         }
         if (storeId != null) {
@@ -67,26 +67,34 @@ public class ESUtils {
         queries.add(Query.of(q -> q.term(t -> t.field("isAvailable").value(true))));
         queries.add(Query.of(q -> q.term(t -> t.field("isBlocked").value(false))));
 
-
-        BoolQuery boolQuery = new BoolQuery.Builder().should(Query.of(q -> q.multiMatch(
-                m -> m.fields(List.of("name", "description", "details", "brandName", "categoryName", "storeName","componentValues.value"))
+        BoolQuery boolQuery = new BoolQuery.Builder()
+                .should(Query.of(q -> q.multiMatch(m -> m.fields(List.of(
+                                "name",
+                                "description",
+                                "details",
+                                "brandName",
+                                "categoryName",
+                                "storeName",
+                                "componentValues.value"))
                         .query(search)
                         .fuzziness("AUTO")
                         .operator(Operator.Or)
-                        .analyzer("standard")
-        ))).filter(queries).build();
+                        .analyzer("standard"))))
+                .filter(queries)
+                .build();
 
-
-        return  boolQuery;
+        return boolQuery;
     }
 
-    public Supplier<Query> createSupplierSearchProducts(Long categoryId,
-                                                        List<Long> brandIds,
-                                                        String storeId,
-                                                        String search,
-                                                        BigDecimal minPrice,
-                                                        BigDecimal maxPrice,
-                                                        int minRate) {
-        return  () -> Query.of(q -> q.bool(createSearchProducts(categoryId, brandIds, storeId, search, minPrice, maxPrice, minRate)));
+    public Supplier<Query> createSupplierSearchProducts(
+            Long categoryId,
+            List<Long> brandIds,
+            String storeId,
+            String search,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            int minRate) {
+        return () -> Query.of(
+                q -> q.bool(createSearchProducts(categoryId, brandIds, storeId, search, minPrice, maxPrice, minRate)));
     }
 }

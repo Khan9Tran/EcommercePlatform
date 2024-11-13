@@ -1,10 +1,10 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.response.ProductComponentValueResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.hkteam.ecommerce_platform.dto.response.ProductComponentValueOfProductResponse;
+import com.hkteam.ecommerce_platform.dto.response.ProductComponentValueResponse;
 import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
 
 @Mapper(componentModel = "spring")

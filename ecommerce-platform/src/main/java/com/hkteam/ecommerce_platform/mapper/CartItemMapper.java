@@ -1,10 +1,11 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import com.hkteam.ecommerce_platform.dto.response.CartItemDetailResponse;
 import com.hkteam.ecommerce_platform.dto.response.CartItemResponse;
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CartItemMapper {

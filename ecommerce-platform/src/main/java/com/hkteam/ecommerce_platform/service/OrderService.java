@@ -3,12 +3,12 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
 import com.hkteam.ecommerce_platform.dto.response.OrderItemResponse;
 import com.hkteam.ecommerce_platform.dto.response.OrderResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
@@ -144,9 +144,10 @@ public class OrderService {
 
     @PreAuthorize("hasRole('SELLER')")
     public void updateOrderStatus(String orderId) {
+        try {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        if (authenticatedUserUtil.isOwner(order)) {
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
         }
 
@@ -159,13 +160,17 @@ public class OrderService {
                 .findByName(nextStatusName.name())
                 .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
 
-        order.getOrderStatusHistories().add(
-                OrderStatusHistory.builder()
+        order.getOrderStatusHistories()
+                .add(OrderStatusHistory.builder()
+                        .order(order)
                         .orderStatus(nextStatus)
                         .remarks(order.getOrderStatusHistories().getLast().getRemarks())
-                        .build()
-        );
-        orderRepository.save(order);
+                        .build());
+
+            orderRepository.save(order);
+        } catch (Exception e) {
+            log.info("LOIIIIIIIIIIII" + e.getMessage());
+        }
     }
 
     private OrderStatusName getNextStatus(OrderStatusName currentStatus) {
@@ -176,7 +181,6 @@ public class OrderService {
             default -> throw new AppException(ErrorCode.COMPLETED_ORDER);
         };
     }
-
 
     public OrderResponse createOrder(OrderRequest orderRequest) {
         return null;

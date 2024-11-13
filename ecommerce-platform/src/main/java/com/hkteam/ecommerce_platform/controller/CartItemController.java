@@ -1,17 +1,20 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.hkteam.ecommerce_platform.dto.request.CartItemCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CartItemUpdateQuantityRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.CartItemResponse;
 import com.hkteam.ecommerce_platform.service.CartItemService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/cartItems")
@@ -31,20 +34,18 @@ public class CartItemController {
     }
 
     @PutMapping("/{id}/change-quantity")
-    public  ApiResponse<CartItemResponse> changeQuantity(@RequestBody CartItemUpdateQuantityRequest request, @PathVariable Long id) {
+    public ApiResponse<CartItemResponse> changeQuantity(
+            @RequestBody CartItemUpdateQuantityRequest request, @PathVariable Long id) {
         return ApiResponse.<CartItemResponse>builder()
                 .result(cartItemService.changeQuantity(request, id))
                 .build();
     }
 
     @PostMapping("")
-    public  ApiResponse<CartItemResponse> addCartItem(@RequestBody @Valid CartItemCreationRequest request) {
+    public ApiResponse<CartItemResponse> addCartItem(@RequestBody @Valid CartItemCreationRequest request) {
 
-        return  ApiResponse.<CartItemResponse>builder()
+        return ApiResponse.<CartItemResponse>builder()
                 .result(cartItemService.addProductToCart(request))
                 .build();
     }
-
-
-
 }

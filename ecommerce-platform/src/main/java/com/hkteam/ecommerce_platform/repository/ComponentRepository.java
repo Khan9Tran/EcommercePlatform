@@ -22,5 +22,4 @@ public interface ComponentRepository extends JpaRepository<Component, Long> {
     Page<Component> findAll(@NotNull Pageable pageable);
 
     List<Component> findByCategoriesId(Long id);
-
 }

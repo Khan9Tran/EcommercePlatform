@@ -46,14 +46,14 @@ public class EcommercePlatformApplication {
         final String FACEBOOK_CLIENT_SECRET = "FACEBOOK_CLIENT_SECRET";
         final String FACEBOOK_REDIRECT_URI = "FACEBOOK_REDIRECT_URI";
 
-        //VNPAY
-        final String VN_PAY_PAY_URL= "VN_PAY_PAY_URL";
-        final String VN_PAY_TMN_CODE="VN_PAY_TMN_CODE";
-        final String VN_PAY_SECRET_KEY="VN_PAY_SECRET_KEY";
-        final String VN_PAY_RETURN_URL="VN_PAY_RETURN_URL";
-        final String VN_PAY_VERSION="VN_PAY_VERSION";
-        final String VN_PAY_COMMAND="VN_PAY_COMMAND";
-        final String VN_PAY_ORDER_TYPE="VN_PAY_ORDER_TYPE";
+        // VNPAY
+        final String VN_PAY_PAY_URL = "VN_PAY_PAY_URL";
+        final String VN_PAY_TMN_CODE = "VN_PAY_TMN_CODE";
+        final String VN_PAY_SECRET_KEY = "VN_PAY_SECRET_KEY";
+        final String VN_PAY_RETURN_URL = "VN_PAY_RETURN_URL";
+        final String VN_PAY_VERSION = "VN_PAY_VERSION";
+        final String VN_PAY_COMMAND = "VN_PAY_COMMAND";
+        final String VN_PAY_ORDER_TYPE = "VN_PAY_ORDER_TYPE";
 
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));

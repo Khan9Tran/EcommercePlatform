@@ -4,13 +4,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
-import com.hkteam.ecommerce_platform.enums.PaymentMethod;
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.hkteam.ecommerce_platform.enums.PaymentMethod;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

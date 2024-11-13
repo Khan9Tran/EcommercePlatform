@@ -27,7 +27,7 @@ public class SecurityConfig {
         "/auths/refresh",
         "/users",
         "/emails/verify",
-        "/external-auths/authentication/google", 
+        "/external-auths/authentication/google",
         "/external-auths/authentication/facebook",
         "/emails/reset-request",
         "/emails/reset-password",

@@ -4,8 +4,6 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 
-import com.hkteam.ecommerce_platform.repository.httpclient.OutboundFacebookUserClient;
-import com.hkteam.ecommerce_platform.repository.httpclient.OutboundIdentityFacebookClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +20,9 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.ExternalAuthRepository;
 import com.hkteam.ecommerce_platform.repository.RoleRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
+import com.hkteam.ecommerce_platform.repository.httpclient.OutboundFacebookUserClient;
 import com.hkteam.ecommerce_platform.repository.httpclient.OutboundIdentityClient;
+import com.hkteam.ecommerce_platform.repository.httpclient.OutboundIdentityFacebookClient;
 import com.hkteam.ecommerce_platform.repository.httpclient.OutboundUserClient;
 
 import lombok.AccessLevel;
@@ -142,13 +142,14 @@ public class ExternalAuthService {
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
-
     public AuthenticationResponse facebookAuthenticate(String code) {
         log.info("code: {}", code);
         try {
-            var response = outboundIdentityFacebookClient.exchangeToken(FACEBOOK_CLIENT_ID, FACEBOOK_REDIRECT_URI,FACEBOOK_CLIENT_SECRET, code);
+            var response = outboundIdentityFacebookClient.exchangeToken(
+                    FACEBOOK_CLIENT_ID, FACEBOOK_REDIRECT_URI, FACEBOOK_CLIENT_SECRET, code);
 
-            var userInfo = outboundFacebookUserClient.getUserInfo(response.getAccessToken(), "id, name, email, picture");
+            var userInfo =
+                    outboundFacebookUserClient.getUserInfo(response.getAccessToken(), "id, name, email, picture");
             var externalAuths = externalAuthRepository.findByProviderAndProviderID(Provider.FACEBOOK, userInfo.getId());
             if (externalAuths.isEmpty()) {
 
@@ -203,12 +204,13 @@ public class ExternalAuthService {
             if (user.isBlocked()) throw new AppException(ErrorCode.USER_HAS_BEEN_BLOCKED);
 
             var token = authenticationService.generateToken(user);
-            return AuthenticationResponse.builder().token(token).authenticated(true).build();
-        }
-        catch (Exception e) {
+            return AuthenticationResponse.builder()
+                    .token(token)
+                    .authenticated(true)
+                    .build();
+        } catch (Exception e) {
             log.info("Error: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
-
     }
 }
