@@ -106,10 +106,10 @@ public enum ErrorCode {
     PROUCT_COMPONENT_VALUE_NOT_FOUND(1690, "Product component value not found", HttpStatus.NOT_FOUND),
     REQUIRED_NOT_EMPTY(1691, "Need fill value in this field", HttpStatus.BAD_REQUEST),
     PAYMENT_FAILED(1692, "Payment failed", HttpStatus.BAD_REQUEST),
-    ORDER_NOT_FOUND(1687, "Order not found", HttpStatus.NOT_FOUND),
-    STATUS_NOT_FOUND(1688, "Status not found", HttpStatus.NOT_FOUND),
-    COMPLETED_ORDER(1689, "Completed order", HttpStatus.BAD_REQUEST),
-    ORDER_NOT_BELONG_TO_STORE(1690, "This order doesn't belong to store", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_FOUND(1693, "Order not found", HttpStatus.NOT_FOUND),
+    STATUS_NOT_FOUND(1694, "Status not found", HttpStatus.NOT_FOUND),
+    COMPLETED_ORDER(1695, "Completed order", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_BELONG_TO_STORE(1696, "This order doesn't belong to store", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
