@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
@@ -49,6 +50,13 @@ public class OrderController {
         orderService.updateOrderStatus(orderId);
         return ApiResponse.<Void>builder()
                 .message("Updated status order successfully")
+                .build();
+    }
+
+    @PostMapping("/")
+    public ApiResponse<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.createOrder(orderRequest))
                 .build();
     }
 }

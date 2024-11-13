@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.util;
 
+import com.hkteam.ecommerce_platform.entity.order.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -42,5 +43,9 @@ public class AuthenticatedUserUtil {
 
     public Boolean isOwner(Store store) {
         return getAuthenticatedUser().getId().equals(store.getUser().getId());
+    }
+
+    public Boolean isOwner(Order order) {
+        return isOwner(order.getStore());
     }
 }

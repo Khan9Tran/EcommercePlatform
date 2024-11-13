@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -87,7 +88,7 @@ public class OrderService {
         }));
 
         return PaginationResponse.<OrderResponse>builder()
-                .currentPage(Integer.parseInt(pageStr))
+                .currentPage(page)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
@@ -143,19 +144,9 @@ public class OrderService {
 
     @PreAuthorize("hasRole('SELLER')")
     public void updateOrderStatus(String orderId) {
-        var user = authenticatedUserUtil.getAuthenticatedUser();
-        log.info("Authenticated user ID: {}", user.getId());
-        log.info(
-                "Authenticated user's Store ID: {}",
-                (user.getStore() != null ? user.getStore().getId() : "null"));
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        log.info("Order ID: {}", order.getId());
-        log.info("Order's User ID: {}", order.getUser().getId());
-        log.info(
-                "Order's User Store ID: {}",
-                (order.getUser().getStore() != null ? order.getUser().getStore().getId() : "null"));
-        if (!order.getStore().getId().equals(user.getStore().getId())) {
+        if (authenticatedUserUtil.isOwner(order)) {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
         }
 
@@ -168,13 +159,12 @@ public class OrderService {
                 .findByName(nextStatusName.name())
                 .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
 
-        OrderStatusHistory newHistory = new OrderStatusHistory();
-        newHistory.setOrder(order);
-        newHistory.setOrderStatus(nextStatus);
-        newHistory.setRemarks(order.getOrderStatusHistories().getLast().getRemarks());
-        orderStatusHistoryRepository.save(newHistory);
-
-        order.getOrderStatusHistories().add(newHistory);
+        order.getOrderStatusHistories().add(
+                OrderStatusHistory.builder()
+                        .orderStatus(nextStatus)
+                        .remarks(order.getOrderStatusHistories().getLast().getRemarks())
+                        .build()
+        );
         orderRepository.save(order);
     }
 
@@ -185,5 +175,10 @@ public class OrderService {
             case SHIPPING -> OrderStatusName.COMPLETED;
             default -> throw new AppException(ErrorCode.COMPLETED_ORDER);
         };
+    }
+
+
+    public OrderResponse createOrder(OrderRequest orderRequest) {
+        return null;
     }
 }
