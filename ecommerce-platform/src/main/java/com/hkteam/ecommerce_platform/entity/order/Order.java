@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.*;
@@ -60,7 +61,7 @@ public class Order {
     @Column(nullable = false, unique = true)
     String code;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     List<OrderStatusHistory> orderStatusHistories;
 
     @OneToMany(mappedBy = "order")
