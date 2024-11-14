@@ -1,5 +1,8 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import com.hkteam.ecommerce_platform.dto.request.ListOrder;
+import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
@@ -54,9 +57,9 @@ public class OrderController {
     }
 
     @PostMapping("/")
-    public ApiResponse<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
-        return ApiResponse.<OrderResponse>builder()
-                .result(orderService.createOrder(orderRequest))
+    public ApiResponse<OrderCreationResponse> createOrder(@RequestBody ListOrder listOrder, HttpServletRequest request) {
+        return ApiResponse.<OrderCreationResponse>builder()
+                .result(orderService.createOrder(listOrder, request))
                 .build();
     }
 }

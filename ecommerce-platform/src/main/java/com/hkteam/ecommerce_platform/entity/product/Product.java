@@ -7,6 +7,7 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 import org.hibernate.annotations.*;
@@ -58,6 +59,7 @@ public class Product {
 
     boolean isAvailable = Boolean.TRUE;
 
+    @Min(0)
     int quantity;
 
     Float rating;
@@ -103,4 +105,7 @@ public class Product {
 
     @Column(nullable = false)
     boolean isBlocked = Boolean.FALSE;
+
+    @Version
+    int version;
 }

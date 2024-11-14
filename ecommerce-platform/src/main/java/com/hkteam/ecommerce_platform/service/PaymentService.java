@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.configuration.VNPayConfig;
-import com.hkteam.ecommerce_platform.dto.response.VNPayResponse;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.util.VNPayUtil;
@@ -26,9 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentService {
     VNPayConfig vnPayConfig;
 
-    public VNPayResponse createVnPayPayment(BigDecimal totalPrice, HttpServletRequest request) {
+    public String createVnPayPayment(BigDecimal totalPrice, HttpServletRequest request, String code) {
         BigDecimal amount = totalPrice.multiply(new BigDecimal("100")).setScale(0, RoundingMode.DOWN);
-        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig();
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(code);
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
 
@@ -37,7 +36,7 @@ public class PaymentService {
         String vnpSecureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
         queryUrl += "&vnp_SecureHash=" + vnpSecureHash;
         String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
-        return VNPayResponse.builder().paymentUrl(paymentUrl).build();
+        return  paymentUrl;
     }
 
     public void callBack(String status) {

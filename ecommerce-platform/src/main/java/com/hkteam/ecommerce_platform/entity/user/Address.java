@@ -35,10 +35,12 @@ public class Address {
     @Column(nullable = false)
     String district;
 
-    @Column(nullable = false)
     String detailAddress;
 
     String detailLocate;
+
+    @Column(nullable = false)
+    String subDistrict;
 
     @ManyToOne
     User user;

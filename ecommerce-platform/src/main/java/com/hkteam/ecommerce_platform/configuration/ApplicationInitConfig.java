@@ -2,6 +2,12 @@ package com.hkteam.ecommerce_platform.configuration;
 
 import java.util.HashSet;
 
+import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
+import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+import com.hkteam.ecommerce_platform.enums.OrderStatusName;
+import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
+import com.hkteam.ecommerce_platform.repository.OrderStatusRepository;
+import com.hkteam.ecommerce_platform.repository.TransactionStatusRepository;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +32,7 @@ public class ApplicationInitConfig {
     PasswordEncoder passwordEncoder;
 
     @Bean
-    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
+    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository, TransactionStatusRepository transactionStatusRepository, OrderStatusRepository orderStatusRepository) {
         return args -> {
             if (roleRepository.findByName(RoleName.USER).isEmpty()) {
                 log.info("Creating user role");
@@ -55,6 +61,20 @@ public class ApplicationInitConfig {
                 }
             }
 
+            if (roleRepository.findByName(RoleName.SELLER).isEmpty()) {
+                log.info("Creating seller role");
+                Role adminRole = Role.builder()
+                        .name(RoleName.SELLER)
+                        .description("Default seller role, please config")
+                        .build();
+
+                try {
+                    roleRepository.save(adminRole);
+                } catch (Exception e) {
+                    log.error("Error creating seller role", e);
+                }
+            }
+
             if (userRepository.findByUsername(RoleName.ADMIN.name()).isEmpty()) {
                 log.info("Creating admin user");
                 User adminUser = User.builder()
@@ -78,6 +98,54 @@ public class ApplicationInitConfig {
                     userRepository.save(adminUser);
                 } catch (Exception e) {
                     log.error("Error creating admin user", e);
+                }
+            }
+
+            if (transactionStatusRepository.findById(TransactionStatusName.PENDING.name()).isEmpty()) {
+                log.info("Creating transaction pending status");
+                TransactionStatus transactionStatus = TransactionStatus.builder()
+                        .name(TransactionStatusName.PENDING.name())
+                        .build();
+                try {
+                    transactionStatusRepository.save(transactionStatus);
+                } catch (Exception e) {
+                    log.error("Error creating pending transaction status", e);
+                }
+            }
+
+            if (transactionStatusRepository.findById(TransactionStatusName.SUCCESS.name()).isEmpty()) {
+                log.info("Creating transaction success status");
+                TransactionStatus transactionStatus = TransactionStatus.builder()
+                        .name(TransactionStatusName.PENDING.name())
+                        .build();
+                try {
+                    transactionStatusRepository.save(transactionStatus);
+                } catch (Exception e) {
+                    log.error("Error creating success status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.PENDING.name()).isEmpty()) {
+                log.info("Creating pending status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.PENDING.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating pending status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.ON_HOLD.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.ON_HOLD.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
                 }
             }
         };

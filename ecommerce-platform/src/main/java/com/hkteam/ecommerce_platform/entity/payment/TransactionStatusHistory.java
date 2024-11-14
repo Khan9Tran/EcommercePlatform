@@ -31,7 +31,7 @@ public class TransactionStatusHistory {
     @ManyToOne
     Transaction transaction;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     TransactionStatus transactionStatus;
 
     String remarks;

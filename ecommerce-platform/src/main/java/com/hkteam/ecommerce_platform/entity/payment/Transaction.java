@@ -33,13 +33,14 @@ public class Transaction {
     @OneToOne
     Order order;
 
-    @OneToMany(mappedBy = "transaction")
+    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<TransactionStatusHistory> transactionStatusHistories;
 
     @ManyToOne
     Payment payment;
 
     BigDecimal amount;
+
 
     @CreationTimestamp
     Instant createdAt;

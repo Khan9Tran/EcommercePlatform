@@ -6,6 +6,7 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
+import jakarta.validation.constraints.Min;
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.product.Product;
@@ -35,6 +36,7 @@ public class OrderItem {
     @ManyToOne
     Order order;
 
+    @Min(1)
     int quantity;
 
     BigDecimal price;

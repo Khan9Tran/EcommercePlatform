@@ -1,8 +1,25 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
+import com.hkteam.ecommerce_platform.dto.request.ListOrder;
+import com.hkteam.ecommerce_platform.dto.request.OrderItemRequest;
+import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
+import com.hkteam.ecommerce_platform.entity.order.OrderItem;
+import com.hkteam.ecommerce_platform.entity.payment.Payment;
+import com.hkteam.ecommerce_platform.entity.payment.Transaction;
+import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.product.Variant;
+import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.enums.PaymentMethod;
+import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
+import com.hkteam.ecommerce_platform.repository.*;
+import com.hkteam.ecommerce_platform.util.ShippingFeeUtil;
+import com.hkteam.ecommerce_platform.util.VNPayUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,9 +36,6 @@ import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.OrderMapper;
-import com.hkteam.ecommerce_platform.repository.OrderRepository;
-import com.hkteam.ecommerce_platform.repository.OrderStatusHistoryRepository;
-import com.hkteam.ecommerce_platform.repository.OrderStatusRepository;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 
@@ -29,17 +43,25 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class OrderService {
+    private final TransactionStatusRepository transactionStatusRepository;
+    private final TransactionRepository transactionRepository;
+    PaymentRepository paymentRepository;
+    StoreRepository storeRepository;
     OrderRepository orderRepository;
     OrderStatusRepository orderStatusRepository;
-    OrderStatusHistoryRepository orderStatusHistoryRepository;
     OrderMapper orderMapper;
+    PaymentService paymentService;
     AuthenticatedUserUtil authenticatedUserUtil;
+    ProductRepository productRepository;
+    VariantRepository variantRepository;
+    AddressRepository addressRepository;
 
     public PaginationResponse<OrderResponse> getAllOrders(String pageStr, String sizeStr, String sort, String search) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
@@ -182,7 +204,176 @@ public class OrderService {
         };
     }
 
-    public OrderResponse createOrder(OrderRequest orderRequest) {
-        return null;
+    @PreAuthorize("hasRole('USER')")
+    @Transactional
+    public OrderCreationResponse createOrder(ListOrder listOrder, HttpServletRequest request) {
+        BigDecimal amount = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal shippingFee = BigDecimal.ZERO;
+
+        Payment payment = Payment.builder()
+                .paymentDetails("Payment for orders")
+                .build();
+
+        Set<Transaction> transactions = new HashSet<>();
+
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+        var address = addressRepository.findById(listOrder.getAddressId()).orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        for (OrderRequest orderRequest : listOrder.getOrders()) {
+
+            Store store = storeRepository.findById(orderRequest.getStoreId()).orElseThrow(
+                    () -> new AppException(ErrorCode.STORE_NOT_FOUND)
+            );
+
+            BigDecimal totalOriginalPrice= totalPaymentBeforeSale(orderRequest);
+            BigDecimal totalSalePrice = totalSalePrice(orderRequest);
+
+            amount = amount.add(ShippingFeeUtil.calculateShippingFee());
+            amount = amount.add(totalSalePrice);
+            total = total.add(totalOriginalPrice);
+            discount = discount.add(totalOriginalPrice.subtract(totalSalePrice));
+            shippingFee = shippingFee.add(ShippingFeeUtil.calculateShippingFee());
+
+            BigDecimal verifyTotalOriginalPrice = BigDecimal.ZERO;
+            BigDecimal verifyTotalSalePrice = BigDecimal.ZERO;
+
+
+            List<OrderItem> orderItems = new ArrayList<>();
+
+            for (OrderItemRequest orderItemRequest: orderRequest.getOrderItems()) {
+                var product = productRepository.findById(orderItemRequest.getProductId())
+                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+                if (!product.getStore().equals(store))
+                    throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+
+                if (product.getQuantity() < orderItemRequest.getQuantity())
+                    throw  new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
+
+                if (product.isBlocked() || Boolean.FALSE.equals(product.isAvailable()))
+                    throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+
+                Variant variant = null;
+                Boolean hasVariant = Objects.isNull(product.getVariants());
+
+                if (Objects.isNull(orderItemRequest.getVariantId())) {
+                    if (hasVariant) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
+
+                    verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(product.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                    verifyTotalSalePrice = verifyTotalSalePrice.add(product.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+
+                }
+                else {
+                    if (Boolean.FALSE.equals(hasVariant))
+                        throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
+
+                    variant = variantRepository.findById(orderItemRequest.getProductId())
+                            .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+
+                    if (Boolean.FALSE.equals(variant.getProduct().getId().equals(product.getId())))
+                        throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+
+                    if (variant.getQuantity() < orderItemRequest.getQuantity())
+                        throw  new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
+
+                    verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(variant.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                    verifyTotalSalePrice = verifyTotalSalePrice.add(variant.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                }
+
+
+                OrderItem orderItem = OrderItem.builder()
+                        .product(product)
+                        .price(totalOriginalPrice)
+                        .discount(totalOriginalPrice.subtract(totalSalePrice))
+                        .quantity(orderItemRequest.getQuantity())
+                        .values(hasVariant ? null : variant.getValues().stream().map(value ->
+                                value.getValue()
+                        ).toList())
+                        .build();
+                orderItems.add(orderItem);
+
+                product.setQuantity(product.getQuantity()- orderItem.getQuantity());
+                if (hasVariant)
+                {
+                    variant.setQuantity(variant.getQuantity() - orderItem.getQuantity());
+                    variantRepository.save(variant);
+                }
+                productRepository.save(product);
+            }
+
+            if (Boolean.FALSE.equals(totalOriginalPrice.equals(verifyTotalOriginalPrice))
+                    || Boolean.FALSE.equals(totalSalePrice.equals(verifyTotalSalePrice))
+            ) throw new AppException(ErrorCode.UNKNOWN_ERROR);
+
+            Order order = Order.builder()
+                    .store(store)
+                    .user(user)
+                    .total(total)
+                    .discount(discount)
+                    .phone(address.getPhone())
+                    .recipientName(address.getRecipientName())
+                    .district(address.getDistrict())
+                    .subDistrict(address.getSubDistrict())
+                    .detailAddress(address.getDetailAddress())
+                    .shippingFee(shippingFee)
+                    .detailLocate(address.getDetailLocate())
+                    .province(address.getProvince())
+                    .note(listOrder.getNote())
+                    .grandTotal(amount)
+                    .promo(discount)
+                    .shippingDiscount(BigDecimal.ZERO)
+                    .build();
+
+            TransactionStatus pending = transactionStatusRepository.findById(TransactionStatusName.PENDING.name())
+                    .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
+            TransactionStatusHistory transactionStatusHistory = TransactionStatusHistory.builder()
+                    .transactionStatus(pending)
+                    .remarks("Process payment via the VnPay gateway.")
+                    .build();
+
+            Transaction transaction = Transaction.builder()
+                    .payment(payment)
+                    .transactionStatusHistories(new HashSet<>(List.of(transactionStatusHistory)))
+                    .order(order)
+                    .amount(amount)
+                    .build();
+
+            transactions.add(transaction);
+        }
+
+        payment.setTransactions(transactions);
+        Boolean isVnPay = listOrder.getPaymentMethod().equals(PaymentMethod.VN_PAY);
+
+        payment.setPaymentMethod(isVnPay ? PaymentMethod.VN_PAY : PaymentMethod.COD);
+
+        paymentRepository.save(payment);
+
+        return OrderCreationResponse.builder()
+                .paymentUrl(isVnPay ? paymentService.createVnPayPayment(amount, request, payment.getId()) : "Please pay upon receiving the goods.")
+                .status("Success")
+                .build();
     }
+
+    private BigDecimal totalSalePrice(OrderRequest request) {
+        BigDecimal fee = BigDecimal.ZERO;
+
+        for (OrderItemRequest orderItemRequest : request.getOrderItems()) {
+                fee = fee.add(orderItemRequest.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+        }
+
+        return fee;
+    }
+
+    private BigDecimal totalPaymentBeforeSale(OrderRequest request) {
+        BigDecimal fee = BigDecimal.ZERO;
+
+        for (OrderItemRequest orderItemRequest : request.getOrderItems()) {
+                fee = fee.add(orderItemRequest.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+        }
+        return fee;
+    }
+
+
 }
