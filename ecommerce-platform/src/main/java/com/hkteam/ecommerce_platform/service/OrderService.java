@@ -18,7 +18,6 @@ import com.hkteam.ecommerce_platform.enums.PaymentMethod;
 import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.ShippingFeeUtil;
-import com.hkteam.ecommerce_platform.util.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -51,7 +50,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class OrderService {
     private final TransactionStatusRepository transactionStatusRepository;
-    private final TransactionRepository transactionRepository;
     PaymentRepository paymentRepository;
     StoreRepository storeRepository;
     OrderRepository orderRepository;
@@ -281,15 +279,12 @@ public class OrderService {
                     verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(variant.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
                     verifyTotalSalePrice = verifyTotalSalePrice.add(variant.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
                 }
-
-
                 OrderItem orderItem = OrderItem.builder()
                         .product(product)
                         .price(totalOriginalPrice)
                         .discount(totalOriginalPrice.subtract(totalSalePrice))
                         .quantity(orderItemRequest.getQuantity())
-                        .values(hasVariant ? null : variant.getValues().stream().map(value ->
-                                value.getValue()
+                        .values(!hasVariant ? null : variant.getValues().stream().map(value -> value.getValue()
                         ).toList())
                         .build();
                 orderItems.add(orderItem);
@@ -324,6 +319,7 @@ public class OrderService {
                     .grandTotal(amount)
                     .promo(discount)
                     .shippingDiscount(BigDecimal.ZERO)
+                    .orderItems(orderItems)
                     .build();
 
             TransactionStatus pending = transactionStatusRepository.findById(TransactionStatusName.PENDING.name())
@@ -344,7 +340,7 @@ public class OrderService {
         }
 
         payment.setTransactions(transactions);
-        Boolean isVnPay = listOrder.getPaymentMethod().equals(PaymentMethod.VN_PAY);
+        boolean isVnPay = listOrder.getPaymentMethod().equals(PaymentMethod.VN_PAY);
 
         payment.setPaymentMethod(isVnPay ? PaymentMethod.VN_PAY : PaymentMethod.COD);
 
