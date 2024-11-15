@@ -12,11 +12,12 @@ import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
-    @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "user.username", target = "accountName")
     @Mapping(source = "user.name", target = "userName")
     @Mapping(source = "user.email", target = "userEmail")
     @Mapping(source = "user.phone", target = "userPhone")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "lastUpdatedAt", target = "lastUpdatedAt")
     OrderResponse toOrderResponse(Order order);
 
     List<OrderItemResponse> toOrderItemResponseList(List<OrderItem> orderItems);

@@ -58,9 +58,6 @@ public class Order {
     BigDecimal promo; // discount + shippingDiscount
     String note;
 
-    @Column(nullable = false, unique = true)
-    String code;
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     List<OrderStatusHistory> orderStatusHistories;
 

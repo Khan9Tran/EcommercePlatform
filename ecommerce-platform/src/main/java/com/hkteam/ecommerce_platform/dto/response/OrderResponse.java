@@ -32,17 +32,14 @@ public class OrderResponse {
     BigDecimal grandTotal;
     BigDecimal promo;
     String note;
-    String code;
     Instant createdAt;
     Instant lastUpdatedAt;
     String currentStatus;
     String defaultAddressStr;
-    String userId;
     String accountName;
     String userName;
     String userEmail;
     String userPhone;
-    int totalOrders;
 
     List<OrderItemResponse> orderItems;
 }

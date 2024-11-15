@@ -29,7 +29,7 @@ public class ProductComponentValueService {
     public ProductComponentValueResponse update(Long id, ProductComponentValueUpdateRequest request) {
         var pcv = productComponentValueRepository
                 .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.PROUCT_COMPONENT_VALUE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_COMPONENT_VALUE_NOT_FOUND));
 
         if (!authenticatedUserUtil.isOwner(pcv.getProduct())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
