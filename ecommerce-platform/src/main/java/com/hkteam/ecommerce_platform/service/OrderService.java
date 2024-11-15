@@ -19,8 +19,12 @@ import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.ShippingFeeUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -204,7 +208,13 @@ public class OrderService {
 
     @PreAuthorize("hasRole('USER')")
     @Transactional
+    @Retryable(
+            value = OptimisticLockingFailureException.class,
+            maxAttempts = 10,
+            backoff = @Backoff(delay = 100)
+    )
     public OrderCreationResponse createOrder(ListOrder listOrder, HttpServletRequest request) {
+        boolean isVnPay = listOrder.getPaymentMethod().equals(PaymentMethod.VN_PAY);
         BigDecimal amount = BigDecimal.ZERO;
         BigDecimal total = BigDecimal.ZERO;
         BigDecimal discount = BigDecimal.ZERO;
@@ -225,7 +235,7 @@ public class OrderService {
                     () -> new AppException(ErrorCode.STORE_NOT_FOUND)
             );
 
-            BigDecimal totalOriginalPrice= totalPaymentBeforeSale(orderRequest);
+            BigDecimal totalOriginalPrice = totalPaymentBeforeSale(orderRequest);
             BigDecimal totalSalePrice = totalSalePrice(orderRequest);
 
             amount = amount.add(ShippingFeeUtil.calculateShippingFee());
@@ -240,7 +250,7 @@ public class OrderService {
 
             List<OrderItem> orderItems = new ArrayList<>();
 
-            for (OrderItemRequest orderItemRequest: orderRequest.getOrderItems()) {
+            for (OrderItemRequest orderItemRequest : orderRequest.getOrderItems()) {
                 var product = productRepository.findById(orderItemRequest.getProductId())
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
@@ -248,7 +258,7 @@ public class OrderService {
                     throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
 
                 if (product.getQuantity() < orderItemRequest.getQuantity())
-                    throw  new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
+                    throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
                 if (product.isBlocked() || Boolean.FALSE.equals(product.isAvailable()))
                     throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
@@ -262,22 +272,25 @@ public class OrderService {
                     verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(product.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
                     verifyTotalSalePrice = verifyTotalSalePrice.add(product.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
 
-                }
-                else {
+                } else {
                     if (Boolean.FALSE.equals(hasVariant))
                         throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
 
-                    variant = variantRepository.findById(orderItemRequest.getProductId())
-                            .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
-
-                    if (Boolean.FALSE.equals(variant.getProduct().getId().equals(product.getId())))
-                        throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+                    variant = product.getVariants().stream()
+                            .filter(v -> v.getId().equals(orderItemRequest.getVariantId()))
+                            .findFirst().orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
 
                     if (variant.getQuantity() < orderItemRequest.getQuantity())
-                        throw  new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
+                        throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
                     verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(variant.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
                     verifyTotalSalePrice = verifyTotalSalePrice.add(variant.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                }
+
+                product.setQuantity(product.getQuantity() - orderItemRequest.getQuantity());
+
+                if (hasVariant) {
+                    variant.setQuantity(variant.getQuantity() - orderItemRequest.getQuantity());
                 }
                 OrderItem orderItem = OrderItem.builder()
                         .product(product)
@@ -288,19 +301,24 @@ public class OrderService {
                         ).toList())
                         .build();
                 orderItems.add(orderItem);
-
-                product.setQuantity(product.getQuantity()- orderItem.getQuantity());
-                if (hasVariant)
-                {
-                    variant.setQuantity(variant.getQuantity() - orderItem.getQuantity());
-                    variantRepository.save(variant);
-                }
-                productRepository.save(product);
             }
 
             if (Boolean.FALSE.equals(totalOriginalPrice.equals(verifyTotalOriginalPrice))
                     || Boolean.FALSE.equals(totalSalePrice.equals(verifyTotalSalePrice))
             ) throw new AppException(ErrorCode.UNKNOWN_ERROR);
+
+            OrderStatus orderStatus;
+            if (isVnPay)
+                orderStatus = orderStatusRepository.findByName(OrderStatusName.ON_HOLD.name()).orElseThrow(
+                        () -> new AppException(ErrorCode.UNKNOWN_ERROR));
+            else
+                orderStatus = orderStatusRepository.findByName(OrderStatusName.PENDING.name()).orElseThrow(
+                        () -> new AppException(ErrorCode.UNKNOWN_ERROR));
+
+            OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
+                    .orderStatus(orderStatus)
+                    .remarks("Process order auto by HKUpTech")
+                    .build();
 
             Order order = Order.builder()
                     .store(store)
@@ -320,10 +338,19 @@ public class OrderService {
                     .promo(discount)
                     .shippingDiscount(BigDecimal.ZERO)
                     .orderItems(orderItems)
+                    .shippingTotal(shippingFee)
+                    .orderStatusHistories(new ArrayList<>(List.of(orderStatusHistory)))
                     .build();
 
-            TransactionStatus pending = transactionStatusRepository.findById(TransactionStatusName.PENDING.name())
+            for (OrderItem item : orderItems) {
+                item.setOrder(order);
+            }
+
+            orderStatusHistory.setOrder(order);
+
+            TransactionStatus pending = transactionStatusRepository.findById(TransactionStatusName.WAITING.name())
                     .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
+
             TransactionStatusHistory transactionStatusHistory = TransactionStatusHistory.builder()
                     .transactionStatus(pending)
                     .remarks("Process payment via the VnPay gateway.")
@@ -336,12 +363,12 @@ public class OrderService {
                     .amount(amount)
                     .build();
 
+            transactionStatusHistory.setTransaction(transaction);
             transactions.add(transaction);
         }
 
         payment.setTransactions(transactions);
-        boolean isVnPay = listOrder.getPaymentMethod().equals(PaymentMethod.VN_PAY);
-
+        payment.setAmount(amount);
         payment.setPaymentMethod(isVnPay ? PaymentMethod.VN_PAY : PaymentMethod.COD);
 
         paymentRepository.save(payment);
@@ -369,6 +396,12 @@ public class OrderService {
                 fee = fee.add(orderItemRequest.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
         }
         return fee;
+    }
+
+    @Recover
+    public OrderCreationResponse recover(OptimisticLockingFailureException e, ListOrder listOrder, HttpServletRequest request) {
+       log.error("Recovering after retries failed: {}" ,e.getMessage());
+        throw new AppException(ErrorCode.RETRY_FAILED);
     }
 
 

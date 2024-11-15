@@ -30,13 +30,13 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     Order order;
 
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<TransactionStatusHistory> transactionStatusHistories;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     Payment payment;
 
     BigDecimal amount;

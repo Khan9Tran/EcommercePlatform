@@ -34,10 +34,11 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			lower(o.recipientName) like lower(concat('%', ?3, '%') )
 			or lower(o.phone) like lower(concat('%', ?4, '%') )
 			or cast(o.grandTotal as String) like concat('%', ?5, '%')
-			or lower(o.code) like lower(concat('%', ?6, '%'))
+	
 		)
 	)
 	""")
+	//	or lower(o.code) like lower(concat('%', ?6, '%'))
     Page<Order> findAllOrderByStore(
             @Nullable String storeId,
             @Nullable String statusName,

@@ -11,6 +11,7 @@ import com.hkteam.ecommerce_platform.repository.TransactionStatusRepository;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
+@EnableRetry
 public class ApplicationInitConfig {
     PasswordEncoder passwordEncoder;
 
@@ -101,10 +103,10 @@ public class ApplicationInitConfig {
                 }
             }
 
-            if (transactionStatusRepository.findById(TransactionStatusName.PENDING.name()).isEmpty()) {
+            if (transactionStatusRepository.findById(TransactionStatusName.WAITING.name()).isEmpty()) {
                 log.info("Creating transaction pending status");
                 TransactionStatus transactionStatus = TransactionStatus.builder()
-                        .name(TransactionStatusName.PENDING.name())
+                        .name(TransactionStatusName.WAITING.name())
                         .build();
                 try {
                     transactionStatusRepository.save(transactionStatus);
@@ -116,7 +118,7 @@ public class ApplicationInitConfig {
             if (transactionStatusRepository.findById(TransactionStatusName.SUCCESS.name()).isEmpty()) {
                 log.info("Creating transaction success status");
                 TransactionStatus transactionStatus = TransactionStatus.builder()
-                        .name(TransactionStatusName.PENDING.name())
+                        .name(TransactionStatusName.SUCCESS.name())
                         .build();
                 try {
                     transactionStatusRepository.save(transactionStatus);

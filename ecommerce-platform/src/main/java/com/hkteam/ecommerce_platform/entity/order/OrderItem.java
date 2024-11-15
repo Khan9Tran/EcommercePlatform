@@ -6,6 +6,7 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
+import jakarta.persistence.CascadeType;
 import jakarta.validation.constraints.Min;
 import org.hibernate.annotations.*;
 
@@ -28,12 +29,12 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     Product product;
 
     List<String> values;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     Order order;
 
     @Min(1)

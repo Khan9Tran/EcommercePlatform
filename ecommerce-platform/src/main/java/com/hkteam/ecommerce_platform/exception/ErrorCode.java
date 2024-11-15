@@ -110,7 +110,8 @@ public enum ErrorCode {
     STATUS_NOT_FOUND(1694, "Status not found", HttpStatus.NOT_FOUND),
     COMPLETED_ORDER(1695, "Completed order", HttpStatus.BAD_REQUEST),
     ORDER_NOT_BELONG_TO_STORE(1696, "This order doesn't belong to store", HttpStatus.BAD_REQUEST),
-    PRODUCT_PRICE_HAS_CHANGE(1697, "Product has new price, please reload", HttpStatus.BAD_REQUEST)
+    PRODUCT_PRICE_HAS_CHANGE(1697, "Product has new price, please reload", HttpStatus.BAD_REQUEST),
+    RETRY_FAILED(1698,"There are too many orders at the moment. Please try again shortly.", HttpStatus.BAD_REQUEST)
     ;
 
     int code;
