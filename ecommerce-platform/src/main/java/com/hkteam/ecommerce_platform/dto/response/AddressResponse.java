@@ -16,6 +16,7 @@ public class AddressResponse {
     String phone;
     String province;
     String district;
+    String subDistrict;
     String detailAddress;
     String detailLocate;
     Instant createdAt;
