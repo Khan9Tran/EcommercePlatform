@@ -28,7 +28,7 @@ public class OrderStatusHistory {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     Order order;
 
     @ManyToOne

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 
 import org.hibernate.annotations.*;
 
@@ -36,6 +37,7 @@ public class Variant {
 
     boolean isAvailable = Boolean.TRUE;
 
+    @Min(0)
     int quantity;
 
     @OneToMany(mappedBy = "variant")
@@ -57,4 +59,7 @@ public class Variant {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
+    @Version
+    private int version;
 }

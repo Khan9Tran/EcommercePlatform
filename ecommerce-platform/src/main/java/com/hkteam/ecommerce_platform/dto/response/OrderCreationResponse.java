@@ -1,7 +1,4 @@
-package com.hkteam.ecommerce_platform.dto.request;
-
-import java.math.BigDecimal;
-import java.util.List;
+package com.hkteam.ecommerce_platform.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,11 +8,10 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class OrderRequest {
-    String storeId;
-    BigDecimal shippingFee;
-    List<OrderItemRequest> orderItems;
+public class OrderCreationResponse {
+    String paymentUrl;
+    String status;
 }

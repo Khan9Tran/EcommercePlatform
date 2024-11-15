@@ -17,6 +17,6 @@ public class OrderItemRequest {
     String productId;
     String variantId;
     Integer quantity;
-    BigDecimal originalPrice;
     BigDecimal salePrice;
+    BigDecimal originalPrice;
 }

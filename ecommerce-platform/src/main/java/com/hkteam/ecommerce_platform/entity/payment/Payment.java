@@ -30,7 +30,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @OneToMany(mappedBy = "payment")
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Transaction> transactions;
 
     BigDecimal amount;

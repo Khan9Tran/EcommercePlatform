@@ -61,7 +61,7 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     List<OrderStatusHistory> orderStatusHistories;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     List<OrderItem> orderItems;
 
     @OneToOne(mappedBy = "order")
