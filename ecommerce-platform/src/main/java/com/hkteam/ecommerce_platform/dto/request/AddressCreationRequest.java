@@ -29,6 +29,9 @@ public class AddressCreationRequest {
     String district;
 
     @ValidSpace
+    String subDistrict;
+
+    @ValidSpace
     String detailAddress;
 
     @ValidSpace

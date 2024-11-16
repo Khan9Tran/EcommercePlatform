@@ -85,6 +85,7 @@ public class StoreService {
                     ", ",
                     defaultAddress.getDetailLocate(),
                     defaultAddress.getDetailAddress(),
+                    defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
                     defaultAddress.getProvince());
         }
@@ -114,6 +115,7 @@ public class StoreService {
                     ", ",
                     defaultAddress.getDetailLocate(),
                     defaultAddress.getDetailAddress(),
+                    defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
                     defaultAddress.getProvince());
         }
@@ -180,6 +182,7 @@ public class StoreService {
                     ", ",
                     defaultAddress.getDetailLocate(),
                     defaultAddress.getDetailAddress(),
+                    defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
                     defaultAddress.getProvince());
         }
@@ -220,6 +223,7 @@ public class StoreService {
                                     ", ",
                                     address.getDetailLocate(),
                                     address.getDetailAddress(),
+                                    address.getSubDistrict(),
                                     address.getDistrict(),
                                     address.getProvince()));
                     return addressMap;
