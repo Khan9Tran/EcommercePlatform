@@ -38,13 +38,14 @@ public class OrderController {
     @Operation(summary = "Get all order by seller", description = "Api get all order by seller")
     @GetMapping("/seller")
     public ApiResponse<PaginationResponse<OrderResponse>> getAllOrderBySeller(
-            @RequestParam(value = "sortBy", required = false) String sortBy,
-            @RequestParam(value = "orderBy", required = false) String orderBy,
+            @RequestParam(value = "sort", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String orderBy,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
-            @RequestParam(value = "search", required = false, defaultValue = "") String search) {
+            @RequestParam(value = "search", required = false, defaultValue = "") String search,
+            @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
         return ApiResponse.<PaginationResponse<OrderResponse>>builder()
-                .result(orderService.getAllOrderBySeller(page, size, sortBy, orderBy, search))
+                .result(orderService.getAllOrderBySeller(page, size, sortBy, orderBy, search, filter))
                 .build();
     }
 

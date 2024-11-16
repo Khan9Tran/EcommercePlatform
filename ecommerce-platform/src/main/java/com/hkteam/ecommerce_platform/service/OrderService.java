@@ -75,7 +75,7 @@ public class OrderService {
     static String[] ORDER_BY = {"asc", "desc"};
 
     public PaginationResponse<OrderResponse> getAllOrderBySeller(
-            String pageStr, String sizeStr, String sortBy, String orderBy, String search) {
+            String pageStr, String sizeStr, String sortBy, String orderBy, String search, String filter) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
         if (user.getStore() == null) {
             throw new AppException(ErrorCode.STORE_NOT_FOUND);
@@ -89,16 +89,17 @@ public class OrderService {
                 : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
 
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = orderRepository.findAllOrderByStore(storeId, search, search, search, pageable);
-        // var pageData =
-        // orderRepository.findByStore_IdContainsAndOrderStatusHistories_OrderStatus_NameLikeOrIdLike(storeId, search,
-        // search, pageable);
+        var pageData = orderRepository.findAllOrderByStore(storeId, search, filter, pageable);
 
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);
         List<OrderResponse> orderResponses = new ArrayList<>();
         pageData.getContent().forEach((order -> {
+            OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
+                    .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
+                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
+
             OrderResponse orderResponse = orderMapper.toOrderResponse(order);
 
             String defaultAddressStr = String.format(
@@ -109,8 +110,7 @@ public class OrderService {
                     order.getSubDistrict(),
                     order.getProvince());
             orderResponse.setDefaultAddressStr(defaultAddressStr);
-            orderResponse.setCurrentStatus(
-                    order.getOrderStatusHistories().getLast().getOrderStatus().getName());
+            orderResponse.setCurrentStatus(lastStatusHistory.getOrderStatus().getName());
             orderResponse.setUserPhone(maskPhone(orderResponse.getUserPhone()));
             orderResponse.setPhone(maskPhone(orderResponse.getPhone()));
             orderResponse.setUserEmail(maskEmail(orderResponse.getUserEmail()));
