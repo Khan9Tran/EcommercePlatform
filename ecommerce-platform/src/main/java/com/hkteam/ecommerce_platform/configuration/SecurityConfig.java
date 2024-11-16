@@ -30,7 +30,12 @@ public class SecurityConfig {
         "/external-auths/authentication/google",
         "/external-auths/authentication/facebook",
         "/emails/reset-request",
-        "/emails/reset-password",
+        "/emails/reset-password"
+
+    };
+
+    private static final String[] VN_PAY_ENDPOINTS = {
+            "payments/vn-pay-callback"
     };
 
     private static final String[] SEARCH_ENDPOINTS = {
@@ -52,6 +57,8 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(requests -> requests.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, SEARCH_ENDPOINTS)
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, VN_PAY_ENDPOINTS)
                 .permitAll()
                 .requestMatchers(SWAGGER_WHITELIST_ENDPOINTS)
                 .permitAll()

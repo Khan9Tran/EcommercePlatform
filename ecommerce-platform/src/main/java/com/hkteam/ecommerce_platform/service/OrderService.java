@@ -207,12 +207,12 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Transactional
     @Retryable(
             value = OptimisticLockingFailureException.class,
             maxAttempts = 10,
             backoff = @Backoff(delay = 100)
     )
+    @Transactional
     public OrderCreationResponse createOrder(ListOrder listOrder, HttpServletRequest request) {
         boolean isVnPay = listOrder.getPaymentMethod().equals(PaymentMethod.VN_PAY);
         BigDecimal amount = BigDecimal.ZERO;
@@ -403,6 +403,5 @@ public class OrderService {
        log.error("Recovering after retries failed: {}" ,e.getMessage());
         throw new AppException(ErrorCode.RETRY_FAILED);
     }
-
 
 }

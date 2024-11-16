@@ -7,9 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
 @EnableFeignClients
+@EnableRetry(proxyTargetClass = true)
 public class EcommercePlatformApplication {
 
     public static void main(String[] args) {
