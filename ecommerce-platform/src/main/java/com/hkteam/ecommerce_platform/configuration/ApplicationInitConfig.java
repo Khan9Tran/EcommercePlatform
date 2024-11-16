@@ -2,12 +2,6 @@ package com.hkteam.ecommerce_platform.configuration;
 
 import java.util.HashSet;
 
-import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
-import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
-import com.hkteam.ecommerce_platform.enums.OrderStatusName;
-import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
-import com.hkteam.ecommerce_platform.repository.OrderStatusRepository;
-import com.hkteam.ecommerce_platform.repository.TransactionStatusRepository;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,10 +9,16 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
+import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
+import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.Gender;
+import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.enums.RoleName;
+import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
+import com.hkteam.ecommerce_platform.repository.OrderStatusRepository;
 import com.hkteam.ecommerce_platform.repository.RoleRepository;
+import com.hkteam.ecommerce_platform.repository.TransactionStatusRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,11 @@ public class ApplicationInitConfig {
     PasswordEncoder passwordEncoder;
 
     @Bean
-    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository, TransactionStatusRepository transactionStatusRepository, OrderStatusRepository orderStatusRepository) {
+    ApplicationRunner applicationRunner(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            TransactionStatusRepository transactionStatusRepository,
+            OrderStatusRepository orderStatusRepository) {
         return args -> {
             if (roleRepository.findByName(RoleName.USER).isEmpty()) {
                 log.info("Creating user role");
@@ -102,7 +106,9 @@ public class ApplicationInitConfig {
                 }
             }
 
-            if (transactionStatusRepository.findById(TransactionStatusName.WAITING.name()).isEmpty()) {
+            if (transactionStatusRepository
+                    .findById(TransactionStatusName.WAITING.name())
+                    .isEmpty()) {
                 log.info("Creating transaction pending status");
                 TransactionStatus transactionStatus = TransactionStatus.builder()
                         .name(TransactionStatusName.WAITING.name())
@@ -114,7 +120,9 @@ public class ApplicationInitConfig {
                 }
             }
 
-            if (transactionStatusRepository.findById(TransactionStatusName.SUCCESS.name()).isEmpty()) {
+            if (transactionStatusRepository
+                    .findById(TransactionStatusName.SUCCESS.name())
+                    .isEmpty()) {
                 log.info("Creating transaction success status");
                 TransactionStatus transactionStatus = TransactionStatus.builder()
                         .name(TransactionStatusName.SUCCESS.name())

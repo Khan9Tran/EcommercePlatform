@@ -19,6 +19,7 @@ import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.ShippingFeeUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -65,27 +66,35 @@ public class OrderService {
     VariantRepository variantRepository;
     AddressRepository addressRepository;
 
-    public PaginationResponse<OrderResponse> getAllOrders(String pageStr, String sizeStr, String sort, String search) {
+    static String[] SORT_BY = {"createdAt"};
+    static String[] ORDER_BY = {"asc", "desc"};
+
+    public PaginationResponse<OrderResponse> getAllOrderBySeller(
+            String pageStr, String sizeStr, String sortBy, String orderBy, String search, String filter) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
         if (user.getStore() == null) {
             throw new AppException(ErrorCode.STORE_NOT_FOUND);
         }
         String storeId = user.getStore().getId();
 
-        Sort sortable =
-                switch (sort) {
-                    case "newest" -> Sort.by("createdAt").descending();
-                    case "oldest" -> Sort.by("createdAt").ascending();
-                    default -> Sort.unsorted();
-                };
+        if (!Arrays.asList(SORT_BY).contains(sortBy)) sortBy = null;
+        if (!Arrays.asList(ORDER_BY).contains(orderBy)) orderBy = null;
+        Sort sortable = (sortBy == null || orderBy == null)
+                ? Sort.unsorted()
+                : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
+
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = orderRepository.findAllOrderByStore(storeId, search, search, search, search, search, pageable);
+        var pageData = orderRepository.findAllOrderByStore(storeId, search, search, pageable);
 
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);
         List<OrderResponse> orderResponses = new ArrayList<>();
         pageData.getContent().forEach((order -> {
+            OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
+                    .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
+                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
+
             OrderResponse orderResponse = orderMapper.toOrderResponse(order);
 
             String defaultAddressStr = String.format(
@@ -96,18 +105,13 @@ public class OrderService {
                     order.getSubDistrict(),
                     order.getProvince());
             orderResponse.setDefaultAddressStr(defaultAddressStr);
-
-            orderResponse.setCurrentStatus(
-                    order.getOrderStatusHistories().getLast().getOrderStatus().getName());
-            orderResponse.setCreatedAt(order.getCreatedAt());
-            orderResponse.setLastUpdatedAt(order.getLastUpdatedAt());
+            orderResponse.setCurrentStatus(lastStatusHistory.getOrderStatus().getName());
             orderResponse.setUserPhone(maskPhone(orderResponse.getUserPhone()));
             orderResponse.setPhone(maskPhone(orderResponse.getPhone()));
             orderResponse.setUserEmail(maskEmail(orderResponse.getUserEmail()));
 
             List<OrderItemResponse> orderItemResponses = orderMapper.toOrderItemResponseList(order.getOrderItems());
             orderResponse.setOrderItems(orderItemResponses);
-
             orderResponses.add(orderResponse);
         }));
 
@@ -167,8 +171,7 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public void updateOrderStatus(String orderId) {
-        try {
+    public void updateOrderStatusBySeller(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
@@ -190,18 +193,58 @@ public class OrderService {
                         .orderStatus(nextStatus)
                         .remarks(order.getOrderStatusHistories().getLast().getRemarks())
                         .build());
-
+        try {
             orderRepository.save(order);
-        } catch (Exception e) {
-            log.info("LOIIIIIIIIIIII" + e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            log.info("Error while updating order status: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    public void cancelOrderBySeller(String orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
+            throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
+        }
+
+        OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
+        if (OrderStatusName.CANCELLED
+                .name()
+                .equals(lastStatusHistory.getOrderStatus().getName())) {
+            throw new AppException(ErrorCode.ORDER_CANCELLED);
+        }
+
+        OrderStatus cancelledStatus = orderStatusRepository
+                .findByName(OrderStatusName.CANCELLED.name())
+                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
+
+        OrderStatusHistory cancelledStatusHistory = OrderStatusHistory.builder()
+                .order(order)
+                .orderStatus(cancelledStatus)
+                .remarks(order.getOrderStatusHistories().getLast().getRemarks())
+                .build();
+
+        order.getOrderStatusHistories().add(cancelledStatusHistory);
+
+        try {
+            orderRepository.save(order);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Error while cancelling order: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
     private OrderStatusName getNextStatus(OrderStatusName currentStatus) {
         return switch (currentStatus) {
-            case CONFIRMING -> OrderStatusName.WAITING;
-            case WAITING -> OrderStatusName.SHIPPING;
-            case SHIPPING -> OrderStatusName.COMPLETED;
+            case ON_HOLD -> OrderStatusName.PENDING;
+            case PENDING -> OrderStatusName.CONFIRMED;
+            case CONFIRMED -> OrderStatusName.PREPARING;
+            case PREPARING -> OrderStatusName.WAITING_FOR_SHIPPING;
+            case WAITING_FOR_SHIPPING -> OrderStatusName.PICKED_UP;
+            case PICKED_UP -> OrderStatusName.OUT_FOR_DELIVERY;
+            case OUT_FOR_DELIVERY -> OrderStatusName.DELIVERED;
             default -> throw new AppException(ErrorCode.COMPLETED_ORDER);
         };
     }
@@ -297,23 +340,29 @@ public class OrderService {
                         .price(totalOriginalPrice)
                         .discount(totalOriginalPrice.subtract(totalSalePrice))
                         .quantity(orderItemRequest.getQuantity())
-                        .values(!hasVariant ? null : variant.getValues().stream().map(value -> value.getValue()
-                        ).toList())
+                        .values(
+                                !hasVariant
+                                        ? null
+                                        : variant.getValues().stream()
+                                                .map(value -> value.getValue())
+                                                .toList())
                         .build();
                 orderItems.add(orderItem);
             }
 
             if (Boolean.FALSE.equals(totalOriginalPrice.equals(verifyTotalOriginalPrice))
-                    || Boolean.FALSE.equals(totalSalePrice.equals(verifyTotalSalePrice))
-            ) throw new AppException(ErrorCode.UNKNOWN_ERROR);
+                    || Boolean.FALSE.equals(totalSalePrice.equals(verifyTotalSalePrice)))
+                throw new AppException(ErrorCode.UNKNOWN_ERROR);
 
             OrderStatus orderStatus;
             if (isVnPay)
-                orderStatus = orderStatusRepository.findByName(OrderStatusName.ON_HOLD.name()).orElseThrow(
-                        () -> new AppException(ErrorCode.UNKNOWN_ERROR));
+                orderStatus = orderStatusRepository
+                        .findByName(OrderStatusName.ON_HOLD.name())
+                        .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
             else
-                orderStatus = orderStatusRepository.findByName(OrderStatusName.PENDING.name()).orElseThrow(
-                        () -> new AppException(ErrorCode.UNKNOWN_ERROR));
+                orderStatus = orderStatusRepository
+                        .findByName(OrderStatusName.PENDING.name())
+                        .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
 
             OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
                     .orderStatus(orderStatus)
@@ -348,7 +397,8 @@ public class OrderService {
 
             orderStatusHistory.setOrder(order);
 
-            TransactionStatus pending = transactionStatusRepository.findById(TransactionStatusName.WAITING.name())
+            TransactionStatus pending = transactionStatusRepository
+                    .findById(TransactionStatusName.WAITING.name())
                     .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
 
             TransactionStatusHistory transactionStatusHistory = TransactionStatusHistory.builder()
@@ -374,7 +424,10 @@ public class OrderService {
         paymentRepository.save(payment);
 
         return OrderCreationResponse.builder()
-                .paymentUrl(isVnPay ? paymentService.createVnPayPayment(amount, request, payment.getId()) : "Please pay upon receiving the goods.")
+                .paymentUrl(
+                        isVnPay
+                                ? paymentService.createVnPayPayment(amount, request, payment.getId())
+                                : "Please pay upon receiving the goods.")
                 .status("Success")
                 .build();
     }
@@ -383,7 +436,7 @@ public class OrderService {
         BigDecimal fee = BigDecimal.ZERO;
 
         for (OrderItemRequest orderItemRequest : request.getOrderItems()) {
-                fee = fee.add(orderItemRequest.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+            fee = fee.add(orderItemRequest.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
         }
 
         return fee;
@@ -393,15 +446,18 @@ public class OrderService {
         BigDecimal fee = BigDecimal.ZERO;
 
         for (OrderItemRequest orderItemRequest : request.getOrderItems()) {
-                fee = fee.add(orderItemRequest.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+            fee = fee.add(
+                    orderItemRequest.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
         }
         return fee;
     }
 
     @Recover
-    public OrderCreationResponse recover(OptimisticLockingFailureException e, ListOrder listOrder, HttpServletRequest request) {
-       log.error("Recovering after retries failed: {}" ,e.getMessage());
+    public OrderCreationResponse recover(
+            OptimisticLockingFailureException e, ListOrder listOrder, HttpServletRequest request) {
+        log.error("Recovering after retries failed: {}", e.getMessage());
         throw new AppException(ErrorCode.RETRY_FAILED);
     }
+
 
 }

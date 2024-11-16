@@ -5,9 +5,9 @@ import java.time.Instant;
 import java.util.List;
 
 import jakarta.persistence.*;
-
 import jakarta.persistence.CascadeType;
 import jakarta.validation.constraints.Min;
+
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.product.Product;

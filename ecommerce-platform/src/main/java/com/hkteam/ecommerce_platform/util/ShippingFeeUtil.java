@@ -1,8 +1,8 @@
 package com.hkteam.ecommerce_platform.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.math.BigDecimal;
+
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ShippingFeeUtil {

@@ -41,7 +41,6 @@ public class Transaction {
 
     BigDecimal amount;
 
-
     @CreationTimestamp
     Instant createdAt;
 

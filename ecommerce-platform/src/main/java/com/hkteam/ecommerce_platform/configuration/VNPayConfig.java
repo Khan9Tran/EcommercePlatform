@@ -9,8 +9,6 @@ import java.util.TimeZone;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import com.hkteam.ecommerce_platform.util.VNPayUtil;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

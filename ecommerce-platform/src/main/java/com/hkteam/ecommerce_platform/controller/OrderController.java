@@ -1,12 +1,12 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.request.ListOrder;
-import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.web.bind.annotation.*;
 
-import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
+import com.hkteam.ecommerce_platform.dto.request.ListOrder;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
 import com.hkteam.ecommerce_platform.dto.response.OrderResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.service.OrderService;
@@ -35,29 +35,41 @@ public class OrderController {
                 .build();
     }
 
-    @Operation(summary = "Get all orders", description = "Api get all orders")
-    @GetMapping()
-    public ApiResponse<PaginationResponse<OrderResponse>> getAllOrders(
-            @RequestParam(value = "sort", required = false, defaultValue = "") String sort,
+    @Operation(summary = "Get all order by seller", description = "Api get all order by seller")
+    @GetMapping("/seller")
+    public ApiResponse<PaginationResponse<OrderResponse>> getAllOrderBySeller(
+            @RequestParam(value = "sort", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String orderBy,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
-            @RequestParam(value = "search", required = false, defaultValue = "") String search) {
+            @RequestParam(value = "search", required = false, defaultValue = "") String search,
+            @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
         return ApiResponse.<PaginationResponse<OrderResponse>>builder()
-                .result(orderService.getAllOrders(page, size, sort, search))
+                .result(orderService.getAllOrderBySeller(page, size, sortBy, orderBy, search, filter))
                 .build();
     }
 
-    @PutMapping("/{orderId}/status")
-    @Operation(summary = "Update order status", description = "Api update status order")
-    public ApiResponse<Void> updateOrderStatus(@PathVariable String orderId) {
-        orderService.updateOrderStatus(orderId);
+    @PutMapping("/{orderId}/update-status/seller")
+    @Operation(summary = "Update order status by seller", description = "Api update status order by seller")
+    public ApiResponse<Void> updateOrderStatusBySeller(@PathVariable String orderId) {
+        orderService.updateOrderStatusBySeller(orderId);
         return ApiResponse.<Void>builder()
                 .message("Updated status order successfully")
                 .build();
     }
 
+    @PutMapping("/{orderId}/cancel/seller")
+    @Operation(summary = "Cancel order by seller", description = "Api cancel order by seller")
+    public ApiResponse<Void> cancelOrderBySeller(@PathVariable String orderId) {
+        orderService.cancelOrderBySeller(orderId);
+        return ApiResponse.<Void>builder()
+                .message("Cancelled order successfully")
+                .build();
+    }
+
     @PostMapping("/")
-    public ApiResponse<OrderCreationResponse> createOrder(@RequestBody ListOrder listOrder, HttpServletRequest request) {
+    public ApiResponse<OrderCreationResponse> createOrder(
+            @RequestBody ListOrder listOrder, HttpServletRequest request) {
         return ApiResponse.<OrderCreationResponse>builder()
                 .result(orderService.createOrder(listOrder, request))
                 .build();
