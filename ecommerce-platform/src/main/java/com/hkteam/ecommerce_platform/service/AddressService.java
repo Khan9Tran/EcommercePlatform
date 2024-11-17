@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
+import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
+import com.hkteam.ecommerce_platform.repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,24 +23,33 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class AddressService {
+    UserRepository userRepository;
     AddressRepository addressRepository;
     AddressMapper addressMapper;
     AuthenticatedUserUtil authenticatedUserUtil;
 
+    @Transactional
     public AddressResponse createAddress(AddressCreationRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-
+        if (Boolean.FALSE.equals(user.getAddresses().isEmpty()) && user.getAddresses().size() >= 10) {
+            throw new AppException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
+        }
         Address address = addressMapper.toAddress(request);
         address.setUser(user);
 
         try {
             addressRepository.save(address);
+            if (request.getIsDefault()){
+                user.setDefaultAddressId(address.getId());
+                userRepository.save(user);
+            }
         } catch (DataIntegrityViolationException e) {
             log.info("Error while creating address {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
@@ -47,9 +58,9 @@ public class AddressService {
         return addressMapper.toAddressResponse(address);
     }
 
+    @Transactional
     public AddressResponse updateAddress(Long id, AddressUpdateRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-
         Address address = addressRepository
                 .findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
@@ -72,19 +83,41 @@ public class AddressService {
         Address address = addressRepository
                 .findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-        addressRepository.delete(address);
+        if (user.getDefaultAddressId().equals(address.getId())) {
+            throw new AppException(ErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
+        }
+        try {
+            addressRepository.delete(address);
+        }
+        catch (DataIntegrityViolationException e) {
+            log.info("Error while deleting address {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
     }
 
-    public PaginationResponse<AddressResponse> getAllAddresses(String pageStr, String sizeStr) {
+    public PaginationResponse<UserAddressResponse> getAllAddresses(String pageStr, String sizeStr) {
         Sort sort = Sort.by("createdAt").descending();
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
+        var user = authenticatedUserUtil.getAuthenticatedUser();
 
         var pageData = addressRepository.findAll(pageable);
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);
+        var addressList = pageData.getContent().stream().map(addressMapper::toUserAddressResponse).toList();
 
-        return PaginationResponse.<AddressResponse>builder()
+        for (UserAddressResponse address : addressList) {
+            if (user.getDefaultAddressId().equals(address.getId())) {
+                address.setIsDefault(Boolean.TRUE);
+            }
+            if (Boolean.FALSE.equals(user.getStore()) && address.getIsDefault().equals(user.getStore().getDefaultAddressId())) {
+                address.setIsStoreAddress(Boolean.TRUE);
+            }
+        }
+
+
+
+        return PaginationResponse.<UserAddressResponse>builder()
                 .currentPage(Integer.parseInt(pageStr))
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
@@ -93,9 +126,7 @@ public class AddressService {
                 .hasPrevious(pageData.hasPrevious())
                 .nextPage(pageData.hasNext() ? page + 1 : null)
                 .previousPage(pageData.hasPrevious() ? page - 1 : null)
-                .data(pageData.getContent().stream()
-                        .map(addressMapper::toAddressResponse)
-                        .toList())
+                .data(addressList)
                 .build();
     }
 

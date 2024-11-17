@@ -114,6 +114,9 @@ public enum ErrorCode {
     PRODUCT_PRICE_HAS_CHANGE(1698, "Product has new price, please reload", HttpStatus.BAD_REQUEST),
     RETRY_FAILED(1699, "There are too many orders at the moment. Please try again shortly.", HttpStatus.BAD_REQUEST),
     STATUS_HISTORY_NOT_FOUND(1700, "Order history status not found", HttpStatus.NOT_FOUND),
+    ADDRESS_LIMIT_EXCEEDED(1701, "The number of addresses created has reached the limit.", HttpStatus.BAD_REQUEST),
+    CANNOT_UN_DEFAULT(1702, "Cannot un-default address", HttpStatus.BAD_REQUEST),
+    CANNOT_DELETE_DEFAULT_ADDRESS(1703, "Cannot delete default address", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

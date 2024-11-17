@@ -27,6 +27,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -156,6 +157,7 @@ public class StoreService {
         return storeMapper.toStoreRegistrationResponse(store);
     }
 
+    @Transactional
     public StoreDetailResponse updateStore(StoreUpdateRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 

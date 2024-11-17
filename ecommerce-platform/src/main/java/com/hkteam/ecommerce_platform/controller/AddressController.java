@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class AddressController {
 
     @Operation(summary = "Update address", description = "Api update address")
     @PutMapping("/{id}")
-    public ApiResponse<AddressResponse> updateCategory(
+    public ApiResponse<AddressResponse> updateAddress(
             @PathVariable Long id, @RequestBody @Valid AddressUpdateRequest request) {
         AddressResponse addressResponse = addressService.updateAddress(id, request);
 
@@ -55,12 +56,12 @@ public class AddressController {
 
     @Operation(summary = "Get all addresses", description = "Api get all addresses")
     @GetMapping()
-    public ApiResponse<PaginationResponse<AddressResponse>> getAllAddresses(
+    public ApiResponse<PaginationResponse<UserAddressResponse>> getAllAddresses(
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
-        PaginationResponse<AddressResponse> paginationResponse = addressService.getAllAddresses(page, size);
+        PaginationResponse<UserAddressResponse> paginationResponse = addressService.getAllAddresses(page, size);
 
-        return ApiResponse.<PaginationResponse<AddressResponse>>builder()
+        return ApiResponse.<PaginationResponse<UserAddressResponse>>builder()
                 .result(paginationResponse)
                 .build();
     }

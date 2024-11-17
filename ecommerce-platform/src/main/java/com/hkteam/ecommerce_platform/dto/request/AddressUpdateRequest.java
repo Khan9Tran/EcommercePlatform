@@ -29,8 +29,9 @@ public class AddressUpdateRequest {
     String district;
 
     @ValidSpace
-    String detailAddress;
+    String subDistrict;
 
     @ValidSpace
-    String detailLocate;
+    String detailAddress;
+
 }

@@ -36,4 +36,7 @@ public class AddressCreationRequest {
 
     @ValidSpace
     String detailLocate;
+
+    @Builder.Default
+    Boolean isDefault = false;
 }
