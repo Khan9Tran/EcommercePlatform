@@ -100,7 +100,7 @@ public class AddressService {
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
-        var pageData = addressRepository.findAll(pageable);
+        var pageData = addressRepository.findAllByUser(user,pageable);
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);

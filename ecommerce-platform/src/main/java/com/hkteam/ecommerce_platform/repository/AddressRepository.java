@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.repository;
 
 import java.util.Optional;
 
+import com.hkteam.ecommerce_platform.entity.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,7 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
 
     @NotNull
     Optional<Address> findByIdAndUserId(@NotNull Long id, @NotNull String userId);
+
+    @NotNull
+    Page<Address> findAllByUser(@NotNull User user, @NotNull Pageable pageable);
 }
