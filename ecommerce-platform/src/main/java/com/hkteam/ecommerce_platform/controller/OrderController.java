@@ -5,10 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.ListOrder;
-import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
-import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
-import com.hkteam.ecommerce_platform.dto.response.OrderResponse;
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.service.OrderService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,24 +24,24 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderController {
     OrderService orderService;
 
-    @GetMapping("/{orderId}")
-    @Operation(summary = "Get one order by id", description = "Api get one order by id")
-    public ApiResponse<OrderResponse> getOneOrderById(@PathVariable String orderId) {
-        return ApiResponse.<OrderResponse>builder()
-                .result(orderService.getOneOrderById(orderId))
+    @GetMapping("/{orderId}/seller")
+    @Operation(summary = "Get one order by seller", description = "Api get one order by seller")
+    public ApiResponse<OrderResponseSeller> getOneOrderBySeller(@PathVariable String orderId) {
+        return ApiResponse.<OrderResponseSeller>builder()
+                .result(orderService.getOneOrderBySeller(orderId))
                 .build();
     }
 
     @Operation(summary = "Get all order by seller", description = "Api get all order by seller")
     @GetMapping("/seller")
-    public ApiResponse<PaginationResponse<OrderResponse>> getAllOrderBySeller(
+    public ApiResponse<PaginationResponse<OrderResponseSeller>> getAllOrderBySeller(
             @RequestParam(value = "sort", required = false) String sortBy,
             @RequestParam(value = "order", required = false) String orderBy,
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
             @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
-        return ApiResponse.<PaginationResponse<OrderResponse>>builder()
+        return ApiResponse.<PaginationResponse<OrderResponseSeller>>builder()
                 .result(orderService.getAllOrderBySeller(page, size, sortBy, orderBy, search, filter))
                 .build();
     }
@@ -62,6 +59,46 @@ public class OrderController {
     @Operation(summary = "Cancel order by seller", description = "Api cancel order by seller")
     public ApiResponse<Void> cancelOrderBySeller(@PathVariable String orderId) {
         orderService.cancelOrderBySeller(orderId);
+        return ApiResponse.<Void>builder()
+                .message("Cancelled order successfully")
+                .build();
+    }
+
+    @GetMapping("/{orderId}/admin")
+    @Operation(summary = "Get one order by admin", description = "Api get one order by admin")
+    public ApiResponse<OrderResponseAdmin> getOneOrderByAdmin(@PathVariable String orderId) {
+        return ApiResponse.<OrderResponseAdmin>builder()
+                .result(orderService.getOneOrderByAdmin(orderId))
+                .build();
+    }
+
+    @Operation(summary = "Get all order by admin", description = "Api get all order by admin")
+    @GetMapping("/admin")
+    public ApiResponse<PaginationResponse<OrderResponseAdmin>> getAllOrderByAdmin(
+            @RequestParam(value = "sort", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String orderBy,
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search,
+            @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
+        return ApiResponse.<PaginationResponse<OrderResponseAdmin>>builder()
+                .result(orderService.getAllOrderByAdmin(page, size, sortBy, orderBy, search, filter))
+                .build();
+    }
+
+    @PutMapping("/{orderId}/update-status/admin")
+    @Operation(summary = "Update order status by admin", description = "Api update status order by admin")
+    public ApiResponse<Void> updateOrderStatusByAdmin(@PathVariable String orderId) {
+        orderService.updateOrderStatusByAdmin(orderId);
+        return ApiResponse.<Void>builder()
+                .message("Updated status order successfully")
+                .build();
+    }
+
+    @PutMapping("/{orderId}/cancel/admin")
+    @Operation(summary = "Cancel order by admin", description = "Api cancel order by admin")
+    public ApiResponse<Void> cancelOrderByAdmin(@PathVariable String orderId) {
+        orderService.cancelOrderByAdmin(orderId);
         return ApiResponse.<Void>builder()
                 .message("Cancelled order successfully")
                 .build();
