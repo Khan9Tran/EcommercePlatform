@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class OrderResponse {
+public class OrderResponseAdmin {
     String id;
     BigDecimal total;
     BigDecimal discount;
