@@ -39,7 +39,8 @@ public class CustomMessageConverter implements MessageConverter {
             messageProperties.setHeader("messageType", "deleteImage");
         } else if (object instanceof UpdateCategoryEsProductRequest) {
             messageProperties.setHeader("messageType", "updateCategoryEsProduct");
-        } else {
+        }
+        else {
             throw new MessageConversionException("Unknown message type");
         }
 
@@ -61,7 +62,8 @@ public class CustomMessageConverter implements MessageConverter {
             } else if ("updateBrandEsProduct".equals(messageType)) {
                 return objectMapper.readValue(message.getBody(), UpdateBrandEsProductRequest.class);
 
-            } else {
+            }
+            else {
                 throw new MessageConversionException("Unknown message type");
             }
         } catch (IOException e) {

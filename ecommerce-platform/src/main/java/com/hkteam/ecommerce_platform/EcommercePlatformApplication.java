@@ -8,10 +8,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.retry.annotation.EnableRetry;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableFeignClients
 @EnableRetry(proxyTargetClass = true)
+@EnableAsync
 public class EcommercePlatformApplication {
 
     public static void main(String[] args) {

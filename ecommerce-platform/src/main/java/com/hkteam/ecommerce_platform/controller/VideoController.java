@@ -34,7 +34,7 @@ public class VideoController {
 
     @Operation(summary = "Delete Product Video", description = "Api delete product video")
     @DeleteMapping(value = "/products/{productId}")
-    public ApiResponse<Void> deleteProductVideo(@PathVariable("productId") Long productId) {
+    public ApiResponse<Void> deleteProductVideo(@PathVariable("productId") String productId) {
         videoService.deleteProductVideo(productId);
         return ApiResponse.<Void>builder()
                 .message("Deleted product video successfully")

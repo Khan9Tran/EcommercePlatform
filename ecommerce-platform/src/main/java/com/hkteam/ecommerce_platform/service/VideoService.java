@@ -1,15 +1,16 @@
 package com.hkteam.ecommerce_platform.service;
 
-import java.util.Map;
-
+import com.hkteam.ecommerce_platform.enums.TypeImage;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.dto.response.VideoResponse;
 import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.ProductRepository;
@@ -21,6 +22,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -29,6 +35,7 @@ public class VideoService {
     CloudinaryService cloudinaryService;
     ProductRepository productRepository;
     AuthenticatedUserUtil authenticatedUserUtil;
+    ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @PreAuthorize("hasRole('SELLER')")
     public VideoResponse uploadVideoProduct(String productId, MultipartFile videoFile) {
@@ -50,44 +57,41 @@ public class VideoService {
         if (!store.getUser().getId().equals(user.getId())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+        asyncUploadVideo(product, videoFile);
+        videoResponse = VideoResponse.builder()
+                .productId(productId)
+                .videoUrl("update processing, please wait")
+                .build();
 
-        try {
-            Map<String, Object> uploadResult = cloudinaryService.uploadVideo(
-                    videoFile, TypeImage.MAIN_VIDEO_OF_PRODUCT.name().toLowerCase());
+        return videoResponse;
+    }
 
-            if (uploadResult.get("url") == null) {
-                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-            } else {
+    @Async
+    void asyncUploadVideo(Product product, MultipartFile videoFile) {
+        executorService.submit(() -> {
+            try {
+                var video = cloudinaryService.uploadVideo(videoFile.getBytes(), TypeImage.MAIN_VIDEO_OF_PRODUCT.toString().toLowerCase());
+
+                if (Objects.isNull(video.get("url"))) {
+                    log.error("Error while uploading video: {}", product.getId());
+                }
+
                 if (product.getVideoUrl() != null) {
                     cloudinaryService.deleteVideo(product.getVideoUrl());
                 }
 
-                product.setVideoUrl(uploadResult.get("url").toString());
-                try {
-                    productRepository.save(product);
-                } catch (DataIntegrityViolationException e) {
-                    log.info("Error while saving at upload product video: {}", e.getMessage());
-                    throw new AppException(ErrorCode.UNKNOWN_ERROR);
-                }
+                product.setVideoUrl(video.get("url").toString());
 
-                videoResponse = VideoResponse.builder()
-                        .productId(productId)
-                        .videoUrl(uploadResult.get("secure_url").toString())
-                        .format(uploadResult.get("format").toString())
-                        .publicId(uploadResult.get("public_id").toString())
-                        .size((int) uploadResult.get("bytes"))
-                        .createdAt(uploadResult.get("created_at").toString())
-                        .build();
+                productRepository.save(product);
+            } catch (IOException e) {
+                log.error("Error processing video: {}", e.getMessage());
             }
-            return videoResponse;
-        } catch (Exception e) {
-            log.info("Error while uploading at upload product video: {}", e.getMessage());
-            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
-        }
+        });
+
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public void deleteProductVideo(Long productId) {
+    public void deleteProductVideo(String productId) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Product product =

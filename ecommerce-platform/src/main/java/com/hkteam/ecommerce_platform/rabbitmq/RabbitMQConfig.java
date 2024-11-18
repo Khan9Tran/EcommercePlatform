@@ -40,6 +40,7 @@ public class RabbitMQConfig {
         return new Queue(BRAND_ES_PRODUCT_QUEUE, true);
     }
 
+
     @Bean
     public RabbitTemplate rabbitTemplate(
             ConnectionFactory connectionFactory, CustomMessageConverter customMessageConverter) {
