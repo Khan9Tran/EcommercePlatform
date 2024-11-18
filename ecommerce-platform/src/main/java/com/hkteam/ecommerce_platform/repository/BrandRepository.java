@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +24,7 @@ public interface BrandRepository extends JpaRepository<Brand, Long> {
 
     Page<Brand> findByNameContainingIgnoreCase(@NotNull String name, @NotNull Pageable pageable);
 
-    List<Brand> findByNameIgnoreCase(String name);
+    List<Brand> findByNameIgnoreCase(@Nullable String name);
 
 
 }
