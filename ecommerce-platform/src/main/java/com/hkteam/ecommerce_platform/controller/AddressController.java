@@ -1,6 +1,5 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +9,7 @@ import com.hkteam.ecommerce_platform.dto.request.AddressUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.AddressResponse;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
 import com.hkteam.ecommerce_platform.service.AddressService;
 
 import io.swagger.v3.oas.annotations.Operation;

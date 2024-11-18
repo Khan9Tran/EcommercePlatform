@@ -33,5 +33,4 @@ public class AddressUpdateRequest {
 
     @ValidSpace
     String detailAddress;
-
 }

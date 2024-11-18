@@ -74,10 +74,10 @@ public class StoreController {
     }
 
     @Operation(summary = "Get all addresses by userId", description = "Api get all addresses by userId")
-    @GetMapping("/{userId}/addresses")
-    public ApiResponse<List<Map<String, Object>>> getAllAddressOfStore(@PathVariable String userId) {
+    @GetMapping("/addresses/seller")
+    public ApiResponse<List<Map<String, Object>>> getAllAddressOfStore() {
         return ApiResponse.<List<Map<String, Object>>>builder()
-                .result(storeService.getAllAddressOfStore(userId))
+                .result(storeService.getAllAddressOfStore())
                 .build();
     }
 }

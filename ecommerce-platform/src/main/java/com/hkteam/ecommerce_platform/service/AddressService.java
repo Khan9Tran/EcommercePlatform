@@ -1,21 +1,22 @@
 package com.hkteam.ecommerce_platform.service;
 
-import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
-import com.hkteam.ecommerce_platform.repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hkteam.ecommerce_platform.dto.request.AddressCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.AddressUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.AddressResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.AddressMapper;
 import com.hkteam.ecommerce_platform.repository.AddressRepository;
+import com.hkteam.ecommerce_platform.repository.UserRepository;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 
@@ -23,7 +24,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +38,8 @@ public class AddressService {
     @Transactional
     public AddressResponse createAddress(AddressCreationRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-        if (Boolean.FALSE.equals(user.getAddresses().isEmpty()) && user.getAddresses().size() >= 10) {
+        if (Boolean.FALSE.equals(user.getAddresses().isEmpty())
+                && user.getAddresses().size() >= 10) {
             throw new AppException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
         }
         Address address = addressMapper.toAddress(request);
@@ -46,7 +47,7 @@ public class AddressService {
 
         try {
             addressRepository.save(address);
-            if (request.getIsDefault()){
+            if (request.getIsDefault()) {
                 user.setDefaultAddressId(address.getId());
                 userRepository.save(user);
             }
@@ -88,8 +89,7 @@ public class AddressService {
         }
         try {
             addressRepository.delete(address);
-        }
-        catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             log.info("Error while deleting address {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
@@ -104,18 +104,19 @@ public class AddressService {
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);
-        var addressList = pageData.getContent().stream().map(addressMapper::toUserAddressResponse).toList();
+        var addressList = pageData.getContent().stream()
+                .map(addressMapper::toUserAddressResponse)
+                .toList();
 
         for (UserAddressResponse address : addressList) {
             if (user.getDefaultAddressId().equals(address.getId())) {
                 address.setIsDefault(Boolean.TRUE);
             }
-            if (Boolean.FALSE.equals(user.getStore()) && address.getIsDefault().equals(user.getStore().getDefaultAddressId())) {
+            if (Boolean.FALSE.equals(user.getStore())
+                    && address.getIsDefault().equals(user.getStore().getDefaultAddressId())) {
                 address.setIsStoreAddress(Boolean.TRUE);
             }
         }
-
-
 
         return PaginationResponse.<UserAddressResponse>builder()
                 .currentPage(Integer.parseInt(pageStr))

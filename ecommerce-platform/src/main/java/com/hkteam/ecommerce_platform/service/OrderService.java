@@ -3,20 +3,6 @@ package com.hkteam.ecommerce_platform.service;
 import java.math.BigDecimal;
 import java.util.*;
 
-import com.hkteam.ecommerce_platform.dto.request.ListOrder;
-import com.hkteam.ecommerce_platform.dto.request.OrderItemRequest;
-import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
-import com.hkteam.ecommerce_platform.entity.order.OrderItem;
-import com.hkteam.ecommerce_platform.entity.payment.Payment;
-import com.hkteam.ecommerce_platform.entity.payment.Transaction;
-import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
-import com.hkteam.ecommerce_platform.entity.product.Variant;
-import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
-import com.hkteam.ecommerce_platform.entity.user.Store;
-import com.hkteam.ecommerce_platform.enums.PaymentMethod;
-import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
-import com.hkteam.ecommerce_platform.repository.*;
-import com.hkteam.ecommerce_platform.util.ShippingFeeUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,26 +14,40 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.hkteam.ecommerce_platform.dto.request.ListOrder;
+import com.hkteam.ecommerce_platform.dto.request.OrderItemRequest;
 import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
+import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
 import com.hkteam.ecommerce_platform.dto.response.OrderItemResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.order.Order;
+import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
+import com.hkteam.ecommerce_platform.entity.payment.Payment;
+import com.hkteam.ecommerce_platform.entity.payment.Transaction;
+import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
+import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
+import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.enums.OrderStatusName;
+import com.hkteam.ecommerce_platform.enums.PaymentMethod;
+import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.OrderMapper;
+import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
+import com.hkteam.ecommerce_platform.util.ShippingFeeUtil;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -375,11 +375,7 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Retryable(
-            value = OptimisticLockingFailureException.class,
-            maxAttempts = 10,
-            backoff = @Backoff(delay = 100)
-    )
+    @Retryable(value = OptimisticLockingFailureException.class, maxAttempts = 10, backoff = @Backoff(delay = 100))
     @Transactional
     public OrderCreationResponse createOrder(ListOrder listOrder, HttpServletRequest request) {
         boolean isVnPay = listOrder.getPaymentMethod().equals(PaymentMethod.VN_PAY);
@@ -388,20 +384,20 @@ public class OrderService {
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal shippingFee = BigDecimal.ZERO;
 
-        Payment payment = Payment.builder()
-                .paymentDetails("Payment for orders")
-                .build();
+        Payment payment = Payment.builder().paymentDetails("Payment for orders").build();
 
         Set<Transaction> transactions = new HashSet<>();
 
         var user = authenticatedUserUtil.getAuthenticatedUser();
-        var address = addressRepository.findById(listOrder.getAddressId()).orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+        var address = addressRepository
+                .findById(listOrder.getAddressId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
 
         for (OrderRequest orderRequest : listOrder.getOrders()) {
 
-            Store store = storeRepository.findById(orderRequest.getStoreId()).orElseThrow(
-                    () -> new AppException(ErrorCode.STORE_NOT_FOUND)
-            );
+            Store store = storeRepository
+                    .findById(orderRequest.getStoreId())
+                    .orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
             BigDecimal totalOriginalPrice = totalPaymentBeforeSale(orderRequest);
             BigDecimal totalSalePrice = totalSalePrice(orderRequest);
@@ -415,15 +411,14 @@ public class OrderService {
             BigDecimal verifyTotalOriginalPrice = BigDecimal.ZERO;
             BigDecimal verifyTotalSalePrice = BigDecimal.ZERO;
 
-
             List<OrderItem> orderItems = new ArrayList<>();
 
             for (OrderItemRequest orderItemRequest : orderRequest.getOrderItems()) {
-                var product = productRepository.findById(orderItemRequest.getProductId())
+                var product = productRepository
+                        .findById(orderItemRequest.getProductId())
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-                if (!product.getStore().equals(store))
-                    throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+                if (!product.getStore().equals(store)) throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
 
                 if (product.getQuantity() < orderItemRequest.getQuantity())
                     throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
@@ -437,22 +432,26 @@ public class OrderService {
                 if (Objects.isNull(orderItemRequest.getVariantId())) {
                     if (hasVariant) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
 
-                    verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(product.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
-                    verifyTotalSalePrice = verifyTotalSalePrice.add(product.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                    verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(
+                            product.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                    verifyTotalSalePrice = verifyTotalSalePrice.add(
+                            product.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
 
                 } else {
-                    if (Boolean.FALSE.equals(hasVariant))
-                        throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
+                    if (Boolean.FALSE.equals(hasVariant)) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
 
                     variant = product.getVariants().stream()
                             .filter(v -> v.getId().equals(orderItemRequest.getVariantId()))
-                            .findFirst().orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+                            .findFirst()
+                            .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
 
                     if (variant.getQuantity() < orderItemRequest.getQuantity())
                         throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
-                    verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(variant.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
-                    verifyTotalSalePrice = verifyTotalSalePrice.add(variant.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                    verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(
+                            variant.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
+                    verifyTotalSalePrice = verifyTotalSalePrice.add(
+                            variant.getSalePrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
                 }
 
                 product.setQuantity(product.getQuantity() - orderItemRequest.getQuantity());

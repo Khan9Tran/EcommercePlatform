@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
 import com.hkteam.ecommerce_platform.dto.request.StoreUpdateRequest;
@@ -27,7 +28,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -99,6 +99,7 @@ public class StoreService {
         return response;
     }
 
+    @PreAuthorize("hasRole('SELLER')")
     public StoreDetailResponse getOneStoreByUserId() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
@@ -106,12 +107,12 @@ public class StoreService {
                 .findByUserId(user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
+        Address defaultAddress = addressRepository
+                .findById(store.getDefaultAddressId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+
         String defaultAddressStr = null;
         if (store.getDefaultAddressId() != null) {
-            Address defaultAddress = addressRepository
-                    .findById(store.getDefaultAddressId())
-                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-
             defaultAddressStr = String.join(
                     ", ",
                     defaultAddress.getDetailLocate(),
@@ -158,12 +159,22 @@ public class StoreService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('SELLER')")
     public StoreDetailResponse updateStore(StoreUpdateRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Store store = storeRepository
                 .findByUserId(user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+
+        Address address = addressRepository
+                .findById(request.getDefaultAddressId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+        Address defaultAddress = addressRepository
+                .findByIdAndUserId(address.getId(), user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_BELONG_TO_USER));
+
+        store.setDefaultAddressId(request.getDefaultAddressId());
 
         storeMapper.updateStore(request, store);
 
@@ -176,10 +187,6 @@ public class StoreService {
 
         String defaultAddressStr = null;
         if (store.getDefaultAddressId() != null) {
-            Address defaultAddress = addressRepository
-                    .findById(store.getDefaultAddressId())
-                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-
             defaultAddressStr = String.join(
                     ", ",
                     defaultAddress.getDetailLocate(),
@@ -198,12 +205,9 @@ public class StoreService {
         return response;
     }
 
-    public List<Map<String, Object>> getAllAddressOfStore(String userId) {
+    @PreAuthorize("hasRole('SELLER')")
+    public List<Map<String, Object>> getAllAddressOfStore() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-
-        if (!user.getId().equals(userId)) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
 
         Store store = user.getStore();
         if (store == null) {
