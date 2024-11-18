@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class VideoResponse {
-    Long productId;
+    String productId;
     String videoUrl;
     String format;
     String publicId;

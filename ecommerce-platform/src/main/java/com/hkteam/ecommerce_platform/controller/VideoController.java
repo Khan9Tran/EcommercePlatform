@@ -26,7 +26,7 @@ public class VideoController {
     @Operation(summary = "Upload Product Video", description = "Api upload product video")
     @PostMapping(value = "/products/{productId}", consumes = "multipart/form-data")
     public ApiResponse<VideoResponse> uploadProductVideo(
-            @PathVariable("productId") Long productId, @RequestParam("videoFile") MultipartFile videoFile) {
+            @PathVariable("productId") String productId, @RequestParam("videoFile") MultipartFile videoFile) {
         return ApiResponse.<VideoResponse>builder()
                 .result(videoService.uploadVideoProduct(productId, videoFile))
                 .build();

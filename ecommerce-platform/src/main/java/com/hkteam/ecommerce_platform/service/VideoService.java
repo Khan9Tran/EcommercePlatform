@@ -31,7 +31,7 @@ public class VideoService {
     AuthenticatedUserUtil authenticatedUserUtil;
 
     @PreAuthorize("hasRole('SELLER')")
-    public VideoResponse uploadVideoProduct(Long productId, MultipartFile videoFile) {
+    public VideoResponse uploadVideoProduct(String productId, MultipartFile videoFile) {
         VideoUtils.validateVideo(videoFile);
 
         var user = authenticatedUserUtil.getAuthenticatedUser();

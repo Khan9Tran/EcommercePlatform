@@ -32,7 +32,7 @@ public class UserController {
                 .build();
     }
 
-    @Operation(summary = "Get user by id", description = "Api get user by id")
+        @Operation(summary = "Get user by id", description = "Api get user by id")
     @GetMapping("/{userId}")
     ApiResponse<UserDetailResponse> getUser(@PathVariable("userId") String userId) {
         return ApiResponse.<UserDetailResponse>builder()
