@@ -138,9 +138,13 @@ public class BrandService {
 
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public List<BrandResponse> getAllBrands(String search) {
-        List<Brand> brand = brandRepository.findByNameIgnoreCase(search);
-        return brand.stream().map(brandMapper::toBrandResponse).toList();
-
+        List<Brand> brands;
+        if (search == null || search.isEmpty()) {
+            brands = brandRepository.findAll();
+        } else {
+            brands = brandRepository.findByNameIgnoreCase(search);
+        }
+        return brands.stream().map(brandMapper::toBrandResponse).toList();
     }
 
     public BrandResponse getOneBrandById(Long id) {
