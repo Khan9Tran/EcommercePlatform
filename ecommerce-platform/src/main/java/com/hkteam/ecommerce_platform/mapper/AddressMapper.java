@@ -1,11 +1,11 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
 import org.mapstruct.*;
 
 import com.hkteam.ecommerce_platform.dto.request.AddressCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.AddressUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.AddressResponse;
+import com.hkteam.ecommerce_platform.dto.response.UserAddressResponse;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 
 @Mapper(componentModel = "spring")
@@ -18,6 +18,9 @@ public interface AddressMapper {
     void updateAddressFromRequest(AddressUpdateRequest request, @MappingTarget Address address);
 
     @Mapping(target = "firstLine", source = "detailAddress")
-    @Mapping(target = "secondLine", expression = "java(address.getSubDistrict() + \", \" + address.getDistrict() + \", \" + address.getProvince())")
+    @Mapping(
+            target = "secondLine",
+            expression =
+                    "java(address.getSubDistrict() + \", \" + address.getDistrict() + \", \" + address.getProvince())")
     UserAddressResponse toUserAddressResponse(Address address);
 }

@@ -19,4 +19,6 @@ public class StoreDetailResponse {
     String defaultAddress;
     Integer totalProduct;
     Instant createdAt;
+
+    Long defaultAddressId;
 }

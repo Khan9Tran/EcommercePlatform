@@ -1,9 +1,11 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.response.IpnResponse;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
+import com.hkteam.ecommerce_platform.dto.response.IpnResponse;
 import com.hkteam.ecommerce_platform.service.PaymentService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,8 +13,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/payments")
@@ -23,7 +23,7 @@ import java.util.Map;
 public class PaymentController {
     PaymentService paymentService;
 
-    //bo
+    // bo
     @GetMapping("/vn-pay-callback")
     public ApiResponse<Void> payCallbackHandler(@RequestParam("vnp_ResponseCode") String status) {
         paymentService.callBack(status);
@@ -35,6 +35,6 @@ public class PaymentController {
     @GetMapping("/vnpay_ipn")
     IpnResponse processIpn(@RequestParam Map<String, String> params) {
         log.info("[VNPay Ipn] Params: {}", params);
-        return  null;
+        return null;
     }
 }

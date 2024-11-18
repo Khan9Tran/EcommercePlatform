@@ -12,10 +12,6 @@ public class SpaceValidator implements ConstraintValidator<ValidSpace, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (value == null) {
-            return true;
-        }
-
         return (!value.isEmpty()) && (value.trim().length() == value.length());
     }
 }

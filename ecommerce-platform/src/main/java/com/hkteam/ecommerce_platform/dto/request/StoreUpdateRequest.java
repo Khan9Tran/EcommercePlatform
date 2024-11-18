@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,5 +21,6 @@ public class StoreUpdateRequest {
 
     String bio;
 
+    @NotNull(message = "NOT_NULL")
     Long defaultAddressId;
 }

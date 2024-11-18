@@ -18,6 +18,7 @@ public interface StoreMapper {
     StoreResponse toStoreResponse(Store store);
 
     @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "defaultAddressId", target = "defaultAddressId")
     StoreDetailResponse toStoreDetailResponse(Store store);
 
     Store toStore(StoreRegistrationRequest request);
