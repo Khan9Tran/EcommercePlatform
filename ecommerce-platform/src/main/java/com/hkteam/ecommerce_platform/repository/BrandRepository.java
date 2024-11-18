@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
@@ -21,4 +22,8 @@ public interface BrandRepository extends JpaRepository<Brand, Long> {
     Page<Brand> findAll(@NotNull Pageable pageable);
 
     Page<Brand> findByNameContainingIgnoreCase(@NotNull String name, @NotNull Pageable pageable);
+
+    List<Brand> findByNameIgnoreCase(String name);
+
+
 }

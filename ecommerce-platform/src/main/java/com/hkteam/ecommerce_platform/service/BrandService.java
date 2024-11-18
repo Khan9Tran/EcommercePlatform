@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -134,8 +136,17 @@ public class BrandService {
                 .build();
     }
 
+    @PreAuthorize("hasRole('SELLER')")
+    public List<BrandResponse> getAllBrands(String search) {
+        List<Brand> brand = brandRepository.findByNameIgnoreCase(search);
+        return brand.stream().map(brandMapper::toBrandResponse).toList();
+
+    }
+
     public BrandResponse getOneBrandById(Long id) {
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
         return brandMapper.toBrandResponse(brand);
     }
+
+
 }

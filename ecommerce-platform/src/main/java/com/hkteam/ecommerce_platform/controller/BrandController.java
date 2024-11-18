@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/brands")
 @RequiredArgsConstructor
@@ -61,6 +63,15 @@ public class BrandController {
             @RequestParam(value = "search", required = false, defaultValue = "") String search) {
         return ApiResponse.<PaginationResponse<BrandResponse>>builder()
                 .result(brandService.getAllBrands(page, size, tab, sort, search))
+                .build();
+    }
+
+    @Operation(summary = "Get all brands", description = "Api get all brands")
+    @GetMapping("/all")
+    ApiResponse<List<BrandResponse>> getAllBrands(
+            @RequestParam(value = "search", required = false, defaultValue = "") String search) {
+        return ApiResponse.<List<BrandResponse>>builder()
+                .result(brandService.getAllBrands(search))
                 .build();
     }
 

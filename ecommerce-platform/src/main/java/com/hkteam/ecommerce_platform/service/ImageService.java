@@ -299,7 +299,7 @@ public class ImageService {
     @PreAuthorize("hasRole('SELLER')")
     public ImageResponse uploadProductMainImage(MultipartFile image, String productId) {
         ImageUtils.validateImage(image);
-        try {
+
             var product = productRepository
                     .findById(productId)
                     .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -307,7 +307,7 @@ public class ImageService {
             if (!authenticatedUserUtil.isOwner(product)) {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
-
+        try {
             addImageToQueue(productId, TypeImage.MAIN_IMAGE_OF_PRODUCT, convertImageToByteArray(image));
         } catch (Exception e) {
             log.error("Error when upload image: " + e.getMessage());
