@@ -283,7 +283,7 @@ public class CategoryService {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     public List<CategoryResponse> getAll() {
         List categories;
         try {
