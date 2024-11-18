@@ -136,7 +136,7 @@ public class BrandService {
                 .build();
     }
 
-    @PreAuthorize("hasRole('SELLER')")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public List<BrandResponse> getAllBrands(String search) {
         List<Brand> brand = brandRepository.findByNameIgnoreCase(search);
         return brand.stream().map(brandMapper::toBrandResponse).toList();
