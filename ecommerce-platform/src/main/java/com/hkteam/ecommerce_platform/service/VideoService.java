@@ -57,7 +57,7 @@ public class VideoService {
         if (!store.getUser().getId().equals(user.getId())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        asyncUploadVideo(product, videoFile);
+        asyncUploadVideo(product.getId(), videoFile);
         videoResponse = VideoResponse.builder()
                 .productId(productId)
                 .videoUrl("update processing, please wait")
@@ -67,14 +67,16 @@ public class VideoService {
     }
 
     @Async
-    void asyncUploadVideo(Product product, MultipartFile videoFile) {
+    void asyncUploadVideo(String productId, MultipartFile videoFile) {
         executorService.submit(() -> {
             try {
                 var video = cloudinaryService.uploadVideo(videoFile.getBytes(), TypeImage.MAIN_VIDEO_OF_PRODUCT.toString().toLowerCase());
 
                 if (Objects.isNull(video.get("url"))) {
-                    log.error("Error while uploading video: {}", product.getId());
+                    log.error("Error while uploading video: {}", productId);
                 }
+                Product product =
+                        productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
                 if (product.getVideoUrl() != null) {
                     cloudinaryService.deleteVideo(product.getVideoUrl());
