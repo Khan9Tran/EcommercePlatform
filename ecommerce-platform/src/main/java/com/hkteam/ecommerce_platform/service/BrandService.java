@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.util.List;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +26,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -151,6 +151,4 @@ public class BrandService {
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
         return brandMapper.toBrandResponse(brand);
     }
-
-
 }

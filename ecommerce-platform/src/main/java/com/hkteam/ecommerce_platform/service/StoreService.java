@@ -107,12 +107,11 @@ public class StoreService {
                 .findByUserId(user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
-        Address defaultAddress = addressRepository
-                .findById(store.getDefaultAddressId())
-                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-
         String defaultAddressStr = null;
         if (store.getDefaultAddressId() != null) {
+            Address defaultAddress = addressRepository
+                    .findById(store.getDefaultAddressId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
             defaultAddressStr = String.join(
                     ", ",
                     defaultAddress.getDetailLocate(),
@@ -160,7 +159,7 @@ public class StoreService {
 
     @Transactional
     @PreAuthorize("hasRole('SELLER')")
-    public StoreDetailResponse updateStore(StoreUpdateRequest request) {
+    public StoreUpdateResponse updateStore(StoreUpdateRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Store store = storeRepository
@@ -198,7 +197,7 @@ public class StoreService {
 
         Integer totalProduct = productRepository.countByStore(store);
 
-        StoreDetailResponse response = storeMapper.toStoreDetailResponse(store);
+        StoreUpdateResponse response = storeMapper.toStoreUpdateResponse(store);
         response.setDefaultAddress(defaultAddressStr);
         response.setTotalProduct(totalProduct);
 

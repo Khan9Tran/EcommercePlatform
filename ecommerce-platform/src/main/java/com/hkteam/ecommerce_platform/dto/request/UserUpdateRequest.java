@@ -3,7 +3,6 @@ package com.hkteam.ecommerce_platform.dto.request;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
 import com.hkteam.ecommerce_platform.enums.Gender;
 
@@ -26,7 +25,4 @@ public class UserUpdateRequest {
     String bio;
     LocalDate dateOfBirth;
     Gender gender;
-
-    @Pattern(regexp = "^0\\d{9}$", message = "INVALID_PHONE")
-    String phone;
 }

@@ -1,8 +1,10 @@
 package com.hkteam.ecommerce_platform.service;
 
-import com.hkteam.ecommerce_platform.enums.TypeImage;
-import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.dto.response.VideoResponse;
 import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.ProductRepository;
@@ -21,11 +24,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,13 +68,16 @@ public class VideoService {
     void asyncUploadVideo(String productId, MultipartFile videoFile) {
         executorService.submit(() -> {
             try {
-                var video = cloudinaryService.uploadVideo(videoFile.getBytes(), TypeImage.MAIN_VIDEO_OF_PRODUCT.toString().toLowerCase());
+                var video = cloudinaryService.uploadVideo(
+                        videoFile.getBytes(),
+                        TypeImage.MAIN_VIDEO_OF_PRODUCT.toString().toLowerCase());
 
                 if (Objects.isNull(video.get("url"))) {
                     log.error("Error while uploading video: {}", productId);
                 }
-                Product product =
-                        productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+                Product product = productRepository
+                        .findById(productId)
+                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
                 if (product.getVideoUrl() != null) {
                     cloudinaryService.deleteVideo(product.getVideoUrl());
@@ -89,7 +90,6 @@ public class VideoService {
                 log.error("Error processing video: {}", e.getMessage());
             }
         });
-
     }
 
     @PreAuthorize("hasRole('SELLER')")

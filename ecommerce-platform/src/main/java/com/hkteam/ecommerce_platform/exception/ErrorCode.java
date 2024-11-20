@@ -119,7 +119,7 @@ public enum ErrorCode {
     ADDRESS_LIMIT_EXCEEDED(1701, "The number of addresses created has reached the limit.", HttpStatus.BAD_REQUEST),
     CANNOT_UN_DEFAULT(1702, "Cannot un-default address", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_DEFAULT_ADDRESS(1703, "Cannot delete default address", HttpStatus.BAD_REQUEST),
-    NOT_NULL(1014, "{field} must not be null", HttpStatus.BAD_REQUEST),
+    NOT_NULL(1704, "{field} must not be null", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

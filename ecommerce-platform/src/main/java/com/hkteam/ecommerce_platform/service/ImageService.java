@@ -300,13 +300,12 @@ public class ImageService {
     public ImageResponse uploadProductMainImage(MultipartFile image, String productId) {
         ImageUtils.validateImage(image);
 
-            var product = productRepository
-                    .findById(productId)
-                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var product =
+                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-            if (!authenticatedUserUtil.isOwner(product)) {
-                throw new AppException(ErrorCode.UNAUTHORIZED);
-            }
+        if (!authenticatedUserUtil.isOwner(product)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
         try {
             addImageToQueue(productId, TypeImage.MAIN_IMAGE_OF_PRODUCT, convertImageToByteArray(image));
         } catch (Exception e) {
