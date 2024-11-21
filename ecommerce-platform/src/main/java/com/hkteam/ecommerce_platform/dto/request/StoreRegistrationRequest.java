@@ -17,6 +17,5 @@ public class StoreRegistrationRequest {
     @ValidSpace
     String name;
 
-    @ValidSpace
     String bio;
 }

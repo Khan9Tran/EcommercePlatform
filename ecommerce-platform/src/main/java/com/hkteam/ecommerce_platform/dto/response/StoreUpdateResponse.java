@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StoreDetailResponse {
+public class StoreUpdateResponse {
     String id;
     String name;
     String bio;
@@ -19,4 +19,5 @@ public class StoreDetailResponse {
     String defaultAddress;
     Integer totalProduct;
     Instant createdAt;
+    Long defaultAddressId;
 }

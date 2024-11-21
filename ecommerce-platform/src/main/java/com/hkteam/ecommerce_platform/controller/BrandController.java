@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +19,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/brands")

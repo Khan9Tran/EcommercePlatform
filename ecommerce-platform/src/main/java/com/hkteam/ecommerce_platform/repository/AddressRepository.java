@@ -2,7 +2,6 @@ package com.hkteam.ecommerce_platform.repository;
 
 import java.util.Optional;
 
-import com.hkteam.ecommerce_platform.entity.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.hkteam.ecommerce_platform.entity.user.Address;
+import com.hkteam.ecommerce_platform.entity.user.User;
 
 @Repository
 public interface AddressRepository extends JpaRepository<Address, Long> {
