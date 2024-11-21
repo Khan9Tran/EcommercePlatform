@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ElasticSearchController {
     ElasticSearchService elasticSearchService;
 
-    @GetMapping("/autoSuggest")
+    @GetMapping("/auto-suggest")
     ApiResponse<List<String>> getAutoSuggestProduct(
             @RequestParam(value = "keyword", required = false, defaultValue = "") String text) throws IOException {
         return ApiResponse.<List<String>>builder()
@@ -39,8 +39,8 @@ public class ElasticSearchController {
 
     @GetMapping()
     ApiResponse<PaginationResponse<ProductResponse>> getAutoSuggestProduct(
-            @RequestParam(value = "category", required = false) Long categoryId,
-            @RequestParam(value = "brand", required = false) List<Long> brandIds,
+            @RequestParam(value = "categories", required = false) List<Long> categoryIds,
+            @RequestParam(value = "brands", required = false) List<Long> brandIds,
             @RequestParam(value = "store", required = false) String storeId,
             @RequestParam(value = "sortBy", required = false) String sortBy,
             @RequestParam(value = "order", required = false) String order,
@@ -52,7 +52,7 @@ public class ElasticSearchController {
             @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate) {
         return ApiResponse.<PaginationResponse<ProductResponse>>builder()
                 .result(elasticSearchService.getAllProducts(
-                        categoryId, brandIds, storeId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate))
+                        categoryIds, brandIds, storeId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate))
                 .build();
     }
 }

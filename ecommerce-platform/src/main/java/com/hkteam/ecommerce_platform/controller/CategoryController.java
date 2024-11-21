@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.dto.response.*;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -10,9 +11,6 @@ import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CategoryUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.request.UpdateComponentRequest;
-import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
-import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.service.CategoryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,6 +44,11 @@ public class CategoryController {
         CategoryResponse categoryResponse = categoryService.updateCategory(id, request);
 
         return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
+    }
+
+    @GetMapping("/with-id/{id}")
+    public ApiResponse<CategoryFilterResponse> getCategory(@PathVariable Long id) {
+        return  ApiResponse.<CategoryFilterResponse>builder().result(categoryService.getCategory(id)).build();
     }
 
     @Operation(summary = "Delete category", description = "Api delete category by id")
@@ -112,6 +115,13 @@ public class CategoryController {
     public ApiResponse<List<CategoryResponse>> findAll() {
         return ApiResponse.<List<CategoryResponse>>builder()
                 .result(categoryService.getAll())
+                .build();
+    }
+
+    @GetMapping(("/tree-view"))
+    public ApiResponse<List<CategoryTreeViewResponse>> getTreeView() {
+        return ApiResponse.<List<CategoryTreeViewResponse>>builder()
+                .result(categoryService.getTreeView())
                 .build();
     }
 }

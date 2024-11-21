@@ -28,4 +28,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 			select c from Category c
 			where lower(c.name) like lower(concat('%', ?1, '%'))""")
     Page<Category> searchAllCategory(String name, Pageable pageable);
+
+    List<Category> findByParentNull();
+
 }

@@ -34,7 +34,7 @@ public class ESUtils {
     }
 
     public BoolQuery createSearchProducts(
-            Long categoryId,
+            List<Long> categoryIds,
             List<Long> brandIds,
             String storeId,
             String search,
@@ -43,8 +43,10 @@ public class ESUtils {
             int minRate) {
         List<Query> queries = new ArrayList<>();
 
-        if (categoryId != null) {
-            queries.add(Query.of(q -> q.term(t -> t.field("categoryId").value(categoryId))));
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            List<FieldValue> categoryFieldValues =
+                    categoryIds.stream().map(FieldValue::of).collect(Collectors.toList());
+            queries.add(Query.of(q -> q.terms(t -> t.field("categoryId").terms(terms -> terms.value(categoryFieldValues)))));
         }
         if (brandIds != null && !brandIds.isEmpty()) {
             List<FieldValue> brandFieldValues =
@@ -87,7 +89,7 @@ public class ESUtils {
     }
 
     public Supplier<Query> createSupplierSearchProducts(
-            Long categoryId,
+            List<Long> categoryId,
             List<Long> brandIds,
             String storeId,
             String search,

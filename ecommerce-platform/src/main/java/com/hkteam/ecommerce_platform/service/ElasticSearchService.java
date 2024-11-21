@@ -36,12 +36,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ElasticSearchService {
     private final ProductMapper productMapper;
-    static final Set<String> ALLOWED_SORT_FIELDS = Set.of("salePrice", "rating", "name", "createdDate");
+    static final Set<String> ALLOWED_SORT_FIELDS = Set.of("salePrice", "rating", "name", "createdAt");
     static final Set<String> ALLOWED_SORT_ORDERS = Set.of("asc", "desc");
     ElasticsearchClient elasticsearchClient;
 
     public PaginationResponse<ProductResponse> getAllProducts(
-            Long categoryId,
+            List<Long> categoryIds,
             List<Long> brandIds,
             String storeId,
             String sortBy,
@@ -55,7 +55,9 @@ public class ElasticSearchService {
 
         int[] pageAndSize = PageUtils.validateAndConvertPageAndSize(page, limit);
         int pageInt = pageAndSize[0];
-        int sizeInt = pageAndSize[1];
+        int sizeInt = pageAndSize[1] < 100 ? pageAndSize[1] : 100; // Giới hạn số lượng bản ghi trên mỗi trang
+
+
         int fromInt = (pageInt - 1) * sizeInt;
 
         List<SortOptions> sortOptions = new ArrayList<>();
@@ -71,7 +73,7 @@ public class ElasticSearchService {
         }
 
         Supplier<Query> supplier = ESUtils.createSupplierSearchProducts(
-                categoryId, brandIds, storeId, search, minPrice, maxPrice, minRate);
+                categoryIds, brandIds, storeId, search, minPrice, maxPrice, minRate);
         try {
             SearchResponse<ProductElasticsearch> searchResponse = elasticsearchClient.search(
                     s -> s.index("products")

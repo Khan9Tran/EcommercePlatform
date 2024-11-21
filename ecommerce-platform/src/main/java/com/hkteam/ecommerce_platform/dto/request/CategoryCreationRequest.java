@@ -17,7 +17,7 @@ public class CategoryCreationRequest {
     @ValidSpace
     String name;
 
-    @ValidSpace
+    @NotBlank(message = "NOT_BLANK")
     String description;
 
     Long parentId;

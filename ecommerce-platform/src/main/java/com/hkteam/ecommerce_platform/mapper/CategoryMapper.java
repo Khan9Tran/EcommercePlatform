@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.dto.response.CategoryFilterResponse;
+import com.hkteam.ecommerce_platform.dto.response.CategoryTreeViewResponse;
 import org.mapstruct.*;
 
 import com.hkteam.ecommerce_platform.dto.request.CategoryCreationRequest;
@@ -23,4 +25,8 @@ public interface CategoryMapper {
     void updateCategoryFromRequest(CategoryUpdateRequest request, @MappingTarget Category category);
 
     CategoryOfProductResponse toCategoryOfProductResponse(Category category);
+
+    CategoryTreeViewResponse toCategoryTreeViewResponse(Category category);
+
+    CategoryFilterResponse toCategoryFilterResponse (Category category);
 }

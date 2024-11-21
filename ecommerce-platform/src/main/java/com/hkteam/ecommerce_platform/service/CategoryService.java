@@ -1,7 +1,10 @@
 package com.hkteam.ecommerce_platform.service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import com.hkteam.ecommerce_platform.dto.response.CategoryFilterResponse;
+import com.hkteam.ecommerce_platform.dto.response.CategoryTreeViewResponse;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -294,5 +297,42 @@ public class CategoryService {
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
         return categories;
+    }
+
+    public List<CategoryTreeViewResponse> getTreeView() {
+        var categories = categoryRepository.findByParentNull();
+        log.info("categories: {}", categories);
+        List<CategoryTreeViewResponse> categoryTreeViewResponses = new ArrayList<>();
+        for (Category category : categories) {
+            var categoryTreeViewResponse = categoryMapper.toCategoryTreeViewResponse(category);
+            categoryTreeViewResponse.setChildren(getChildren(category));
+            categoryTreeViewResponses.add(categoryTreeViewResponse);
+        }
+
+        return  categoryTreeViewResponses;
+    }
+
+    private  List<CategoryTreeViewResponse> getChildren(Category category) {
+        if (Objects.isNull(category.getChildren())|| category.getChildren().isEmpty()) {
+            return null;
+        }
+        List<CategoryTreeViewResponse> categoryTreeViewResponses = new ArrayList<>();
+
+        var categories = category.getChildren().stream().toList();
+        for (Category cate : categories) {
+            var cateTreeView = categoryMapper.toCategoryTreeViewResponse(cate);
+            cateTreeView.setChildren(getChildren(cate));
+            categoryTreeViewResponses.add(cateTreeView);
+        }
+
+        return categoryTreeViewResponses;
+    }
+
+    public CategoryFilterResponse getCategory(Long id) {
+        Category category = categoryRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        return categoryMapper.toCategoryFilterResponse(category);
     }
 }

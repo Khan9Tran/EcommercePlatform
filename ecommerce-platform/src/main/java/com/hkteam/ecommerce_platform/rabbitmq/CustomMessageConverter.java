@@ -40,6 +40,9 @@ public class CustomMessageConverter implements MessageConverter {
         } else if (object instanceof UpdateCategoryEsProductRequest) {
             messageProperties.setHeader("messageType", "updateCategoryEsProduct");
         }
+        else if (object instanceof UpdateBrandEsProductRequest) {
+            messageProperties.setHeader("messageType", "updateBrandEsProduct");
+        }
         else {
             throw new MessageConversionException("Unknown message type");
         }

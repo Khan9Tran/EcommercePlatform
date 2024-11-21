@@ -36,7 +36,7 @@ public class SecurityConfig {
     private static final String[] VN_PAY_ENDPOINTS = {"payments/vn-pay-callback"};
 
     private static final String[] SEARCH_ENDPOINTS = {
-        "/search", "/search/autoSuggest",
+        "/search", "/search/auto-suggest", "/brands/all", "/categories/tree-view", "categories/with-id/{id}"
     };
 
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {

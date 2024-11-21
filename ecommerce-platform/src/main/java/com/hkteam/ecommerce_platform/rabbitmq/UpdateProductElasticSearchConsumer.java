@@ -52,7 +52,7 @@ public class UpdateProductElasticSearchConsumer {
     public void receiveBrandUpdateRequest(UpdateBrandEsProductRequest message) {
         log.info("Receive message update brand for product: {}", message.getId());
         try {
-            var products = productElasticsearchRepository.findByCategoryId(message.getId());
+            var products = productElasticsearchRepository.findByBrandId(message.getId());
             if (products.isEmpty()) {
                 log.info("No product need update: {}", message.getId());
                 return;

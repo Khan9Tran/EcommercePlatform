@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
@@ -8,6 +9,7 @@ import com.hkteam.ecommerce_platform.dto.request.BrandUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.BrandOfProductResponse;
 import com.hkteam.ecommerce_platform.dto.response.BrandResponse;
 import com.hkteam.ecommerce_platform.entity.product.Brand;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring")
 public interface BrandMapper {

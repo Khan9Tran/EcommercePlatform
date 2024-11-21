@@ -95,7 +95,10 @@ public class BrandService {
                     RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE,
                     UpdateBrandEsProductRequest.builder()
                             .isDeleted(Boolean.TRUE)
-                            .id(id));
+                            .id(id)
+                            .build()
+            )
+            ;
         } catch (Exception e) {
             log.error("Error when delete brand: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
@@ -136,7 +139,6 @@ public class BrandService {
                 .build();
     }
 
-    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public List<BrandResponse> getAllBrands(String search) {
         List<Brand> brands;
         if (search == null || search.isEmpty()) {
