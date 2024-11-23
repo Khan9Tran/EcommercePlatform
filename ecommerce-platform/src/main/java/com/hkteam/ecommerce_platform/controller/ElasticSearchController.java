@@ -52,7 +52,17 @@ public class ElasticSearchController {
             @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate) {
         return ApiResponse.<PaginationResponse<ProductResponse>>builder()
                 .result(elasticSearchService.getAllProducts(
-                        categoryIds, brandIds, storeId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate))
+                        categoryIds,
+                        brandIds,
+                        storeId,
+                        sortBy,
+                        order,
+                        page,
+                        limit,
+                        search,
+                        minPrice,
+                        maxPrice,
+                        minRate))
                 .build();
     }
 }

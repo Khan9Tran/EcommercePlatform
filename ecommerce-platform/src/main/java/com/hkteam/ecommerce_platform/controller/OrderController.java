@@ -104,6 +104,37 @@ public class OrderController {
                 .build();
     }
 
+    @GetMapping("/{orderId}/user")
+    @Operation(summary = "Get one order by user", description = "Api get one order by user")
+    public ApiResponse<OrderResponseUser> getOneOrderByUser(@PathVariable String orderId) {
+        return ApiResponse.<OrderResponseUser>builder()
+                .result(orderService.getOneOrderByUser(orderId))
+                .build();
+    }
+
+    @Operation(summary = "Get all order by user", description = "Api get all order by user")
+    @GetMapping("/user")
+    public ApiResponse<PaginationResponse<OrderResponseUser>> getAllOrderByUser(
+            @RequestParam(value = "sort", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String orderBy,
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search,
+            @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
+        return ApiResponse.<PaginationResponse<OrderResponseUser>>builder()
+                .result(orderService.getAllOrderByUser(page, size, sortBy, orderBy, search, filter))
+                .build();
+    }
+
+    @PutMapping("/{orderId}/cancel/user")
+    @Operation(summary = "Cancel order by user", description = "Api cancel order by user")
+    public ApiResponse<Void> cancelOrderByUser(@PathVariable String orderId) {
+        orderService.cancelOrderByUser(orderId);
+        return ApiResponse.<Void>builder()
+                .message("Cancelled order successfully")
+                .build();
+    }
+
     @PostMapping("/")
     public ApiResponse<OrderCreationResponse> createOrder(
             @RequestBody ListOrder listOrder, HttpServletRequest request) {

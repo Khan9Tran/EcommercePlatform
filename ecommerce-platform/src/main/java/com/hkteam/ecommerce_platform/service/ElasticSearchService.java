@@ -57,7 +57,6 @@ public class ElasticSearchService {
         int pageInt = pageAndSize[0];
         int sizeInt = pageAndSize[1] < 100 ? pageAndSize[1] : 100; // Giới hạn số lượng bản ghi trên mỗi trang
 
-
         int fromInt = (pageInt - 1) * sizeInt;
 
         List<SortOptions> sortOptions = new ArrayList<>();

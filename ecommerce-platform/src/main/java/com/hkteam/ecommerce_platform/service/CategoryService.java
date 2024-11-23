@@ -1,10 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import com.hkteam.ecommerce_platform.dto.response.CategoryFilterResponse;
-import com.hkteam.ecommerce_platform.dto.response.CategoryTreeViewResponse;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +10,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.*;
+import com.hkteam.ecommerce_platform.dto.response.CategoryFilterResponse;
 import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
+import com.hkteam.ecommerce_platform.dto.response.CategoryTreeViewResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.entity.category.Component;
@@ -309,11 +308,11 @@ public class CategoryService {
             categoryTreeViewResponses.add(categoryTreeViewResponse);
         }
 
-        return  categoryTreeViewResponses;
+        return categoryTreeViewResponses;
     }
 
-    private  List<CategoryTreeViewResponse> getChildren(Category category) {
-        if (Objects.isNull(category.getChildren())|| category.getChildren().isEmpty()) {
+    private List<CategoryTreeViewResponse> getChildren(Category category) {
+        if (Objects.isNull(category.getChildren()) || category.getChildren().isEmpty()) {
             return null;
         }
         List<CategoryTreeViewResponse> categoryTreeViewResponses = new ArrayList<>();
@@ -329,9 +328,8 @@ public class CategoryService {
     }
 
     public CategoryFilterResponse getCategory(Long id) {
-        Category category = categoryRepository
-                .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+        Category category =
+                categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
         return categoryMapper.toCategoryFilterResponse(category);
     }

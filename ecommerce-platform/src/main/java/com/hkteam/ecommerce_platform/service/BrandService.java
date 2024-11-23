@@ -96,9 +96,7 @@ public class BrandService {
                     UpdateBrandEsProductRequest.builder()
                             .isDeleted(Boolean.TRUE)
                             .id(id)
-                            .build()
-            )
-            ;
+                            .build());
         } catch (Exception e) {
             log.error("Error when delete brand: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
