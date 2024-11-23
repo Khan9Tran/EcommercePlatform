@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ElasticSearchService {
     private final ProductMapper productMapper;
-    static final Set<String> ALLOWED_SORT_FIELDS = Set.of("salePrice", "rating", "name", "createdAt");
+    static final Set<String> ALLOWED_SORT_FIELDS = Set.of("salePrice","originalPrice", "rating", "name", "createdAt");
     static final Set<String> ALLOWED_SORT_ORDERS = Set.of("asc", "desc");
     ElasticsearchClient elasticsearchClient;
 
