@@ -19,7 +19,6 @@ public class OrderResponseAdmin {
     String id;
     BigDecimal total;
     BigDecimal discount;
-    String phone;
     String recipientName;
     String province;
     String district;
@@ -40,6 +39,7 @@ public class OrderResponseAdmin {
     String userName;
     String userEmail;
     String userPhone;
+    String orderPhone;
 
     List<OrderItemResponse> orderItems;
 }

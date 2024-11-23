@@ -46,7 +46,8 @@ public class ESUtils {
         if (categoryIds != null && !categoryIds.isEmpty()) {
             List<FieldValue> categoryFieldValues =
                     categoryIds.stream().map(FieldValue::of).collect(Collectors.toList());
-            queries.add(Query.of(q -> q.terms(t -> t.field("categoryId").terms(terms -> terms.value(categoryFieldValues)))));
+            queries.add(Query.of(
+                    q -> q.terms(t -> t.field("categoryId").terms(terms -> terms.value(categoryFieldValues)))));
         }
         if (brandIds != null && !brandIds.isEmpty()) {
             List<FieldValue> brandFieldValues =

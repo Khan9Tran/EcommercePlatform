@@ -30,5 +30,4 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Page<Category> searchAllCategory(String name, Pageable pageable);
 
     List<Category> findByParentNull();
-
 }

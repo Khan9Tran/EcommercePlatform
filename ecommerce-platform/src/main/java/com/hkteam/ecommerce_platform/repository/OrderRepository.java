@@ -62,4 +62,34 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Nullable String province,
             @Nullable String statusName,
             Pageable pageable);
+
+    @Query(
+            value =
+                    """
+					select o from Order o
+					join o.orderStatusHistories osh
+					join o.orderItems oi
+					join oi.product p
+					where o.user.id = :userId
+					and (
+						(:orderId = '' or o.id like concat('%', :orderId, '%'))
+						or (:storeName = '' or o.store.name like concat('%', :storeName, '%'))
+						or (:productName = '' or p.name like concat('%', :productName, '%'))
+					)
+					and osh = (
+						select osh1 from OrderStatusHistory osh1
+						where osh1.order = o
+						and (:statusName = '' or osh1.orderStatus.name = :statusName)
+						and osh1.createdAt = (
+							select max(osh2.createdAt) from OrderStatusHistory osh2 where osh2.order = osh1.order
+						)
+					)
+			""")
+    Page<Order> findAllOrderByUser(
+            @Nullable String userId,
+            @Nullable String orderId,
+            @Nullable String storeName,
+            @Nullable String productName,
+            @Nullable String statusName,
+            Pageable pageable);
 }

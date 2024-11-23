@@ -39,11 +39,9 @@ public class CustomMessageConverter implements MessageConverter {
             messageProperties.setHeader("messageType", "deleteImage");
         } else if (object instanceof UpdateCategoryEsProductRequest) {
             messageProperties.setHeader("messageType", "updateCategoryEsProduct");
-        }
-        else if (object instanceof UpdateBrandEsProductRequest) {
+        } else if (object instanceof UpdateBrandEsProductRequest) {
             messageProperties.setHeader("messageType", "updateBrandEsProduct");
-        }
-        else {
+        } else {
             throw new MessageConversionException("Unknown message type");
         }
 
