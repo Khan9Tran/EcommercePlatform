@@ -66,8 +66,14 @@ public class ElasticSearchService {
                 order = "asc";
             }
 
+            if (sortBy.equals("name")) {
+                sortBy = "name.keyword";
+            }
+
             SortOrder sortOrder = order.equalsIgnoreCase("asc") ? SortOrder.Asc : SortOrder.Desc;
-            FieldSort fieldSort = FieldSort.of(s -> s.field(sortBy).order(sortOrder));
+            String finalSortBy = sortBy;
+
+            FieldSort fieldSort = FieldSort.of(s -> s.field(finalSortBy).order(sortOrder));
             sortOptions.add(SortOptions.of(s -> s.field(fieldSort)));
         }
 
