@@ -87,7 +87,7 @@ public class VideoService {
                     cloudinaryService.deleteVideo(product.getVideoUrl());
                 }
 
-                productRepository.updateVideoUrlById(productId, video.get("url").toString());
+                productRepository.updateVideoUrlById(video.get("url").toString(),productId);
                 var esPro = productElasticsearchRepository.findById(product.getId()).orElse(null);
                 if (esPro != null) {
                     esPro.setVideoUrl(video.get("url").toString());
