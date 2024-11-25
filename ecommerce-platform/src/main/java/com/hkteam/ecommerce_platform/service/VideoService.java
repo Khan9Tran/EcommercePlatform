@@ -90,7 +90,7 @@ public class VideoService {
                 productRepository.updateVideoUrlById(productId, video.get("url").toString());
                 var esPro = productElasticsearchRepository.findById(product.getId()).orElse(null);
                 if (esPro != null) {
-                    esPro.setVideoUrl(product.getVideoUrl());
+                    esPro.setVideoUrl(video.get("url").toString());
                 }
 
                 productElasticsearchRepository.save(esPro);
