@@ -5,10 +5,12 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.dto.response.VideoResponse;
@@ -34,6 +36,7 @@ public class VideoService {
     ProductRepository productRepository;
     AuthenticatedUserUtil authenticatedUserUtil;
     ExecutorService executorService = Executors.newFixedThreadPool(5);
+    ProductElasticsearchRepository productElasticsearchRepository;
 
     @PreAuthorize("hasRole('SELLER')")
     public VideoResponse uploadVideoProduct(String productId, MultipartFile videoFile) {
@@ -65,6 +68,7 @@ public class VideoService {
     }
 
     @Async
+    @Transactional
     void asyncUploadVideo(String productId, MultipartFile videoFile) {
         executorService.submit(() -> {
             try {
@@ -83,9 +87,14 @@ public class VideoService {
                     cloudinaryService.deleteVideo(product.getVideoUrl());
                 }
 
-                product.setVideoUrl(video.get("url").toString());
+                productRepository.updateVideoUrlById(productId, video.get("url").toString());
+                var esPro = productElasticsearchRepository.findById(product.getId()).orElse(null);
+                if (esPro != null) {
+                    esPro.setVideoUrl(product.getVideoUrl());
+                }
 
-                productRepository.save(product);
+                productElasticsearchRepository.save(esPro);
+
             } catch (IOException e) {
                 log.error("Error processing video: {}", e.getMessage());
             }
@@ -93,6 +102,7 @@ public class VideoService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
+    @Transactional
     public void deleteProductVideo(String productId) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
@@ -116,14 +126,15 @@ public class VideoService {
         try {
             cloudinaryService.deleteVideo(product.getVideoUrl());
 
-            product.setVideoUrl(null);
-
-            try {
-                productRepository.save(product);
-            } catch (DataIntegrityViolationException e) {
-                log.info("Error while saving at delete product video: {}", e.getMessage());
-                throw new AppException(ErrorCode.UNKNOWN_ERROR);
+            var esPro = productElasticsearchRepository.findById(product.getId()).orElse(null);
+            if (esPro != null) {
+                esPro.setVideoUrl(null);
             }
+
+            product.setVideoUrl(null);
+            productRepository.save(product);
+            productElasticsearchRepository.save(esPro);
+
         } catch (Exception e) {
             log.info("Error while deleting at delete product video: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);

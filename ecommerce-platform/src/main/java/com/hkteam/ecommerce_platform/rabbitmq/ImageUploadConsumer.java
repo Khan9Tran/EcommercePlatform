@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
+import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class ImageUploadConsumer {
     CloudinaryService cloudinaryService;
     ProductRepository productRepository;
     ProductImageRepository productImageRepository;
+    ProductElasticsearchRepository productElasticsearchRepository;
 
     @RabbitListener(queues = RabbitMQConfig.IMAGE_QUEUE)
     public void receiveFileUploadMessage(ImageMessageRequest message) {
@@ -55,10 +57,15 @@ public class ImageUploadConsumer {
                 cloudinaryService.deleteImage(product.getMainImageUrl());
             }
 
-            product.setMainImageUrl(getUrl(img));
+            var esPro = productElasticsearchRepository.findById(product.getId()).orElse(null);
+            if (esPro != null) {
+                esPro.setMainImageUrl(getUrl(img));
+            }
+
 
             try {
-                productRepository.save(product);
+                productRepository.updateMainImageUrlById(getUrl(img), product.getId());
+                productElasticsearchRepository.save(esPro);
             } catch (DataIntegrityViolationException exception) {
                 log.error("Error when up load main image for product " + product.getId());
                 throw new AppException(ErrorCode.UNKNOWN_ERROR);
