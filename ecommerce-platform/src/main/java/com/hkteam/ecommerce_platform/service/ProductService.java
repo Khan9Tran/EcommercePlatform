@@ -50,8 +50,11 @@ public class ProductService {
     AttributeRepository attributeRepository;
     BrandMapper brandMapper;
     StoreMapper storeMapper;
+    ValuesMapper valuesMapper;
     ProductComponentValueMapper productComponentValueMapper;
     ProductElasticsearchRepository productElasticsearchRepository;
+    ImageMapper imageMapper;
+    AttributeMapper attributeMapper;
 
     static String[] SORT_BY = {"name", "originalPrice", "salePrice", "rating", "createdAt"};
     static String[] ORDER = {"asc", "desc"};
@@ -231,7 +234,7 @@ public class ProductService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public ProductDetailResponse updateProduct(String id, ProductUpdateRequest request) {
+    public ProductUserViewResponse updateProduct(String id, ProductUpdateRequest request) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         var esPro = productElasticsearchRepository
                 .findById(id)
@@ -272,14 +275,19 @@ public class ProductService {
         return map(product);
     }
 
-    public ProductDetailResponse getProductBySlug(String slug) {
+
+    public ProductUserViewResponse getProductBySlug(String slug) {
         var product =
                 productRepository.findBySlug(slug).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (product.isBlocked() || Boolean.FALSE.equals(product.isAvailable())) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
 
         return map(product);
     }
 
-    public ProductDetailResponse getProduct(String id) {
+
+    public ProductUserViewResponse getProduct(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
         return map(product);
@@ -301,8 +309,41 @@ public class ProductService {
         }
     }
 
-    private ProductDetailResponse map(Product product) {
-        var response = productMapper.toProductDetailResponse(product);
+    private ProductUserViewResponse map(Product product) {
+        var response = productMapper.toProductUserViewResponse(product);
+        response.setImages(product.getImages().stream()
+                .map(imageMapper::toImageInList)
+                .collect(Collectors.toSet()));
+        Set<Attribute> attributes = new HashSet<>();
+        Set<VariantOfProductUserViewResponse> variants = new HashSet<>();
+        product.getVariants().forEach((variant) -> {
+            if (variant.isAvailable()) {
+                var vrMap = variantMapper.toVariantOfProductUserViewResponse(variant);
+                List<ValueOfVariantResponse> values = new ArrayList<>();
+
+                variant.getValues().forEach((value) -> {
+                    attributes.add(value.getAttribute());
+                    values.add(valuesMapper.toValueOfVariantResponse(value));
+                });
+                vrMap.setValues(values);
+
+                variants.add(vrMap);
+            }
+        });
+        response.setVariants(variants);
+
+        List<AttributeOfProductResponse> attributeOfProductResponses = new ArrayList<>();
+
+        attributes.forEach((attribute) -> {
+            var att = attributeMapper.toAttributeOfProductResponse(attribute);
+            att.setValues(attribute.getValues().stream()
+                    .map(valuesMapper::toValueOfAttributeResponse).toList());
+            attributeOfProductResponses.add(att);
+        });
+
+        response.setAttributes(attributeOfProductResponses);
+
+
 
         response.setCategory(categoryMapper.toCategoryOfProductResponse(product.getCategory()));
         response.setBrand(brandMapper.toBrandOfProductResponse(product.getBrand()));

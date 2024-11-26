@@ -3,15 +3,19 @@ package com.hkteam.ecommerce_platform.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StoreOfProductResponse {
+public class VariantOfProductUserViewResponse {
     String id;
-    String name;
     String slug;
-    String imageUrl;
-    Float rating;
+    BigDecimal originalPrice;
+    BigDecimal salePrice;
+    int quantity;
+    List<ValueOfVariantResponse> values;
 }

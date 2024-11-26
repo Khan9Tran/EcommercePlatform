@@ -32,23 +32,23 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    ApiResponse<ProductDetailResponse> updateProduct(
+    ApiResponse<ProductUserViewResponse> updateProduct(
             @PathVariable String id, @RequestBody @Valid ProductUpdateRequest request) {
-        return ApiResponse.<ProductDetailResponse>builder()
+        return ApiResponse.<ProductUserViewResponse>builder()
                 .result(productService.updateProduct(id, request))
                 .build();
     }
 
     @GetMapping("/slug/{slug}")
-    ApiResponse<ProductDetailResponse> getProductBySlug(@PathVariable String slug) {
-        return ApiResponse.<ProductDetailResponse>builder()
+    ApiResponse<ProductUserViewResponse> getProductBySlug(@PathVariable String slug) {
+        return ApiResponse.<ProductUserViewResponse>builder()
                 .result(productService.getProductBySlug(slug))
                 .build();
     }
 
     @GetMapping("/{id}")
-    ApiResponse<ProductDetailResponse> getProduct(@PathVariable String id) {
-        return ApiResponse.<ProductDetailResponse>builder()
+    ApiResponse<ProductUserViewResponse> getProduct(@PathVariable String id) {
+        return ApiResponse.<ProductUserViewResponse>builder()
                 .result(productService.getProduct(id))
                 .build();
     }

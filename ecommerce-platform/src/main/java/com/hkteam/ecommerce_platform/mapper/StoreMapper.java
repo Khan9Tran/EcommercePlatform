@@ -27,5 +27,6 @@ public interface StoreMapper {
 
     void updateStore(StoreUpdateRequest request, @MappingTarget Store store);
 
+    @Mapping(target = "imageUrl", source = "user.imageUrl")
     StoreOfProductResponse toStoreOfProductResponse(Store store);
 }

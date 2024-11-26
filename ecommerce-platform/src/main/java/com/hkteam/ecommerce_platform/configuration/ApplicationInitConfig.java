@@ -1,7 +1,10 @@
 package com.hkteam.ecommerce_platform.configuration;
 
 import java.util.HashSet;
+import java.util.Set;
 
+import com.hkteam.ecommerce_platform.entity.authorization.Permission;
+import com.hkteam.ecommerce_platform.repository.*;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,10 +18,6 @@ import com.hkteam.ecommerce_platform.enums.Gender;
 import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
-import com.hkteam.ecommerce_platform.repository.OrderStatusRepository;
-import com.hkteam.ecommerce_platform.repository.RoleRepository;
-import com.hkteam.ecommerce_platform.repository.TransactionStatusRepository;
-import com.hkteam.ecommerce_platform.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -36,7 +35,9 @@ public class ApplicationInitConfig {
             UserRepository userRepository,
             RoleRepository roleRepository,
             TransactionStatusRepository transactionStatusRepository,
-            OrderStatusRepository orderStatusRepository) {
+            OrderStatusRepository orderStatusRepository,
+            PermissionRepository permissionRepository
+    ) {
         return args -> {
             if (roleRepository.findByName(RoleName.USER).isEmpty()) {
                 log.info("Creating user role");
@@ -47,6 +48,8 @@ public class ApplicationInitConfig {
 
                 try {
                     roleRepository.save(userRole);
+
+                    var permission = new HashSet<String>();
                 } catch (Exception e) {
                     log.error("Error creating user role", e);
                 }
@@ -154,6 +157,16 @@ public class ApplicationInitConfig {
                     orderStatusRepository.save(orderStatus);
                 } catch (Exception e) {
                     log.error("Error creating on hold status", e);
+                }
+            }
+
+            if (permissionRepository.findById("PERMISSION_PURCHASE").isEmpty()) {
+
+                var permission = Permission.builder().name("PERMISSION_PURCHASE").description("Permission to purchase").build();
+                try {
+                    permissionRepository.save(permission);
+                } catch (Exception e) {
+                    log.error("Error creating permission", e);
                 }
             }
         };
