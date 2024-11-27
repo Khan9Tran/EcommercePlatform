@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 import com.hkteam.ecommerce_platform.validator.ValidSpace;
@@ -16,25 +17,24 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class AddressCreationRequest {
-    @ValidSpace()
+    @NotBlank(message = "NOT_BLANK")
     String recipientName;
 
     @Pattern(regexp = "^0\\d{9}$", message = "INVALID_PHONE")
     String phone;
 
-    @ValidSpace
+    @NotBlank(message = "NOT_BLANK")
     String province;
 
-    @ValidSpace
+    @NotBlank(message = "NOT_BLANK")
     String district;
 
-    @ValidSpace
+    @NotBlank(message = "NOT_BLANK")
     String subDistrict;
 
-    @ValidSpace
+    @NotBlank(message = "NOT_BLANK")
     String detailAddress;
 
-    @ValidSpace
     String detailLocate;
 
     @Builder.Default

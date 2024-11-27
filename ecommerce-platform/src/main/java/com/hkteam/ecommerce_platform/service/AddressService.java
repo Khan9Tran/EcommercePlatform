@@ -47,7 +47,7 @@ public class AddressService {
 
         try {
             addressRepository.save(address);
-            if (request.getIsDefault()) {
+            if (Boolean.TRUE.equals(request.getIsDefault())) {
                 user.setDefaultAddressId(address.getId());
                 userRepository.save(user);
             }
@@ -112,8 +112,8 @@ public class AddressService {
             if (user.getDefaultAddressId().equals(address.getId())) {
                 address.setIsDefault(Boolean.TRUE);
             }
-            if (Boolean.FALSE.equals(user.getStore())
-                    && address.getIsDefault().equals(user.getStore().getDefaultAddressId())) {
+            if (user.getStore()!= null
+                    && address.getId().equals(user.getStore().getDefaultAddressId())) {
                 address.setIsStoreAddress(Boolean.TRUE);
             }
         }

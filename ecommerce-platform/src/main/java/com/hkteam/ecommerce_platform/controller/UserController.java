@@ -2,6 +2,8 @@ package com.hkteam.ecommerce_platform.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.*;
@@ -33,8 +35,9 @@ public class UserController {
     }
 
     @Operation(summary = "Get user by id", description = "Api get user by id")
+    @Cacheable(value = "userCache", key = "#userId")
     @GetMapping("/{userId}")
-    ApiResponse<UserDetailResponse> getUser(@PathVariable("userId") String userId) {
+    public ApiResponse<UserDetailResponse> getUser(@PathVariable("userId") String userId) {
         return ApiResponse.<UserDetailResponse>builder()
                 .result(userService.getUser(userId))
                 .build();
@@ -58,15 +61,17 @@ public class UserController {
     }
 
     @Operation(summary = "Delete user by id", description = "Api delete user by id")
+    @CacheEvict(value = "userCache", key = "#userId")
     @DeleteMapping("/{userId}")
-    ApiResponse<Void> deleteUser(@PathVariable("userId") String userId) {
+    public ApiResponse<Void> deleteUser(@PathVariable("userId") String userId) {
         userService.deleteUser(userId);
         return ApiResponse.<Void>builder().build();
     }
 
     @Operation(summary = "Update user by id", description = "Api update user by id")
     @PutMapping("/{userId}")
-    ApiResponse<UserUpdateResponse> updateUser(
+    @CacheEvict(value = "userCache", key = "#userId")
+    public ApiResponse<UserUpdateResponse> updateUser(
             @PathVariable("userId") String userId, @RequestBody @Valid UserUpdateRequest request) {
         return ApiResponse.<UserUpdateResponse>builder()
                 .result(userService.updateUser(userId, request))
