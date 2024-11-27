@@ -30,4 +30,5 @@ public class UserDetailResponse {
     boolean isBlocked;
     Instant createdAt;
     List<RoleResponse> roles;
+    Integer cartItemCount;
 }

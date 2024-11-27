@@ -70,7 +70,9 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public UserDetailResponse getUser(String userId) {
         var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userMapper.toUserDetailResponse(user);
+        var res =  userMapper.toUserDetailResponse(user);
+        res.setCartItemCount(user.getCarts().stream().mapToInt(cart -> cart.getCartItems().size()).sum());
+        return res;
     }
 
     public void setDefaultAddress(DefaultAddressRequest request) {
@@ -153,6 +155,7 @@ public class UserService {
 
         var userDetail = userMapper.toUserDetailResponse(user);
         userDetail.setNoPassword(!StringUtils.hasText(user.getPasswordDigest()));
+        userDetail.setCartItemCount(user.getCarts().stream().mapToInt(cart -> cart.getCartItems().size()).sum());
 
         return userDetail;
     }
