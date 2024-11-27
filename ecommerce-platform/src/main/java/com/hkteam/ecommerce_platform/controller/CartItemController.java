@@ -48,4 +48,11 @@ public class CartItemController {
                 .result(cartItemService.addProductToCart(request))
                 .build();
     }
+
+    @GetMapping("/count")
+    public ApiResponse<Integer> countCartItems() {
+        return ApiResponse.<Integer>builder()
+                .result(cartItemService.countCartItems())
+                .build();
+    }
 }
