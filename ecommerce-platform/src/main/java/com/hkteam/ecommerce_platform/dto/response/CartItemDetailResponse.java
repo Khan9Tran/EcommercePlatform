@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartItemDetailResponse {
+    Long id;
     String name;
     int quantity;
     BigDecimal originalPrice;
