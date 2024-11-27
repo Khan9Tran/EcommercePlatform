@@ -156,4 +156,9 @@ public class CartItemService {
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
+
+    public Integer countCartItems() {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+        return user.getCarts().stream().mapToInt(cart -> cart.getCartItems().size()).sum();
+    }
 }

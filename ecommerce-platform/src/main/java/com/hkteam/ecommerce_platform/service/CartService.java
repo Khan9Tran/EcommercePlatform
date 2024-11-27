@@ -109,10 +109,10 @@ public class CartService {
             return false;
         }
         if (Objects.isNull(cartItem.getVariant())) {
-            return cartItem.getQuantity() >= cartItem.getProduct().getQuantity();
+            return cartItem.getQuantity() <= cartItem.getProduct().getQuantity();
         }
 
-        return cartItem.getQuantity() >= cartItem.getVariant().getQuantity();
+        return cartItem.getQuantity() <= cartItem.getVariant().getQuantity();
     }
 
     @PreAuthorize("hasRole('USER')")
