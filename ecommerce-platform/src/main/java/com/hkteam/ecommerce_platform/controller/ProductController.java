@@ -2,6 +2,8 @@ package com.hkteam.ecommerce_platform.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
@@ -31,16 +33,19 @@ public class ProductController {
                 .build();
     }
 
+    @CacheEvict(value = "productsCache", allEntries = true)
     @PatchMapping("/{id}")
-    ApiResponse<ProductUserViewResponse> updateProduct(
+    public ApiResponse<ProductUserViewResponse> updateProduct(
             @PathVariable String id, @RequestBody @Valid ProductUpdateRequest request) {
         return ApiResponse.<ProductUserViewResponse>builder()
                 .result(productService.updateProduct(id, request))
                 .build();
     }
 
+    @Cacheable(value = "productCache", key = "#slug", unless = "#result == null")
     @GetMapping("/slug/{slug}")
-    ApiResponse<ProductUserViewResponse> getProductBySlug(@PathVariable String slug) {
+    public ApiResponse<ProductUserViewResponse> getProductBySlug(@PathVariable String slug) {
+        log.info("Get product by slug: {}", slug);
         return ApiResponse.<ProductUserViewResponse>builder()
                 .result(productService.getProductBySlug(slug))
                 .build();
@@ -53,8 +58,9 @@ public class ProductController {
                 .build();
     }
 
+    @CacheEvict(value = "productsCache", allEntries = true)
     @DeleteMapping("/{id}")
-    ApiResponse<String> deleteProduct(@PathVariable String id) {
+    public ApiResponse<String> deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);
         return ApiResponse.<String>builder()
                 .result("Product deleted successfully")
@@ -74,8 +80,9 @@ public class ProductController {
                 .build();
     }
 
+    @CacheEvict(value = "productsCache", allEntries = true)
     @PatchMapping("/{id}/status")
-    ApiResponse<Void> updateProductStatus(@PathVariable String id) {
+    public ApiResponse<Void> updateProductStatus(@PathVariable String id) {
         return ApiResponse.<Void>builder()
                 .result(productService.updateProductStatus(id))
                 .build();

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,10 +56,11 @@ public class ProductService {
     ProductElasticsearchRepository productElasticsearchRepository;
     ImageMapper imageMapper;
     AttributeMapper attributeMapper;
+    CacheManager cacheManager;
 
-    static String[] SORT_BY = {"name", "originalPrice", "salePrice", "rating", "createdAt"};
-    static String[] ORDER = {"asc", "desc"};
-    static String[] TAB = {"available", "unAvailable", "blocked"};
+    static final String[] SORT_BY = {"name", "originalPrice", "salePrice", "rating", "createdAt"};
+    static final String[] ORDER = {"asc", "desc"};
+    static final String[] TAB = {"available", "unAvailable", "blocked"};
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
@@ -111,8 +113,6 @@ public class ProductService {
         if (!category.getComponents().isEmpty() && components.isEmpty())
             throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
 
-        // if (!category.getComponents().equals(components)) throw new AppException(ErrorCode.COMPONENT_NOT_FOUND);
-
         List<Attribute> attributes = new ArrayList<>();
 
         List<Variant> variants = new ArrayList<>();
@@ -159,7 +159,7 @@ public class ProductService {
         });
 
         try {
-            attributes.forEach(attributeRepository::save);
+            attributeRepository.saveAll(attributes);
             productRepository.save(product);
             var productElasticsearch = ProductElasticsearch.builder()
                     .id(product.getId())
@@ -183,7 +183,7 @@ public class ProductService {
                     .isBlocked(product.isBlocked())
                     .productComponentValues(product.getProductComponentValues().stream()
                             .map(pc -> new EsProComponentValue(pc.getId(), pc.getValue()))
-                            .collect(Collectors.toList()))
+                            .toList())
                     .build();
             productElasticsearchRepository.save(productElasticsearch);
         } catch (Exception e) {
@@ -241,7 +241,7 @@ public class ProductService {
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         Long brandId = esPro.getBrandId();
 
-        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         productMapper.updateProductFromRequest(request, product);
         productMapper.updateProductFromRequest(request, esPro);
@@ -268,6 +268,7 @@ public class ProductService {
 
             productRepository.save(product);
             productElasticsearchRepository.save(esPro);
+            evictCache(product);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
@@ -296,17 +297,18 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public void deleteProduct(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         try {
             product.setDeleted(true);
             productRepository.save(product);
-
             productElasticsearchRepository.deleteById(product.getId());
+            evictCache(product);
         } catch (Exception e) {
             log.info("Has error when delete pro: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
+
     }
 
     private ProductUserViewResponse map(Product product) {
@@ -397,7 +399,7 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public Void updateProductStatus(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) throw new AppException(ErrorCode.UNAUTHORIZED);
         product.setAvailable(!product.isAvailable());
 
         try {
@@ -406,7 +408,11 @@ public class ProductService {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
-
+        evictCache(product);
         return null;
+    }
+
+    private void evictCache(Product product) {
+        Objects.requireNonNull(cacheManager.getCache("productCache")).evict(product.getSlug());
     }
 }

@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,7 +13,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaginationResponse<T> {
+public class PaginationResponse<T> implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Builder.Default
     private List<T> data = Collections.emptyList();
 

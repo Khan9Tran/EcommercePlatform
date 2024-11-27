@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -14,6 +15,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 @EnableFeignClients
 @EnableRetry(proxyTargetClass = true)
 @EnableAsync
+@EnableCaching
 public class EcommercePlatformApplication {
 
     public static void main(String[] args) {
@@ -58,6 +60,7 @@ public class EcommercePlatformApplication {
         final String VN_PAY_VERSION = "VN_PAY_VERSION";
         final String VN_PAY_COMMAND = "VN_PAY_COMMAND";
         final String VN_PAY_ORDER_TYPE = "VN_PAY_ORDER_TYPE";
+
 
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));

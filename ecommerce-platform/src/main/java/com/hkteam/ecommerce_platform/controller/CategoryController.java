@@ -4,6 +4,9 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
+import org.hibernate.annotations.Cache;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.request.AddComponentRequest;
@@ -38,6 +41,7 @@ public class CategoryController {
     }
 
     @Operation(summary = "Update category", description = "Api update category")
+    @CacheEvict(value = "categoriesTreeCache", allEntries = true)
     @PutMapping("/{id}")
     public ApiResponse<CategoryResponse> updateCategory(
             @PathVariable Long id, @RequestBody @Valid CategoryUpdateRequest request) {
@@ -48,12 +52,14 @@ public class CategoryController {
 
     @GetMapping("/with-id/{id}")
     public ApiResponse<CategoryFilterResponse> getCategory(@PathVariable Long id) {
+        log.info("Get category by id: {}", id);
         return ApiResponse.<CategoryFilterResponse>builder()
                 .result(categoryService.getCategory(id))
                 .build();
     }
 
     @Operation(summary = "Delete category", description = "Api delete category by id")
+    @CacheEvict(value = "categoriesTreeCache", allEntries = true)
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
@@ -70,14 +76,17 @@ public class CategoryController {
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
             @RequestParam(value = "search", required = false, defaultValue = "") String search) {
+        log.info("Get all categories with tab: {}, sort: {}, page: {}, size: {}, search: {}", tab, sort, page, size, search);
         return ApiResponse.<PaginationResponse<CategoryResponse>>builder()
                 .result(categoryService.getAllCategories(page, size, tab, sort, search))
                 .build();
     }
 
     @GetMapping("/{slug}")
+    @Cacheable(value = "categoryCache", key = "#slug", unless = "#result == null")
     @Operation(summary = "Get one category by slug", description = "Api get one category by slug")
     public ApiResponse<CategoryResponse> getOneCategoryBySlug(@PathVariable String slug) {
+        log.info("Get category by slug: {}", slug);
         CategoryResponse categoryResponse = categoryService.getOneCategoryBySlug(slug);
 
         return ApiResponse.<CategoryResponse>builder().result(categoryResponse).build();
@@ -120,6 +129,7 @@ public class CategoryController {
                 .build();
     }
 
+    @Cacheable(value = "categoriesTreeCache", key = "'treeViewKey'", unless = "#result == null")
     @GetMapping(("/tree-view"))
     public ApiResponse<List<CategoryTreeViewResponse>> getTreeView() {
         return ApiResponse.<List<CategoryTreeViewResponse>>builder()

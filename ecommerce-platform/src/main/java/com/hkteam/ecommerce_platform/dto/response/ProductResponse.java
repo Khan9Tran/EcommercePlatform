@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.Instant;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +15,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class ProductResponse {
+public class ProductResponse implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     String id;
     String slug;
     String name;

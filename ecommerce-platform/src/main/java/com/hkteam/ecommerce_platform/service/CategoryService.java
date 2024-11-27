@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.*;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.cache.CacheManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,8 +41,8 @@ public class CategoryService {
     CategoryMapper categoryMapper;
     CategoryRepository categoryRepository;
     ComponentRepository componentRepository;
-    ProductElasticsearchRepository productElasticsearchRepository;
     RabbitTemplate rabbitTemplate;
+    CacheManager cacheManager;
 
     @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse createCategory(CategoryCreationRequest request) {
@@ -116,6 +117,7 @@ public class CategoryService {
             throw new AppException(ErrorCode.CATEGORY_LATER_EXISTED);
         }
 
+        Objects.requireNonNull(cacheManager.getCache("categoryCache")).evict(category.getSlug());
         return categoryMapper.toCategoryResponse(category);
     }
 
@@ -134,6 +136,7 @@ public class CategoryService {
         } catch (Exception e) {
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
+        Objects.requireNonNull(cacheManager.getCache("categoryCache")).evict(category.getSlug());
     }
 
     public PaginationResponse<CategoryResponse> getAllCategories(
