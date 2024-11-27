@@ -23,4 +23,6 @@ public class CartItemDetailResponse {
     String productSlug;
     String variantSlug;
     boolean isAvailable;
+    String brand;
+    String logoBrand;
 }

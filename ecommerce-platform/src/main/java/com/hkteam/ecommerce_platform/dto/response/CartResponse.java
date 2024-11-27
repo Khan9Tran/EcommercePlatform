@@ -13,5 +13,7 @@ import lombok.experimental.FieldDefaults;
 public class CartResponse {
     String storeName;
     String storeSlug;
+    String avatarStore;
+    Float ratingStore;
     List<CartItemDetailResponse> items;
 }

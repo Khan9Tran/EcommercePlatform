@@ -17,5 +17,7 @@ public interface CartItemMapper {
     @Mapping(target = "originalPrice", source = "product.originalPrice")
     @Mapping(target = "salePrice", source = "product.salePrice")
     @Mapping(target = "image", source = "product.mainImageUrl")
+    @Mapping(target = "brand", source = "product.brand.name")
+    @Mapping(target = "logoBrand", source = "product.brand.logoUrl")
     CartItemDetailResponse toCartItemDetailResponse(CartItem cartItem);
 }

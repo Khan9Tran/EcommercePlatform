@@ -12,5 +12,7 @@ public interface CartMapper {
     @Mapping(target = "storeName", source = "store.name")
     @Mapping(target = "storeSlug", source = "store.slug")
     @Mapping(target = "items", ignore = true)
+    @Mapping(target = "avatarStore", source = "store.user.imageUrl")
+    @Mapping(target = "ratingStore", source = "store.rating")
     CartResponse toCartResponse(Cart cart);
 }
