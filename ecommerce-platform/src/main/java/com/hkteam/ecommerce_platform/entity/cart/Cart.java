@@ -1,7 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.cart;
 
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 
 import jakarta.persistence.*;
 
@@ -37,7 +37,7 @@ public class Cart {
     User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<CartItem> cartItems;
+    List<CartItem> cartItems;
 
     @CreationTimestamp
     Instant createdAt;

@@ -73,8 +73,8 @@ public class CartService {
                 .build();
     }
 
-    Set<CartItem> filterNotCheckout(Set<CartItem> cartItems) {
-        return cartItems.stream().filter(cartItem -> !cartItem.isCheckout()).collect(Collectors.toSet());
+    List<CartItem> filterNotCheckout(List<CartItem> cartItems) {
+        return cartItems.stream().filter(cartItem -> !cartItem.isCheckout()).toList();
     }
 
     CartResponse setItems(CartResponse cartResponse, Cart cart) {

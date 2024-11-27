@@ -124,9 +124,7 @@ public class CartItemService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        int quantityChange = request.getQuantity() - cartItem.getQuantity();
-
-        if (isAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), quantityChange))
+        if (isAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), request.getQuantity()))
             throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
         cartItem.setQuantity(request.getQuantity());
