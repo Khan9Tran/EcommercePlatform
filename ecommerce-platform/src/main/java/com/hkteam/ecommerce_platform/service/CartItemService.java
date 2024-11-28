@@ -152,7 +152,7 @@ public class CartItemService {
         try {
             Cart cart = cartItem.getCart();
             cartItemRepository.delete(cartItem);
-            if (cart.getCartItems().isEmpty()) {
+            if (Objects.isNull(cart.getCartItems()) || cart.getCartItems().isEmpty()) {git
                 cartRepository.delete(cart);
             }
         } catch (Exception e) {
