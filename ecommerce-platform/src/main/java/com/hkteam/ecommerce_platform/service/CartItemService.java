@@ -25,6 +25,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +140,7 @@ public class CartItemService {
         return cartItemMapper.toCartItemResponse(cartItem);
     }
 
+    @Transactional
     public void deleteCartItem(Long id) {
         var cartItem =
                 cartItemRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
@@ -148,7 +150,11 @@ public class CartItemService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         try {
+            Cart cart = cartItem.getCart();
             cartItemRepository.delete(cartItem);
+            if (cart.getCartItems().isEmpty()) {
+                cartRepository.delete(cart);
+            }
         } catch (Exception e) {
             log.error("Error when delete item: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
