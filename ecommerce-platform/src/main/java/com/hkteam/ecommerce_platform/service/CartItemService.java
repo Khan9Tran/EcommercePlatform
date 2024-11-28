@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.Objects;
 
+import jakarta.transaction.Transactional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -149,12 +149,17 @@ public class CartItemService {
                 .equals(cartItem.getCart().getUser())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+        log.info("Delete cart item: {}", cartItem.getId());
         try {
             Cart cart = cartItem.getCart();
+            cart.getCartItems().remove(cartItem);
             cartItemRepository.delete(cartItem);
-            if (Objects.isNull(cart.getCartItems()) || cart.getCartItems().isEmpty()) {
+
+            if (cart.getCartItems().isEmpty()) {
                 cartRepository.delete(cart);
             }
+
+
         } catch (Exception e) {
             log.error("Error when delete item: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
