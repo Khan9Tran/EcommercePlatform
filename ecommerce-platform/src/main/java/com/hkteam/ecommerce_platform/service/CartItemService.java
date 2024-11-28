@@ -1,7 +1,9 @@
 package com.hkteam.ecommerce_platform.service;
 
 import java.util.Objects;
+import java.util.Optional;
 
+import com.hkteam.ecommerce_platform.dto.response.QuantityCartItemsResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -42,7 +44,12 @@ public class CartItemService {
     @PreAuthorize("hasAuthority('PERMISSION_PURCHASE')")
     public CartItemResponse addProductToCart(CartItemCreationRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-        var ci = cartItemRepository.findByProductIdAndCartUser(request.getProductId(), user);
+        Optional<CartItem> ci;
+        if (request.getVariantId().isEmpty()) {
+            ci = cartItemRepository.findByProductIdAndCartUser(request.getProductId(), user);
+        } else {
+            ci = cartItemRepository.findByVariantIdAndCartUser(request.getVariantId(), user);
+        }
         var product = productRepository
                 .findById(request.getProductId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -64,8 +71,10 @@ public class CartItemService {
 
         CartItem cartItem;
 
-        if (ci.isPresent()) {
+        if (ci.isPresent() && (variant == null || ci.get().getVariant().equals(variant))) {
             cartItem = addQuantityForCartItem(ci.get(), request.getQuantity());
+            if (isAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), cartItem.getQuantity()))
+                throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
         } else {
             var cart = cartRepository
                     .findByUserAndStore(user, product.getStore())
@@ -166,8 +175,9 @@ public class CartItemService {
         }
     }
 
-    public Integer countCartItems() {
+    public QuantityCartItemsResponse countCartItems() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-        return user.getCarts().stream().mapToInt(cart -> cart.getCartItems().size()).sum();
+        Integer count = user.getCarts().stream().mapToInt(cart -> cart.getCartItems().size()).sum();
+        return QuantityCartItemsResponse.builder().quantity(count).build();
     }
 }

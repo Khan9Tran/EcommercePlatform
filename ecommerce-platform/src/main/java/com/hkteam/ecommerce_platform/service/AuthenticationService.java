@@ -169,6 +169,7 @@ public class AuthenticationService {
         var user =
                 userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
+        log.info("User {} refresh token", user.getUsername());
         var token = generateToken(user);
 
         return AuthenticationResponse.builder().token(token).authenticated(true).build();

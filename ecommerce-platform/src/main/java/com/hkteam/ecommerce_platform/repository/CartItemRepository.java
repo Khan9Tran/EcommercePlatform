@@ -11,4 +11,5 @@ import com.hkteam.ecommerce_platform.entity.user.User;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     Optional<CartItem> findByProductIdAndCartUser(String id, User user);
+    Optional<CartItem> findByVariantIdAndCartUser(String id, User user);
 }

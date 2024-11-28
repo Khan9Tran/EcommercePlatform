@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import com.hkteam.ecommerce_platform.dto.response.QuantityCartItemsResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -50,8 +51,8 @@ public class CartItemController {
     }
 
     @GetMapping("/count")
-    public ApiResponse<Integer> countCartItems() {
-        return ApiResponse.<Integer>builder()
+    public ApiResponse<QuantityCartItemsResponse> countCartItems() {
+        return ApiResponse.<QuantityCartItemsResponse>builder()
                 .result(cartItemService.countCartItems())
                 .build();
     }
