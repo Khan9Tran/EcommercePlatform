@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import com.hkteam.ecommerce_platform.dto.response.MiniCartItemResponse;
 import com.hkteam.ecommerce_platform.dto.response.QuantityCartItemsResponse;
 import jakarta.validation.Valid;
 
@@ -16,6 +17,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/cartItems")
@@ -54,6 +57,13 @@ public class CartItemController {
     public ApiResponse<QuantityCartItemsResponse> countCartItems() {
         return ApiResponse.<QuantityCartItemsResponse>builder()
                 .result(cartItemService.countCartItems())
+                .build();
+    }
+
+    @GetMapping("/top5")
+    public ApiResponse<List<MiniCartItemResponse>> getTop5CartItems() {
+        return ApiResponse.<List<MiniCartItemResponse>>builder()
+                .result(cartItemService.getCartItemNewest())
                 .build();
     }
 }

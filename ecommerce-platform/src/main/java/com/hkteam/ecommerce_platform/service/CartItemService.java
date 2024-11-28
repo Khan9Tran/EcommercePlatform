@@ -1,16 +1,21 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import com.hkteam.ecommerce_platform.dto.response.QuantityCartItemsResponse;
+import com.hkteam.ecommerce_platform.dto.response.*;
+import com.hkteam.ecommerce_platform.entity.product.Value;
+import com.hkteam.ecommerce_platform.util.CartItemsUtil;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.CartItemCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CartItemUpdateQuantityRequest;
-import com.hkteam.ecommerce_platform.dto.response.CartItemResponse;
 import com.hkteam.ecommerce_platform.entity.cart.Cart;
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
 import com.hkteam.ecommerce_platform.entity.product.Product;
@@ -28,6 +33,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -177,7 +183,24 @@ public class CartItemService {
 
     public QuantityCartItemsResponse countCartItems() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-        Integer count = user.getCarts().stream().mapToInt(cart -> cart.getCartItems().size()).sum();
+        Integer count = user.getCarts().stream().mapToInt(cart -> cart.getCartItems().stream().mapToInt(CartItem::getQuantity).sum()).sum();
         return QuantityCartItemsResponse.builder().quantity(count).build();
+    }
+
+    public List<MiniCartItemResponse> getCartItemNewest() {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        Pageable pageable = PageRequest.of(0, 5);
+        return  cartItemRepository.findByUpdatedAtAndUser(user, pageable).stream().map(cartItem ->
+            MiniCartItemResponse.builder()
+                    .id(cartItem.getId())
+                    .name(cartItem.getProduct().getName())
+                    .slug(cartItem.getProduct().getSlug())
+                    .image(cartItem.getProduct().getMainImageUrl())
+                    .value(cartItem.getVariant() != null ? cartItem.getVariant().getValues().stream().map(Value::getValue).toList() : null)
+                    .salePrice(cartItem.getVariant() != null ? cartItem.getVariant().getSalePrice() : cartItem.getProduct().getSalePrice())
+                    .build()
+        ).toList();
+
     }
 }

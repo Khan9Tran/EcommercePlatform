@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.hkteam.ecommerce_platform.util.CartItemsUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -81,7 +82,7 @@ public class CartService {
         cartResponse.setItems(filterNotCheckout(cart.getCartItems()).stream()
                 .map(cartItem -> {
                     CartItemDetailResponse cartItemDetailResponse = cartItemMapper.toCartItemDetailResponse(cartItem);
-                    cartItemDetailResponse.setAvailable(isAvailable(cartItem));
+                    cartItemDetailResponse.setAvailable(CartItemsUtil.isAvailable(cartItem));
 
                     if (!Objects.isNull(cartItem.getVariant())) {
                         cartItemDetailResponse.setSalePrice(
@@ -95,24 +96,13 @@ public class CartService {
                                 cartItem.getVariant().getSlug());
                         cartItemDetailResponse.setValue(cartItem.getVariant().getValues().stream()
                                 .map(Value::getValue)
-                                .collect(Collectors.toList()));
+                                .toList());
                     }
                     return cartItemDetailResponse;
                 })
-                .collect(Collectors.toList()));
+                .toList());
 
         return cartResponse;
-    }
-
-    boolean isAvailable(CartItem cartItem) {
-        if (cartItem.getProduct().isBlocked() || !cartItem.getProduct().isAvailable()) {
-            return false;
-        }
-        if (Objects.isNull(cartItem.getVariant())) {
-            return cartItem.getQuantity() <= cartItem.getProduct().getQuantity();
-        }
-
-        return cartItem.getQuantity() <= cartItem.getVariant().getQuantity();
     }
 
     @PreAuthorize("hasRole('USER')")
