@@ -87,7 +87,7 @@ public class CartService {
                     if (!Objects.isNull(cartItem.getVariant())) {
                         cartItemDetailResponse.setSalePrice(
                                 cartItem.getVariant().getSalePrice());
-                        cartItemDetailResponse.setImage(cartItem.getVariant().getImageUrl());
+                        cartItemDetailResponse.setImage(cartItem.getProduct().getMainImageUrl());
                         cartItemDetailResponse.setOriginalPrice(
                                 cartItem.getVariant().getOriginalPrice());
                         cartItemDetailResponse.setVariantId(
