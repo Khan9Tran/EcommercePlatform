@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartResponse {
     String storeName;
+    String storeId;
     String storeSlug;
     String avatarStore;
     Float ratingStore;

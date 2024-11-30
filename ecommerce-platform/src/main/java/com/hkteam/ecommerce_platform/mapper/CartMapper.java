@@ -10,6 +10,7 @@ import com.hkteam.ecommerce_platform.entity.cart.Cart;
 public interface CartMapper {
 
     @Mapping(target = "storeName", source = "store.name")
+    @Mapping(target = "storeId", source = "store.id")
     @Mapping(target = "storeSlug", source = "store.slug")
     @Mapping(target = "items", ignore = true)
     @Mapping(target = "avatarStore", source = "store.user.imageUrl")
