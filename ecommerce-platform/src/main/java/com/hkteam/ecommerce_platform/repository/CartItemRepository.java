@@ -17,7 +17,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     List<CartItem> findByUpdatedAtAndUser(User user, Pageable pageable);
 
     Optional<CartItem> findByProductIdAndCartUserAndCartCartItemsIsCheckout(String id, User user, boolean isCheckout);
+
     Optional<CartItem> findByVariantIdAndCartUserAndCartCartItemsIsCheckout(String id, User user, boolean isCheckout);
-
-
 }

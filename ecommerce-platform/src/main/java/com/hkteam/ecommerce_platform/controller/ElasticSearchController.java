@@ -42,8 +42,9 @@ public class ElasticSearchController {
 
     @Cacheable(
             value = "searchCache",
-            key = "{#categoryIds, #brandIds, #storeId, #sortBy, #order, #page, #limit, #search, #minPrice, #maxPrice, #minRate}" // Key cache
-    )
+            key =
+                    "{#categoryIds, #brandIds, #storeId, #sortBy, #order, #page, #limit, #search, #minPrice, #maxPrice, #minRate}" // Key cache
+            )
     @GetMapping()
     public ApiResponse<PaginationResponse<ProductResponse>> getAutoSuggestProduct(
             @RequestParam(value = "categories", required = false) List<Long> categoryIds,
@@ -57,8 +58,19 @@ public class ElasticSearchController {
             @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
             @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
             @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate) {
-        log.info("Search product with categories: {}, brands: {}, store: {}, sortBy: {}, order: {}, page: {}, limit: {}, search: {}, minPrice: {}, maxPrice: {}, minRate: {}",
-                categoryIds, brandIds, storeId, sortBy, order, page, limit, search, minPrice, maxPrice, minRate);
+        log.info(
+                "Search product with categories: {}, brands: {}, store: {}, sortBy: {}, order: {}, page: {}, limit: {}, search: {}, minPrice: {}, maxPrice: {}, minRate: {}",
+                categoryIds,
+                brandIds,
+                storeId,
+                sortBy,
+                order,
+                page,
+                limit,
+                search,
+                minPrice,
+                maxPrice,
+                minRate);
         return ApiResponse.<PaginationResponse<ProductResponse>>builder()
                 .result(elasticSearchService.getAllProducts(
                         categoryIds,

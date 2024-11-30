@@ -61,7 +61,6 @@ public class EcommercePlatformApplication {
         final String VN_PAY_COMMAND = "VN_PAY_COMMAND";
         final String VN_PAY_ORDER_TYPE = "VN_PAY_ORDER_TYPE";
 
-
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));

@@ -44,5 +44,4 @@ public class ProductUpdateRequest {
 
     @NonNull
     Long brandId;
-
 }

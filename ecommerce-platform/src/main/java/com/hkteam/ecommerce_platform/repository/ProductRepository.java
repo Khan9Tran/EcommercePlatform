@@ -9,13 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.user.Store;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -49,7 +48,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Modifying
     @Query("update Product p set p.mainImageUrl = ?1 where p.id = ?2")
     int updateMainImageUrlById(String mainImageUrl, String id);
+<<<<<<< HEAD
 
     @Query("SELECT p FROM Product p WHERE p.store.id = ?1 ORDER BY p.lastUpdatedAt DESC")
     List<Product> findByLastUpdatedAtAndStoreId(@NotNull String storeId, Pageable pageable);
+=======
+>>>>>>> order
 }

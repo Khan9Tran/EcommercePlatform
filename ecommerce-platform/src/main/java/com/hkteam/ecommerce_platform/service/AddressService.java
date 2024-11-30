@@ -112,7 +112,7 @@ public class AddressService {
             if (user.getDefaultAddressId().equals(address.getId())) {
                 address.setIsDefault(Boolean.TRUE);
             }
-            if (user.getStore()!= null
+            if (user.getStore() != null
                     && address.getId().equals(user.getStore().getDefaultAddressId())) {
                 address.setIsStoreAddress(Boolean.TRUE);
             }

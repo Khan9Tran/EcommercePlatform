@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ElasticSearchService {
     private final ProductMapper productMapper;
-    static final Set<String> ALLOWED_SORT_FIELDS = Set.of("salePrice","originalPrice", "rating", "createdAt");
+    static final Set<String> ALLOWED_SORT_FIELDS = Set.of("salePrice", "originalPrice", "rating", "createdAt");
     static final Set<String> ALLOWED_SORT_ORDERS = Set.of("asc", "desc");
     ElasticsearchClient elasticsearchClient;
 
@@ -65,7 +65,6 @@ public class ElasticSearchService {
             if (order == null || !ALLOWED_SORT_ORDERS.contains(order)) {
                 order = "asc";
             }
-
 
             SortOrder sortOrder = order.equalsIgnoreCase("asc") ? SortOrder.Asc : SortOrder.Desc;
 

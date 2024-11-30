@@ -18,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 public class ProductResponse implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+
     String id;
     String slug;
     String name;

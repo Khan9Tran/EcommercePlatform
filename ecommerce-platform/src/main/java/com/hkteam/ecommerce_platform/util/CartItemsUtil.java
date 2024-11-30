@@ -1,9 +1,10 @@
 package com.hkteam.ecommerce_platform.util;
 
-import com.hkteam.ecommerce_platform.entity.cart.CartItem;
-import lombok.experimental.UtilityClass;
-
 import java.util.Objects;
+
+import com.hkteam.ecommerce_platform.entity.cart.CartItem;
+
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class CartItemsUtil {

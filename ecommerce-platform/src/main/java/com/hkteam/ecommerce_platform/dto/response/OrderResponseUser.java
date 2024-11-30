@@ -44,6 +44,6 @@ public class OrderResponseUser {
     String avatarStore;
     String orderPhone;
 
-    List<OrderItemResponse> orderItems;
-    List<OrderStatusHistoryResponse> orderStatusHistories;
+    List<OrderItemResponseUser> orderItems;
+    List<OrderStatusHistoryResponseUser> orderStatusHistories;
 }

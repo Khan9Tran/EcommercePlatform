@@ -1,7 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
-import com.hkteam.ecommerce_platform.dto.response.MiniCartItemResponse;
-import com.hkteam.ecommerce_platform.dto.response.QuantityCartItemsResponse;
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +10,8 @@ import com.hkteam.ecommerce_platform.dto.request.CartItemCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.CartItemUpdateQuantityRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.CartItemResponse;
+import com.hkteam.ecommerce_platform.dto.response.MiniCartItemResponse;
+import com.hkteam.ecommerce_platform.dto.response.QuantityCartItemsResponse;
 import com.hkteam.ecommerce_platform.service.CartItemService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,8 +19,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/cartItems")
