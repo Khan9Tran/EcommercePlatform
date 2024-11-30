@@ -45,7 +45,7 @@ public class CartItemService {
     AuthenticatedUserUtil authenticatedUserUtil;
     CartItemMapper cartItemMapper;
 
-    @PreAuthorize("hasAuthority('PERMISSION_PURCHASE')")
+    @PreAuthorize("hasRole('USER')")
     @Transactional
     public CartItemResponse addProductToCart(CartItemCreationRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
@@ -126,7 +126,7 @@ public class CartItemService {
         return cartItem;
     }
 
-    @PreAuthorize("hasAuthority('PERMISSION_PURCHASE')")
+    @PreAuthorize("hasRole('USER')")
     public CartItemResponse changeQuantity(CartItemUpdateQuantityRequest request, Long id) {
         if (request.getQuantity() < 0) {
             throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
