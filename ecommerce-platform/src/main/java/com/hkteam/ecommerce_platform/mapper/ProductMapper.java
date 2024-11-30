@@ -1,12 +1,12 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import com.hkteam.ecommerce_platform.dto.response.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import com.hkteam.ecommerce_platform.dto.request.ProductCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 
@@ -42,4 +42,10 @@ public interface ProductMapper {
     ProductResponse toProductResponse(ProductElasticsearch productElasticsearch);
 
     ProductResponse toProductResponse(Product product);
+
+    ProductDetailResponseUser toProductDetailResponseUser(Product product);
+
+    ProductDetailResponseSeller toProductDetailResponseSeller(Product product);
+
+    ProductDetailResponseAdmin toProductDetailResponseAdmin(Product product);
 }

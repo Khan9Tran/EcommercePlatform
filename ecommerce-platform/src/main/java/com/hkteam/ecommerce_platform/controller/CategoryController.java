@@ -4,7 +4,6 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
-import org.hibernate.annotations.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
@@ -76,7 +75,13 @@ public class CategoryController {
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
             @RequestParam(value = "search", required = false, defaultValue = "") String search) {
-        log.info("Get all categories with tab: {}, sort: {}, page: {}, size: {}, search: {}", tab, sort, page, size, search);
+        log.info(
+                "Get all categories with tab: {}, sort: {}, page: {}, size: {}, search: {}",
+                tab,
+                sort,
+                page,
+                size,
+                search);
         return ApiResponse.<PaginationResponse<CategoryResponse>>builder()
                 .result(categoryService.getAllCategories(page, size, tab, sort, search))
                 .build();

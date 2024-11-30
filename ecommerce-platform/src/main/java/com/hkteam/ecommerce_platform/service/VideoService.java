@@ -5,8 +5,6 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -18,6 +16,7 @@ import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.VideoUtils;
@@ -87,8 +86,9 @@ public class VideoService {
                     cloudinaryService.deleteVideo(product.getVideoUrl());
                 }
 
-                productRepository.updateVideoUrlById(video.get("url").toString(),productId);
-                var esPro = productElasticsearchRepository.findById(product.getId()).orElse(null);
+                productRepository.updateVideoUrlById(video.get("url").toString(), productId);
+                var esPro =
+                        productElasticsearchRepository.findById(product.getId()).orElse(null);
                 if (esPro != null) {
                     esPro.setVideoUrl(video.get("url").toString());
                 }

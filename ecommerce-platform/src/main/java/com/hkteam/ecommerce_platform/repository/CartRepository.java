@@ -20,6 +20,4 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     Page<Cart> findByUserAndIsAvailable(User user, boolean isAvailable, Pageable pageable);
 
     Optional<Cart> findByUserAndStoreId(User user, String id);
-
-
 }

@@ -241,7 +241,8 @@ public class ProductService {
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         Long brandId = esPro.getBrandId();
 
-        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product)))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
 
         productMapper.updateProductFromRequest(request, product);
         productMapper.updateProductFromRequest(request, esPro);
@@ -276,7 +277,6 @@ public class ProductService {
         return map(product);
     }
 
-
     public ProductUserViewResponse getProductBySlug(String slug) {
         var product =
                 productRepository.findBySlug(slug).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -287,7 +287,6 @@ public class ProductService {
         return map(product);
     }
 
-
     public ProductUserViewResponse getProduct(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
@@ -297,7 +296,8 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public void deleteProduct(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product)))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
 
         try {
             product.setDeleted(true);
@@ -308,14 +308,12 @@ public class ProductService {
             log.info("Has error when delete pro: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
-
     }
 
     private ProductUserViewResponse map(Product product) {
         var response = productMapper.toProductUserViewResponse(product);
-        response.setImages(product.getImages().stream()
-                .map(imageMapper::toImageInList)
-                .collect(Collectors.toSet()));
+        response.setImages(
+                product.getImages().stream().map(imageMapper::toImageInList).collect(Collectors.toSet()));
         Set<Attribute> attributes = new HashSet<>();
         Set<VariantOfProductUserViewResponse> variants = new HashSet<>();
         product.getVariants().forEach((variant) -> {
@@ -339,13 +337,12 @@ public class ProductService {
         attributes.forEach((attribute) -> {
             var att = attributeMapper.toAttributeOfProductResponse(attribute);
             att.setValues(attribute.getValues().stream()
-                    .map(valuesMapper::toValueOfAttributeResponse).toList());
+                    .map(valuesMapper::toValueOfAttributeResponse)
+                    .toList());
             attributeOfProductResponses.add(att);
         });
 
         response.setAttributes(attributeOfProductResponses);
-
-
 
         response.setCategory(categoryMapper.toCategoryOfProductResponse(product.getCategory()));
         response.setBrand(brandMapper.toBrandOfProductResponse(product.getBrand()));
@@ -399,7 +396,8 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public Void updateProductStatus(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product)))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         product.setAvailable(!product.isAvailable());
 
         try {

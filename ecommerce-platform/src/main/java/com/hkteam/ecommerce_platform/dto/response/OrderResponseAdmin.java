@@ -41,5 +41,5 @@ public class OrderResponseAdmin {
     String userPhone;
     String orderPhone;
 
-    List<OrderItemResponse> orderItems;
+    List<OrderItemResponseAdmin> orderItems;
 }

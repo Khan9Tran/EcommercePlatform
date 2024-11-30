@@ -1,12 +1,12 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder

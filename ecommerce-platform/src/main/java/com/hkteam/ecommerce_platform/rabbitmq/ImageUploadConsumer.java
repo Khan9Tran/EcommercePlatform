@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
-import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,7 @@ import com.hkteam.ecommerce_platform.entity.image.ProductImage;
 import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import com.hkteam.ecommerce_platform.repository.ProductImageRepository;
 import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import com.hkteam.ecommerce_platform.service.CloudinaryService;
@@ -61,7 +61,6 @@ public class ImageUploadConsumer {
             if (esPro != null) {
                 esPro.setMainImageUrl(getUrl(img));
             }
-
 
             try {
                 productRepository.updateMainImageUrlById(getUrl(img), product.getId());

@@ -1,15 +1,13 @@
 package com.hkteam.ecommerce_platform.configuration;
 
 import java.util.HashSet;
-import java.util.Set;
 
-import com.hkteam.ecommerce_platform.entity.authorization.Permission;
-import com.hkteam.ecommerce_platform.repository.*;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.hkteam.ecommerce_platform.entity.authorization.Permission;
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
@@ -18,6 +16,7 @@ import com.hkteam.ecommerce_platform.enums.Gender;
 import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
+import com.hkteam.ecommerce_platform.repository.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -36,8 +35,7 @@ public class ApplicationInitConfig {
             RoleRepository roleRepository,
             TransactionStatusRepository transactionStatusRepository,
             OrderStatusRepository orderStatusRepository,
-            PermissionRepository permissionRepository
-    ) {
+            PermissionRepository permissionRepository) {
         return args -> {
             if (roleRepository.findByName(RoleName.USER).isEmpty()) {
                 log.info("Creating user role");
@@ -162,7 +160,10 @@ public class ApplicationInitConfig {
 
             if (permissionRepository.findById("PERMISSION_PURCHASE").isEmpty()) {
 
-                var permission = Permission.builder().name("PERMISSION_PURCHASE").description("Permission to purchase").build();
+                var permission = Permission.builder()
+                        .name("PERMISSION_PURCHASE")
+                        .description("Permission to purchase")
+                        .build();
                 try {
                     permissionRepository.save(permission);
                 } catch (Exception e) {

@@ -3,8 +3,6 @@ package com.hkteam.ecommerce_platform.service;
 import java.math.BigDecimal;
 import java.util.*;
 
-import com.hkteam.ecommerce_platform.entity.cart.Cart;
-import com.hkteam.ecommerce_platform.entity.product.Value;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,14 +21,15 @@ import com.hkteam.ecommerce_platform.dto.request.OrderItemRequest;
 import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
-import com.hkteam.ecommerce_platform.dto.response.OrderItemResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.entity.cart.Cart;
 import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.payment.Payment;
 import com.hkteam.ecommerce_platform.entity.payment.Transaction;
 import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
+import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
@@ -40,6 +39,7 @@ import com.hkteam.ecommerce_platform.enums.PaymentMethod;
 import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.mapper.OrderItemMapper;
 import com.hkteam.ecommerce_platform.mapper.OrderMapper;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
@@ -62,6 +62,7 @@ public class OrderService {
     OrderRepository orderRepository;
     OrderStatusRepository orderStatusRepository;
     OrderMapper orderMapper;
+    OrderItemMapper orderItemMapper;
     PaymentService paymentService;
     AuthenticatedUserUtil authenticatedUserUtil;
     ProductRepository productRepository;
@@ -108,8 +109,9 @@ public class OrderService {
             orderResponseSeller.setUserPhone(maskPhone(orderResponseSeller.getUserPhone()));
             orderResponseSeller.setUserEmail(maskEmail(orderResponseSeller.getUserEmail()));
 
-            List<OrderItemResponse> orderItemResponses = orderMapper.toOrderItemResponseList(order.getOrderItems());
-            orderResponseSeller.setOrderItems(orderItemResponses);
+            List<OrderItemResponseSeller> orderItemResponseSellers =
+                    orderItemMapper.toOrderItemResponseSellerList(order.getOrderItems());
+            orderResponseSeller.setOrderItems(orderItemResponseSellers);
             orderResponseSellers.add(orderResponseSeller);
         }));
 
@@ -275,8 +277,9 @@ public class OrderService {
             orderResponseAdmin.setCurrentStatus(
                     lastStatusHistory.getOrderStatus().getName());
 
-            List<OrderItemResponse> orderItemResponses = orderMapper.toOrderItemResponseList(order.getOrderItems());
-            orderResponseAdmin.setOrderItems(orderItemResponses);
+            List<OrderItemResponseAdmin> orderItemResponseAdmins =
+                    orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
+            orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
             orderResponseAdmins.add(orderResponseAdmin);
         }));
 
@@ -417,8 +420,9 @@ public class OrderService {
             orderResponseUser.setCurrentStatus(
                     lastStatusHistory.getOrderStatus().getName());
 
-            List<OrderItemResponse> orderItemResponses = orderMapper.toOrderItemResponseList(order.getOrderItems());
-            orderResponseUser.setOrderItems(orderItemResponses);
+            List<OrderItemResponseUser> orderItemResponseUsers =
+                    orderItemMapper.toOrderItemResponseList(order.getOrderItems());
+            orderResponseUser.setOrderItems(orderItemResponseUsers);
             orderResponseUsers.add(orderResponseUser);
         }));
 
@@ -457,9 +461,9 @@ public class OrderService {
         orderResponseUser.setDefaultAddressStr(defaultAddressStr);
         orderResponseUser.setCurrentStatus(
                 order.getOrderStatusHistories().getLast().getOrderStatus().getName());
-        List<OrderStatusHistoryResponse> orderStatusHistoryResponses =
-                orderMapper.toOrderStatusHistoryResponseList(order.getOrderStatusHistories());
-        orderResponseUser.setOrderStatusHistories(orderStatusHistoryResponses);
+        List<OrderStatusHistoryResponseUser> orderStatusHistoryResponseUsers =
+                orderMapper.toOrderStatusHistoryResponseUserList(order.getOrderStatusHistories());
+        orderResponseUser.setOrderStatusHistories(orderStatusHistoryResponseUsers);
 
         return orderResponseUser;
     }
@@ -543,7 +547,9 @@ public class OrderService {
                 var product = productRepository
                         .findById(orderItemRequest.getProductId())
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-                var cartItem = cartItemRepository.findById(orderItemRequest.getCartItemId()).orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+                var cartItem = cartItemRepository
+                        .findById(orderItemRequest.getCartItemId())
+                        .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
 
                 if (!product.getStore().equals(store)) throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
 
@@ -554,7 +560,7 @@ public class OrderService {
                     throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
 
                 Variant variant = null;
-                Boolean hasVariant =Boolean.FALSE.equals(product.getVariants().isEmpty());
+                Boolean hasVariant = Boolean.FALSE.equals(product.getVariants().isEmpty());
 
                 if (Objects.isNull(orderItemRequest.getVariantId())) {
                     if (Boolean.TRUE.equals(hasVariant)) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
@@ -603,9 +609,11 @@ public class OrderService {
                 cartItemRepository.save(cartItem);
             }
 
-
-            if (Boolean.FALSE.equals(totalOriginalPrice.stripTrailingZeros().equals(verifyTotalOriginalPrice.stripTrailingZeros()))
-                    || Boolean.FALSE.equals(totalSalePrice.stripTrailingZeros().equals(verifyTotalSalePrice.stripTrailingZeros())))
+            if (Boolean.FALSE.equals(totalOriginalPrice
+                            .stripTrailingZeros()
+                            .equals(verifyTotalOriginalPrice.stripTrailingZeros()))
+                    || Boolean.FALSE.equals(
+                            totalSalePrice.stripTrailingZeros().equals(verifyTotalSalePrice.stripTrailingZeros())))
                 throw new AppException(ErrorCode.UNKNOWN_ERROR);
 
             log.info("Order created successfully.");
@@ -678,19 +686,18 @@ public class OrderService {
 
         paymentRepository.save(payment);
 
-        listOrder.getOrders().forEach( (order) -> {
-                Cart cart = cartRepository.findByUserAndStoreId(user, order.getStoreId()).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
-                var rs = cart.getCartItems().stream().filter(cartItem -> !cartItem.isCheckout()).toList();
-                if (rs.isEmpty()) {
-                    cart.setAvailable(Boolean.FALSE);
-                    cartRepository.save(cart);
-                }
-
+        listOrder.getOrders().forEach((order) -> {
+            Cart cart = cartRepository
+                    .findByUserAndStoreId(user, order.getStoreId())
+                    .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+            var rs = cart.getCartItems().stream()
+                    .filter(cartItem -> !cartItem.isCheckout())
+                    .toList();
+            if (rs.isEmpty()) {
+                cart.setAvailable(Boolean.FALSE);
+                cartRepository.save(cart);
             }
-        );
-
-
-
+        });
 
         return OrderCreationResponse.builder()
                 .paymentUrl(
@@ -730,7 +737,8 @@ public class OrderService {
     }
 
     @Recover
-    public OrderCreationResponse recover(Exception e, ListOrder listOrder, HttpServletRequest request) throws Exception {
+    public OrderCreationResponse recover(Exception e, ListOrder listOrder, HttpServletRequest request)
+            throws Exception {
         log.error("Unexpected error occurred: {}", e.getMessage());
         throw e;
     }

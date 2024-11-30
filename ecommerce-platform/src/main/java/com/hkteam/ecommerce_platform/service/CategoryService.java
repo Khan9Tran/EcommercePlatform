@@ -24,7 +24,6 @@ import com.hkteam.ecommerce_platform.mapper.CategoryMapper;
 import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.CategoryRepository;
 import com.hkteam.ecommerce_platform.repository.ComponentRepository;
-import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 import com.hkteam.ecommerce_platform.util.SlugUtils;
 

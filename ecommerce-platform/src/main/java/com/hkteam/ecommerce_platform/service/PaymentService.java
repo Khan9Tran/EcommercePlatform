@@ -4,16 +4,16 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 
-import com.hkteam.ecommerce_platform.dto.response.PaymentDetailResponse;
-import com.hkteam.ecommerce_platform.entity.payment.Transaction;
-import com.hkteam.ecommerce_platform.repository.PaymentRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.configuration.VNPayConfig;
+import com.hkteam.ecommerce_platform.dto.response.PaymentDetailResponse;
+import com.hkteam.ecommerce_platform.entity.payment.Transaction;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
+import com.hkteam.ecommerce_platform.repository.PaymentRepository;
 import com.hkteam.ecommerce_platform.util.VNPayUtil;
 
 import lombok.AccessLevel;
@@ -54,7 +54,12 @@ public class PaymentService {
         var payment = paymentRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_FOUND));
         boolean hasPay = true;
         for (Transaction transaction : payment.getTransactions()) {
-            if (Boolean.FALSE.equals(transaction.getTransactionStatusHistories().getLast().getTransactionStatus().getName().equals("SUCCESS"))) {
+            if (Boolean.FALSE.equals(transaction
+                    .getTransactionStatusHistories()
+                    .getLast()
+                    .getTransactionStatus()
+                    .getName()
+                    .equals("SUCCESS"))) {
                 hasPay = false;
                 break;
             }

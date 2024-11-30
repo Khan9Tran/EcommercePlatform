@@ -3,10 +3,7 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.hkteam.ecommerce_platform.util.CartItemsUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +21,7 @@ import com.hkteam.ecommerce_platform.mapper.CartItemMapper;
 import com.hkteam.ecommerce_platform.mapper.CartMapper;
 import com.hkteam.ecommerce_platform.repository.CartRepository;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
+import com.hkteam.ecommerce_platform.util.CartItemsUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 
 import lombok.AccessLevel;
@@ -60,7 +58,6 @@ public class CartService {
             CartResponse cartResponse = cartMapper.toCartResponse(cart);
             cartResponses.add(setItems(cartResponse, cart));
         });
-
 
         return PaginationResponse.<CartResponse>builder()
                 .currentPage(page)
@@ -113,7 +110,6 @@ public class CartService {
         if (!cart.getUser().equals(authenticatedUserUtil.getAuthenticatedUser())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-
 
         try {
             cartRepository.delete(cart);
