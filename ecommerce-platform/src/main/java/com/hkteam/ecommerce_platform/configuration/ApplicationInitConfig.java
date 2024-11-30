@@ -160,6 +160,90 @@ public class ApplicationInitConfig {
                 }
             }
 
+            if (orderStatusRepository.findById(OrderStatusName.CONFIRMED.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.CONFIRMED.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.PREPARING.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.PREPARING.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.WAITING_FOR_SHIPPING.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.WAITING_FOR_SHIPPING.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.PICKED_UP.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.PICKED_UP.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.OUT_FOR_DELIVERY.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.OUT_FOR_DELIVERY.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.DELIVERED.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.DELIVERED.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
+                }
+            }
+
+            if (orderStatusRepository.findById(OrderStatusName.CANCELLED.name()).isEmpty()) {
+                log.info("Creating on hold status");
+                OrderStatus orderStatus = OrderStatus.builder()
+                        .name(OrderStatusName.CANCELLED.name())
+                        .build();
+                try {
+                    orderStatusRepository.save(orderStatus);
+                } catch (Exception e) {
+                    log.error("Error creating on hold status", e);
+                }
+            }
+
             if (permissionRepository.findById("PERMISSION_PURCHASE").isEmpty()) {
 
                 var permission = Permission.builder().name("PERMISSION_PURCHASE").description("Permission to purchase").build();

@@ -50,5 +50,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("update Product p set p.mainImageUrl = ?1 where p.id = ?2")
     int updateMainImageUrlById(String mainImageUrl, String id);
 
-
+    @Query("SELECT p FROM Product p WHERE p.store.id = ?1 ORDER BY p.lastUpdatedAt DESC")
+    List<Product> findByLastUpdatedAtAndStoreId(@NotNull String storeId, Pageable pageable);
 }

@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.hkteam.ecommerce_platform.entity.user.Store;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -414,5 +416,22 @@ public class ProductService {
 
     private void evictCache(Product product) {
         Objects.requireNonNull(cacheManager.getCache("productCache")).evict(product.getSlug());
+    }
+
+    public List<MiniProductResponse> getProductNewest(String storeId){
+        Pageable pageable = PageRequest.of(0, 3);
+        return productRepository.findByLastUpdatedAtAndStoreId(storeId, pageable).stream().map(product ->
+                MiniProductResponse.builder()
+                        .id(product.getId())
+                        .name(product.getName())
+                        .slug(product.getSlug())
+                        .mainImageUrl(product.getMainImageUrl())
+                        .originalPrice(product.getVariants() != null ? product.getVariants().getLast().getOriginalPrice() : product.getOriginalPrice())
+                        .salePrice(product.getVariants() != null ? product.getVariants().getLast().getSalePrice() : product.getSalePrice())
+                        .rating(product.getRating())
+                        .brandName(product.getBrand().getName())
+                        .build()
+                ).toList();
+
     }
 }

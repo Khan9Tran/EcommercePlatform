@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
@@ -85,6 +87,13 @@ public class ProductController {
     public ApiResponse<Void> updateProductStatus(@PathVariable String id) {
         return ApiResponse.<Void>builder()
                 .result(productService.updateProductStatus(id))
+                .build();
+    }
+
+    @GetMapping("/top3/store/{storeId}")
+    ApiResponse<List<MiniProductResponse>> getProductNewest(@PathVariable String storeId) {
+        return ApiResponse.<List<MiniProductResponse>>builder()
+                .result(productService.getProductNewest(storeId))
                 .build();
     }
 }
