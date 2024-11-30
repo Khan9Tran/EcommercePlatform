@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.util.Map;
 
+import com.hkteam.ecommerce_platform.dto.response.PaymentDetailResponse;
 import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
@@ -36,5 +37,12 @@ public class PaymentController {
     IpnResponse processIpn(@RequestParam Map<String, String> params) {
         log.info("[VNPay Ipn] Params: {}", params);
         return null;
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<PaymentDetailResponse> getPayment(@PathVariable String id) {
+        return ApiResponse.<PaymentDetailResponse>builder()
+                .result(paymentService.getPayment(id))
+                .build();
     }
 }

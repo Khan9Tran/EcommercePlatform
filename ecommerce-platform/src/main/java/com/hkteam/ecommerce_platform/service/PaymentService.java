@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 
+import com.hkteam.ecommerce_platform.dto.response.PaymentDetailResponse;
+import com.hkteam.ecommerce_platform.entity.payment.Transaction;
+import com.hkteam.ecommerce_platform.repository.PaymentRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PaymentService {
     VNPayConfig vnPayConfig;
+    PaymentRepository paymentRepository;
 
     public String createVnPayPayment(BigDecimal totalPrice, HttpServletRequest request, String code) {
         BigDecimal amount = totalPrice.multiply(new BigDecimal("100")).setScale(0, RoundingMode.DOWN);
@@ -44,5 +48,22 @@ public class PaymentService {
         if (!status.equals("00")) {
             throw new AppException(ErrorCode.PAYMENT_FAILED);
         }
+    }
+
+    public PaymentDetailResponse getPayment(String id) {
+        var payment = paymentRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_FOUND));
+        boolean hasPay = true;
+        for (Transaction transaction : payment.getTransactions()) {
+            if (Boolean.FALSE.equals(transaction.getTransactionStatusHistories().getLast().getTransactionStatus().getName().equals("SUCCESS"))) {
+                hasPay = false;
+                break;
+            }
+        }
+        return PaymentDetailResponse.builder()
+                .id(payment.getId())
+                .paymentMethod(payment.getPaymentMethod().name())
+                .amount(payment.getAmount().toString())
+                .status(hasPay ? "SUCCESS" : "WAITING")
+                .build();
     }
 }

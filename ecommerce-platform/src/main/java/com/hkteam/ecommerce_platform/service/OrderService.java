@@ -3,6 +3,8 @@ package com.hkteam.ecommerce_platform.service;
 import java.math.BigDecimal;
 import java.util.*;
 
+import com.hkteam.ecommerce_platform.entity.cart.Cart;
+import com.hkteam.ecommerce_platform.entity.product.Value;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class OrderService {
-    private final TransactionStatusRepository transactionStatusRepository;
+    TransactionStatusRepository transactionStatusRepository;
     PaymentRepository paymentRepository;
     StoreRepository storeRepository;
     OrderRepository orderRepository;
@@ -64,6 +66,8 @@ public class OrderService {
     AuthenticatedUserUtil authenticatedUserUtil;
     ProductRepository productRepository;
     AddressRepository addressRepository;
+    CartItemRepository cartItemRepository;
+    CartRepository cartRepository;
 
     static String[] SORT_BY_SELLER = {"createdAt"};
     static String[] SORT_BY_ADMIN = {"createdAt"};
@@ -539,6 +543,7 @@ public class OrderService {
                 var product = productRepository
                         .findById(orderItemRequest.getProductId())
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+                var cartItem = cartItemRepository.findById(orderItemRequest.getCartItemId()).orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
 
                 if (!product.getStore().equals(store)) throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
 
@@ -549,10 +554,10 @@ public class OrderService {
                     throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
 
                 Variant variant = null;
-                Boolean hasVariant = Objects.isNull(product.getVariants());
+                Boolean hasVariant =Boolean.FALSE.equals(product.getVariants().isEmpty());
 
                 if (Objects.isNull(orderItemRequest.getVariantId())) {
-                    if (hasVariant) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
+                    if (Boolean.TRUE.equals(hasVariant)) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
 
                     verifyTotalOriginalPrice = verifyTotalOriginalPrice.add(
                             product.getOriginalPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity())));
@@ -578,7 +583,7 @@ public class OrderService {
 
                 product.setQuantity(product.getQuantity() - orderItemRequest.getQuantity());
 
-                if (hasVariant) {
+                if (Boolean.TRUE.equals(hasVariant)) {
                     variant.setQuantity(variant.getQuantity() - orderItemRequest.getQuantity());
                 }
                 OrderItem orderItem = OrderItem.builder()
@@ -587,19 +592,23 @@ public class OrderService {
                         .discount(totalOriginalPrice.subtract(totalSalePrice))
                         .quantity(orderItemRequest.getQuantity())
                         .values(
-                                !hasVariant
+                                Boolean.FALSE.equals(hasVariant)
                                         ? null
                                         : variant.getValues().stream()
-                                                .map(value -> value.getValue())
+                                                .map(Value::getValue)
                                                 .toList())
                         .build();
                 orderItems.add(orderItem);
+                cartItem.setCheckout(Boolean.TRUE);
+                cartItemRepository.save(cartItem);
             }
 
-            if (Boolean.FALSE.equals(totalOriginalPrice.equals(verifyTotalOriginalPrice))
-                    || Boolean.FALSE.equals(totalSalePrice.equals(verifyTotalSalePrice)))
+
+            if (Boolean.FALSE.equals(totalOriginalPrice.stripTrailingZeros().equals(verifyTotalOriginalPrice.stripTrailingZeros()))
+                    || Boolean.FALSE.equals(totalSalePrice.stripTrailingZeros().equals(verifyTotalSalePrice.stripTrailingZeros())))
                 throw new AppException(ErrorCode.UNKNOWN_ERROR);
 
+            log.info("Order created successfully.");
             OrderStatus orderStatus;
             if (isVnPay)
                 orderStatus = orderStatusRepository
@@ -625,7 +634,7 @@ public class OrderService {
                     .district(address.getDistrict())
                     .subDistrict(address.getSubDistrict())
                     .detailAddress(address.getDetailAddress())
-                    .shippingFee(shippingFee)
+                    .shippingFee(ShippingFeeUtil.calculateShippingFee())
                     .detailLocate(address.getDetailLocate())
                     .province(address.getProvince())
                     .note(listOrder.getNote())
@@ -649,12 +658,12 @@ public class OrderService {
 
             TransactionStatusHistory transactionStatusHistory = TransactionStatusHistory.builder()
                     .transactionStatus(pending)
-                    .remarks("Process payment via the VnPay gateway.")
+                    .remarks("Process payment.")
                     .build();
 
             Transaction transaction = Transaction.builder()
                     .payment(payment)
-                    .transactionStatusHistories(new HashSet<>(List.of(transactionStatusHistory)))
+                    .transactionStatusHistories(List.of(transactionStatusHistory))
                     .order(order)
                     .amount(amount)
                     .build();
@@ -669,12 +678,27 @@ public class OrderService {
 
         paymentRepository.save(payment);
 
+        listOrder.getOrders().forEach( (order) -> {
+                Cart cart = cartRepository.findByUserAndStoreId(user, order.getStoreId()).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+                var rs = cart.getCartItems().stream().filter(cartItem -> !cartItem.isCheckout()).toList();
+                if (rs.isEmpty()) {
+                    cart.setAvailable(Boolean.FALSE);
+                    cartRepository.save(cart);
+                }
+
+            }
+        );
+
+
+
+
         return OrderCreationResponse.builder()
                 .paymentUrl(
                         isVnPay
                                 ? paymentService.createVnPayPayment(amount, request, payment.getId())
                                 : "Please pay upon receiving the goods.")
                 .status("Success")
+                .paymentId(payment.getId())
                 .build();
     }
 
@@ -703,5 +727,11 @@ public class OrderService {
             OptimisticLockingFailureException e, ListOrder listOrder, HttpServletRequest request) {
         log.error("Recovering after retries failed: {}", e.getMessage());
         throw new AppException(ErrorCode.RETRY_FAILED);
+    }
+
+    @Recover
+    public OrderCreationResponse recover(Exception e, ListOrder listOrder, HttpServletRequest request) throws Exception {
+        log.error("Unexpected error occurred: {}", e.getMessage());
+        throw e;
     }
 }

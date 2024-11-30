@@ -61,6 +61,7 @@ public class CartService {
             cartResponses.add(setItems(cartResponse, cart));
         });
 
+
         return PaginationResponse.<CartResponse>builder()
                 .currentPage(page)
                 .pageSize(pageData.getSize())
@@ -112,6 +113,7 @@ public class CartService {
         if (!cart.getUser().equals(authenticatedUserUtil.getAuthenticatedUser())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+
 
         try {
             cartRepository.delete(cart);

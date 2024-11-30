@@ -14,4 +14,5 @@ import lombok.experimental.FieldDefaults;
 public class OrderCreationResponse {
     String paymentUrl;
     String status;
+    String paymentId;
 }

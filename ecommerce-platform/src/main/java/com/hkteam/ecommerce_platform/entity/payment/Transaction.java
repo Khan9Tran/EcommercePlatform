@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.entity.payment;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -34,7 +35,7 @@ public class Transaction {
     Order order;
 
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<TransactionStatusHistory> transactionStatusHistories;
+    List<TransactionStatusHistory> transactionStatusHistories;
 
     @ManyToOne(cascade = CascadeType.ALL)
     Payment payment;

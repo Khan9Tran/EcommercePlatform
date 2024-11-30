@@ -48,13 +48,14 @@ public class CartItemService {
     CartItemMapper cartItemMapper;
 
     @PreAuthorize("hasAuthority('PERMISSION_PURCHASE')")
+    @Transactional
     public CartItemResponse addProductToCart(CartItemCreationRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
         Optional<CartItem> ci;
         if (request.getVariantId().isEmpty()) {
-            ci = cartItemRepository.findByProductIdAndCartUser(request.getProductId(), user);
+            ci = cartItemRepository.findByProductIdAndCartUserAndCartCartItemsIsCheckout(request.getProductId(), user,false);
         } else {
-            ci = cartItemRepository.findByVariantIdAndCartUser(request.getVariantId(), user);
+            ci = cartItemRepository.findByVariantIdAndCartUserAndCartCartItemsIsCheckout(request.getVariantId(), user,false);
         }
         var product = productRepository
                 .findById(request.getProductId())
@@ -79,6 +80,7 @@ public class CartItemService {
 
         if (ci.isPresent() && (variant == null || ci.get().getVariant().equals(variant))) {
             cartItem = addQuantityForCartItem(ci.get(), request.getQuantity());
+            cartItem.getCart().setAvailable(Boolean.TRUE);
             if (isAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), cartItem.getQuantity()))
                 throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
         } else {
@@ -89,6 +91,7 @@ public class CartItemService {
                             .isAvailable(Boolean.TRUE)
                             .store(product.getStore())
                             .build());
+            cart.setAvailable(Boolean.TRUE);
             cartItem = addCartItemToCart(cart, product, variant, request.getQuantity());
         }
 
