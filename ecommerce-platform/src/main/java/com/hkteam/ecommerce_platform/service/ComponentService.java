@@ -60,7 +60,7 @@ public class ComponentService {
         PageUtils.validatePageBounds(page, pageData);
 
         return PaginationResponse.<ComponentResponse>builder()
-                .currentPage(Integer.parseInt(pageStr))
+                .currentPage(page)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
