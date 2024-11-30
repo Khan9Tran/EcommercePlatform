@@ -74,7 +74,7 @@ public class StoreService {
                 .build();
     }
 
-    public StoreDetailResponse getOneStoreById(String id) {
+    public StoreInformationResponse getOneStoreById(String id) {
         Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
         String defaultAddressStr = null;
@@ -92,7 +92,7 @@ public class StoreService {
         }
         Integer totalProduct = productRepository.countByStore(store);
 
-        StoreDetailResponse response = storeMapper.toStoreDetailResponse(store);
+        StoreInformationResponse response = storeMapper.toStoreInformationResponse(store);
         response.setDefaultAddress(defaultAddressStr);
         response.setTotalProduct(totalProduct);
 

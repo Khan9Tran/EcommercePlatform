@@ -18,6 +18,10 @@ public interface StoreMapper {
     StoreDetailResponse toStoreDetailResponse(Store store);
 
     @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "user.imageUrl", target = "avatarStore")
+    StoreInformationResponse toStoreInformationResponse(Store store);
+
+    @Mapping(source = "user.username", target = "username")
     @Mapping(source = "defaultAddressId", target = "defaultAddressId")
     StoreUpdateResponse toStoreUpdateResponse(Store store);
 
