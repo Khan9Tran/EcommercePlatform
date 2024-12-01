@@ -186,7 +186,7 @@ public class CartItemService {
     public QuantityCartItemsResponse countCartItems() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
         Integer count = user.getCarts().stream()
-                .mapToInt(cart -> cart.getCartItems().stream()
+                .mapToInt(cart -> cart.getCartItems().stream().filter(cartItem -> !cartItem.isCheckout())
                         .mapToInt(CartItem::getQuantity)
                         .sum())
                 .sum();
