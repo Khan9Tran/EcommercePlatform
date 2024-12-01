@@ -1,6 +1,8 @@
 package com.hkteam.ecommerce_platform.service;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -82,13 +84,20 @@ public class StoreService {
             Address defaultAddress = addressRepository
                     .findById(store.getDefaultAddressId())
                     .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-            defaultAddressStr = String.join(
-                    ", ",
+            List<String> addressParts = new ArrayList<>();
+            for (String part : Arrays.asList(
                     defaultAddress.getDetailLocate(),
                     defaultAddress.getDetailAddress(),
                     defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
-                    defaultAddress.getProvince());
+                    defaultAddress.getProvince()
+            )) {
+                if (part != null && !part.isEmpty()) {
+                    addressParts.add(part);
+                }
+            }
+
+            defaultAddressStr = String.join(", ", addressParts);
         }
         Integer totalProduct = productRepository.countByStore(store);
 
@@ -112,13 +121,20 @@ public class StoreService {
             Address defaultAddress = addressRepository
                     .findById(store.getDefaultAddressId())
                     .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-            defaultAddressStr = String.join(
-                    ", ",
+            List<String> addressParts = new ArrayList<>();
+            for (String part : Arrays.asList(
                     defaultAddress.getDetailLocate(),
                     defaultAddress.getDetailAddress(),
                     defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
-                    defaultAddress.getProvince());
+                    defaultAddress.getProvince()
+            )) {
+                if (part != null && !part.isEmpty()) {
+                    addressParts.add(part);
+                }
+            }
+
+            defaultAddressStr = String.join(", ", addressParts);
         }
 
         Integer totalProduct = productRepository.countByStore(store);
@@ -186,13 +202,20 @@ public class StoreService {
 
         String defaultAddressStr = null;
         if (store.getDefaultAddressId() != null) {
-            defaultAddressStr = String.join(
-                    ", ",
+            List<String> addressParts = new ArrayList<>();
+            for (String part : Arrays.asList(
                     defaultAddress.getDetailLocate(),
                     defaultAddress.getDetailAddress(),
                     defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
-                    defaultAddress.getProvince());
+                    defaultAddress.getProvince()
+            )) {
+                if (part != null && !part.isEmpty()) {
+                    addressParts.add(part);
+                }
+            }
+
+            defaultAddressStr = String.join(", ", addressParts);
         }
 
         Integer totalProduct = productRepository.countByStore(store);
@@ -224,13 +247,14 @@ public class StoreService {
                     addressMap.put("defaultAddressId", address.getId());
                     addressMap.put(
                             "defaultAddressStr",
-                            String.join(
-                                    ", ",
-                                    address.getDetailLocate(),
-                                    address.getDetailAddress(),
-                                    address.getSubDistrict(),
-                                    address.getDistrict(),
-                                    address.getProvince()));
+                            Stream.of(
+                                            address.getDetailLocate(),
+                                            address.getDetailAddress(),
+                                            address.getSubDistrict(),
+                                            address.getDistrict(),
+                                            address.getProvince())
+                                    .filter(part -> part != null && !part.isEmpty())
+                                    .collect(Collectors.joining(", ")));
                     return addressMap;
                 })
                 .toList();
