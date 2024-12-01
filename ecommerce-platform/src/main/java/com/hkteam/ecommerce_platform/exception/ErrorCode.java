@@ -123,6 +123,7 @@ public enum ErrorCode {
     ORDER_NOT_BELONG_TO_USER(1705, "This order doesn't belong to you", HttpStatus.BAD_REQUEST),
     PAYMENT_NOT_FOUND(1706, "Payment not found", HttpStatus.NOT_FOUND),
     TRANSACTION_STATUS_HISTORY_NOT_FOUND(1707, "Transaction status history not found", HttpStatus.NOT_FOUND),
+    STORE_BANNED(1708, "Store is banned", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

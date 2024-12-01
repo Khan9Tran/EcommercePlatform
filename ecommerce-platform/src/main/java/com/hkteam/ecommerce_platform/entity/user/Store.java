@@ -5,6 +5,7 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import jakarta.persistence.CascadeType;
 import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.cart.Cart;
@@ -41,7 +42,7 @@ public class Store {
     @Column(name = "default_address_id")
     Long defaultAddressId;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Product> products;
 
     @OneToOne
@@ -61,4 +62,7 @@ public class Store {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
+    @Column(nullable = false)
+    boolean isBanned = Boolean.FALSE;
 }

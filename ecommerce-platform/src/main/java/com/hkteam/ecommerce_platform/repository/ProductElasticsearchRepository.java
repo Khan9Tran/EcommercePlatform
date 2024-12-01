@@ -10,4 +10,6 @@ public interface ProductElasticsearchRepository extends ElasticsearchRepository<
     List<ProductElasticsearch> findByBrandId(Long brandId);
 
     List<ProductElasticsearch> findByCategoryId(Long categoryId);
+
+    List<ProductElasticsearch> findByStoreId(String storeId);
 }

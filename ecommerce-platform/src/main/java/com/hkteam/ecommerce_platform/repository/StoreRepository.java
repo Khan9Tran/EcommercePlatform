@@ -23,6 +23,6 @@ public interface StoreRepository extends JpaRepository<Store, String> {
     Page<Store> findAll(@NotNull Pageable pageable);
 
     @Query(
-            "select s from Store s where lower(s.name) like lower(concat('%', ?1, '%')) or lower(s.user.username) like lower(concat('%', ?2, '%'))")
-    Page<Store> searchAllStore(String name, String username, Pageable pageable);
+            "select s from Store s where (lower(s.name) like lower(concat('%', ?1, '%')) or lower(s.user.username) like lower(concat('%', ?2, '%'))) and s.isBanned = ?3")
+    Page<Store> searchAllStore(String name, String username, Pageable pageable, boolean isBanned);
 }

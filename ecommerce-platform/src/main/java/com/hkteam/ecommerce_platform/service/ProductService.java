@@ -65,7 +65,6 @@ public class ProductService {
 
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
-
         var product = productMapper.toProduct(request);
 
         product.setSlug(SlugUtils.getSlug(product.getName(), TypeSlug.PRODUCT));
@@ -74,6 +73,7 @@ public class ProductService {
 
         if (Objects.isNull(owner.getStore())) throw new AppException(ErrorCode.STORE_NOT_FOUND);
 
+        if (Boolean.TRUE.equals(owner.getStore().isBanned())) throw new AppException(ErrorCode.STORE_BANNED);
         product.setStore(owner.getStore());
 
         var category = categoryRepository

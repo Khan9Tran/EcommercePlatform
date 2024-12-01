@@ -41,6 +41,14 @@ public class StoreController {
                 .build();
     }
 
+    @PatchMapping("/update-status/{storeId}")
+    @Operation(summary = "Update store status by id", description = "Api update store status by id")
+    public ApiResponse<Void> updateStoreStatus(@PathVariable String storeId) {
+        storeService.changeStoreStatus(storeId);
+        return ApiResponse.<Void>builder()
+                .build();
+    }
+
     @GetMapping("/{storeId}")
     @Operation(summary = "Get one store by id", description = "Api get one store by id")
     public ApiResponse<StoreInformationResponse> getOneStoreById(@PathVariable String storeId) {
@@ -79,5 +87,19 @@ public class StoreController {
         return ApiResponse.<List<Map<String, Object>>>builder()
                 .result(storeService.getAllAddressOfStore())
                 .build();
+    }
+
+    @DeleteMapping("/block/{storeId}")
+    @Operation(summary = "Block store by id", description = "Api block store by id")
+    public ApiResponse<Void> blockStore(@PathVariable String storeId) {
+        storeService.blockStore(storeId);
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @DeleteMapping("/unblock/{storeId}")
+    @Operation(summary = "Unblock store by id", description = "Api unblock store by id")
+    public ApiResponse<Void> unblockStore(@PathVariable String storeId) {
+        storeService.unblockStore(storeId);
+        return ApiResponse.<Void>builder().build();
     }
 }

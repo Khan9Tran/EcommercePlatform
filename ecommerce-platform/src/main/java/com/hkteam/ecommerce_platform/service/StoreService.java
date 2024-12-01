@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,7 @@ public class StoreService {
     ProductRepository productRepository;
     AuthenticatedUserUtil authenticatedUserUtil;
     RoleRepository roleRepository;
+    ProductElasticsearchRepository elasticsearchRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<StoreResponse> getAllStores(
@@ -55,7 +57,7 @@ public class StoreService {
                     default -> Sort.unsorted();
                 };
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = storeRepository.searchAllStore(search, search, pageable);
+        var pageData = storeRepository.searchAllStore(search, search, pageable, tab.equals("blocked") ? true : false);
 
         int page = Integer.parseInt(pageStr);
 
@@ -106,6 +108,13 @@ public class StoreService {
         response.setTotalProduct(totalProduct);
 
         return response;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void changeStoreStatus(String storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+        store.setBanned(!store.isBanned());
+        storeRepository.save(store);
     }
 
     @PreAuthorize("hasRole('SELLER')")
@@ -258,5 +267,35 @@ public class StoreService {
                     return addressMap;
                 })
                 .toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void blockStore(String storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+        store.setBanned(true);
+        store.getProducts().forEach(product ->
+            product.setBlocked(true));
+        var esPro = elasticsearchRepository.findByStoreId(storeId);
+        esPro.forEach(product -> {
+            product.setBlocked(true);
+        });
+        elasticsearchRepository.saveAll(esPro);
+        storeRepository.save(store);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void unblockStore(String storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+        store.setBanned(false);
+        store.getProducts().forEach(product ->
+            product.setBlocked(false));
+        var esPro = elasticsearchRepository.findByStoreId(storeId);
+        esPro.forEach(product -> {
+            product.setBlocked(false);
+        });
+        elasticsearchRepository.saveAll(esPro);
+        storeRepository.save(store);
     }
 }
