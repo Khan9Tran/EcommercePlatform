@@ -43,6 +43,9 @@ public class OrderResponseUser {
     Float ratingStore;
     String avatarStore;
     String orderPhone;
+    String storeId;
+    String currentStatusTransaction;
+    String paymentMethod;
 
     List<OrderItemResponseUser> orderItems;
     List<OrderStatusHistoryResponseUser> orderStatusHistories;

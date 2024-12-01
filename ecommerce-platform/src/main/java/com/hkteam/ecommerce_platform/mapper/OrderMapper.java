@@ -15,7 +15,6 @@ public interface OrderMapper {
     @Mapping(source = "user.email", target = "userEmail")
     @Mapping(source = "user.phone", target = "userPhone")
     @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "lastUpdatedAt", target = "lastUpdatedAt")
     OrderResponseSeller toOrderResponseSeller(Order order);
 
     @Mapping(source = "user.username", target = "accountName")
@@ -24,7 +23,7 @@ public interface OrderMapper {
     @Mapping(source = "user.phone", target = "userPhone")
     @Mapping(source = "phone", target = "orderPhone")
     @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "lastUpdatedAt", target = "lastUpdatedAt")
+    @Mapping(source = "transaction.payment.paymentMethod", target = "paymentMethod")
     OrderResponseAdmin toOrderResponseAdmin(Order order);
 
     @Mapping(source = "user.username", target = "accountName")
@@ -37,6 +36,8 @@ public interface OrderMapper {
     @Mapping(source = "store.user.imageUrl", target = "avatarStore")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "lastUpdatedAt", target = "lastUpdatedAt")
+    @Mapping(source = "store.id", target = "storeId")
+    @Mapping(source = "transaction.payment.paymentMethod", target = "paymentMethod")
     OrderResponseUser toOrderResponseUser(Order order);
 
     @Mapping(source = "orderStatus.name", target = "orderStatusName")

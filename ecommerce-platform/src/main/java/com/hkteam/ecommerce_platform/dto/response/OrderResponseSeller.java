@@ -21,7 +21,6 @@ public class OrderResponseSeller {
     BigDecimal discount;
     String note;
     Instant createdAt;
-    Instant lastUpdatedAt;
     String currentStatus;
     String accountName;
     String userEmail;

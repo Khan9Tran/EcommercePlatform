@@ -1,7 +1,6 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -21,7 +20,8 @@ public class OrderItemResponseAdmin {
     int quantity;
     BigDecimal price;
     BigDecimal discount;
-    Instant createdAt;
-    Instant lastUpdatedAt;
-    ProductDetailResponseAdmin product;
+    String productName;
+    String productMainImageUrl;
+    String productNameBrand;
+    String productSlug;
 }

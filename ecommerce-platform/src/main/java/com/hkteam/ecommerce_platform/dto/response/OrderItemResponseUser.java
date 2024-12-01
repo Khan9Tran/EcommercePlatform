@@ -23,5 +23,7 @@ public class OrderItemResponseUser {
     BigDecimal discount;
     Instant createdAt;
     Instant lastUpdatedAt;
-    ProductDetailResponseUser product;
+    String productName;
+    String productMainImageUrl;
+    String productSlug;
 }

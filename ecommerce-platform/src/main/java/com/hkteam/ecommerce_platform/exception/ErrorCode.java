@@ -120,8 +120,9 @@ public enum ErrorCode {
     CANNOT_UN_DEFAULT(1702, "Cannot un-default address", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_DEFAULT_ADDRESS(1703, "Cannot delete default address", HttpStatus.BAD_REQUEST),
     NOT_NULL(1704, "{field} must not be null", HttpStatus.BAD_REQUEST),
-    ORDER_NOT_BELONG_TO_USER(1696, "This order doesn't belong to you", HttpStatus.BAD_REQUEST),
-    PAYMENT_NOT_FOUND(1705, "Payment not found", HttpStatus.NOT_FOUND),
+    ORDER_NOT_BELONG_TO_USER(1705, "This order doesn't belong to you", HttpStatus.BAD_REQUEST),
+    PAYMENT_NOT_FOUND(1706, "Payment not found", HttpStatus.NOT_FOUND),
+    TRANSACTION_STATUS_HISTORY_NOT_FOUND(1707, "Transaction status history not found", HttpStatus.NOT_FOUND),
     ;
 
     int code;

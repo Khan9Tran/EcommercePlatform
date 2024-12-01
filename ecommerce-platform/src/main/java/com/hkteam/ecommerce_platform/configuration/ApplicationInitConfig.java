@@ -182,7 +182,9 @@ public class ApplicationInitConfig {
                 }
             }
 
-            if (orderStatusRepository.findById(OrderStatusName.WAITING_FOR_SHIPPING.name()).isEmpty()) {
+            if (orderStatusRepository
+                    .findById(OrderStatusName.WAITING_FOR_SHIPPING.name())
+                    .isEmpty()) {
                 log.info("Creating on hold status");
                 OrderStatus orderStatus = OrderStatus.builder()
                         .name(OrderStatusName.WAITING_FOR_SHIPPING.name())
@@ -206,7 +208,9 @@ public class ApplicationInitConfig {
                 }
             }
 
-            if (orderStatusRepository.findById(OrderStatusName.OUT_FOR_DELIVERY.name()).isEmpty()) {
+            if (orderStatusRepository
+                    .findById(OrderStatusName.OUT_FOR_DELIVERY.name())
+                    .isEmpty()) {
                 log.info("Creating on hold status");
                 OrderStatus orderStatus = OrderStatus.builder()
                         .name(OrderStatusName.OUT_FOR_DELIVERY.name())

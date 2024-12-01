@@ -41,6 +41,7 @@ import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.OrderItemMapper;
 import com.hkteam.ecommerce_platform.mapper.OrderMapper;
+import com.hkteam.ecommerce_platform.mapper.ProductMapper;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
@@ -69,6 +70,7 @@ public class OrderService {
     AddressRepository addressRepository;
     CartItemRepository cartItemRepository;
     CartRepository cartRepository;
+    ProductMapper productMapper;
 
     static String[] SORT_BY_SELLER = {"createdAt"};
     static String[] SORT_BY_ADMIN = {"createdAt"};
@@ -164,6 +166,9 @@ public class OrderService {
                 order.getOrderStatusHistories().getLast().getOrderStatus().getName());
         orderResponseSeller.setUserPhone(maskPhone(orderResponseSeller.getUserPhone()));
         orderResponseSeller.setUserEmail(maskEmail(orderResponseSeller.getUserEmail()));
+        List<OrderItemResponseSeller> orderItemResponseSellers =
+                orderItemMapper.toOrderItemResponseSellerList(order.getOrderItems());
+        orderResponseSeller.setOrderItems(orderItemResponseSellers);
 
         return orderResponseSeller;
     }
@@ -264,11 +269,15 @@ public class OrderService {
                     .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
                     .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
 
+            TransactionStatusHistory lastTransactionStatusHistory =
+                    order.getTransaction().getTransactionStatusHistories().stream()
+                            .max(Comparator.comparing(TransactionStatusHistory::getCreatedAt))
+                            .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_STATUS_HISTORY_NOT_FOUND));
             OrderResponseAdmin orderResponseAdmin = orderMapper.toOrderResponseAdmin(order);
 
             String defaultAddressStr = String.format(
-                    "%s, %s, %s, %s, %s",
-                    order.getDetailLocate(),
+                    "%s%s, %s, %s, %s",
+                    order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
                     order.getDetailAddress(),
                     order.getSubDistrict(),
                     order.getDistrict(),
@@ -276,6 +285,8 @@ public class OrderService {
             orderResponseAdmin.setDefaultAddressStr(defaultAddressStr);
             orderResponseAdmin.setCurrentStatus(
                     lastStatusHistory.getOrderStatus().getName());
+            orderResponseAdmin.setCurrentStatusTransaction(
+                    lastTransactionStatusHistory.getTransactionStatus().getName());
 
             List<OrderItemResponseAdmin> orderItemResponseAdmins =
                     orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
@@ -302,8 +313,8 @@ public class OrderService {
                 orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         String defaultAddressStr = String.format(
-                "%s, %s, %s, %s, %s",
-                order.getDetailLocate(),
+                "%s%s, %s, %s, %s",
+                order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
                 order.getDetailAddress(),
                 order.getDistrict(),
                 order.getSubDistrict(),
@@ -313,6 +324,14 @@ public class OrderService {
         orderResponseAdmin.setDefaultAddressStr(defaultAddressStr);
         orderResponseAdmin.setCurrentStatus(
                 order.getOrderStatusHistories().getLast().getOrderStatus().getName());
+        orderResponseAdmin.setCurrentStatusTransaction(order.getTransaction()
+                .getTransactionStatusHistories()
+                .getLast()
+                .getTransactionStatus()
+                .getName());
+        List<OrderItemResponseAdmin> orderItemResponseAdmins =
+                orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
+        orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
 
         return orderResponseAdmin;
     }
@@ -406,12 +425,16 @@ public class OrderService {
             OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
                     .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
                     .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
+            TransactionStatusHistory lastTransactionStatusHistory =
+                    order.getTransaction().getTransactionStatusHistories().stream()
+                            .max(Comparator.comparing(TransactionStatusHistory::getCreatedAt))
+                            .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_STATUS_HISTORY_NOT_FOUND));
 
             OrderResponseUser orderResponseUser = orderMapper.toOrderResponseUser(order);
 
             String defaultAddressStr = String.format(
-                    "%s, %s, %s, %s, %s",
-                    order.getDetailLocate(),
+                    "%s%s, %s, %s, %s",
+                    order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
                     order.getDetailAddress(),
                     order.getSubDistrict(),
                     order.getDistrict(),
@@ -419,6 +442,8 @@ public class OrderService {
             orderResponseUser.setDefaultAddressStr(defaultAddressStr);
             orderResponseUser.setCurrentStatus(
                     lastStatusHistory.getOrderStatus().getName());
+            orderResponseUser.setCurrentStatusTransaction(
+                    lastTransactionStatusHistory.getTransactionStatus().getName());
 
             List<OrderItemResponseUser> orderItemResponseUsers =
                     orderItemMapper.toOrderItemResponseList(order.getOrderItems());
@@ -450,8 +475,8 @@ public class OrderService {
         }
 
         String defaultAddressStr = String.format(
-                "%s, %s, %s, %s, %s",
-                order.getDetailLocate(),
+                "%s%s, %s, %s, %s",
+                order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
                 order.getDetailAddress(),
                 order.getDistrict(),
                 order.getSubDistrict(),
@@ -461,6 +486,15 @@ public class OrderService {
         orderResponseUser.setDefaultAddressStr(defaultAddressStr);
         orderResponseUser.setCurrentStatus(
                 order.getOrderStatusHistories().getLast().getOrderStatus().getName());
+        orderResponseUser.setCurrentStatusTransaction(order.getTransaction()
+                .getTransactionStatusHistories()
+                .getLast()
+                .getTransactionStatus()
+                .getName());
+
+        List<OrderItemResponseUser> orderItemResponseUsers =
+                orderItemMapper.toOrderItemResponseList(order.getOrderItems());
+        orderResponseUser.setOrderItems(orderItemResponseUsers);
         List<OrderStatusHistoryResponseUser> orderStatusHistoryResponseUsers =
                 orderMapper.toOrderStatusHistoryResponseUserList(order.getOrderStatusHistories());
         orderResponseUser.setOrderStatusHistories(orderStatusHistoryResponseUsers);

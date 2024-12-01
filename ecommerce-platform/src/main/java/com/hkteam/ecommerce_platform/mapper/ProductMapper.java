@@ -42,10 +42,4 @@ public interface ProductMapper {
     ProductResponse toProductResponse(ProductElasticsearch productElasticsearch);
 
     ProductResponse toProductResponse(Product product);
-
-    ProductDetailResponseUser toProductDetailResponseUser(Product product);
-
-    ProductDetailResponseSeller toProductDetailResponseSeller(Product product);
-
-    ProductDetailResponseAdmin toProductDetailResponseAdmin(Product product);
 }

@@ -32,7 +32,6 @@ public class OrderResponseAdmin {
     BigDecimal promo;
     String note;
     Instant createdAt;
-    Instant lastUpdatedAt;
     String currentStatus;
     String defaultAddressStr;
     String accountName;
@@ -40,6 +39,8 @@ public class OrderResponseAdmin {
     String userEmail;
     String userPhone;
     String orderPhone;
+    String currentStatusTransaction;
+    String paymentMethod;
 
     List<OrderItemResponseAdmin> orderItems;
 }
