@@ -197,7 +197,7 @@ public class CartItemService {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
         Pageable pageable = PageRequest.of(0, 5);
-        return cartItemRepository.findByUpdatedAtAndUser(user, pageable).stream()
+        return cartItemRepository.findByCart_UserAndIsCheckoutFalse(user, pageable).stream()
                 .map(cartItem -> MiniCartItemResponse.builder()
                         .id(cartItem.getId())
                         .name(cartItem.getProduct().getName())

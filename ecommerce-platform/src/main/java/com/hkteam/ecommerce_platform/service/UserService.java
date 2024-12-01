@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.HashSet;
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -308,5 +309,45 @@ public class UserService {
                         .map(userMapper::toAdminResponse)
                         .toList())
                 .build();
+    }
+
+    public UserInfoResponse getUserInfo() {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+
+        boolean isAdmin = false;
+        boolean isSeller = false;
+
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(RoleName.ADMIN)) {
+                isAdmin = true;
+            }
+            if (role.getName().equals(RoleName.SELLER)) {
+                isSeller = true;
+            }
+        }
+
+        if (isAdmin) {
+            return UserInfoResponse.builder()
+                    .name(user.getName())
+                    .lastRole("ADMIN")
+                    .imageUrl(user.getImageUrl())
+                    .roles(user.getRoles().stream().map(role -> role.getName().name()).toList())
+                    .build();
+        } else if (isSeller) {
+            return UserInfoResponse.builder()
+                    .name(user.getName())
+                    .lastRole("SELLER")
+                    .imageUrl(user.getImageUrl())
+                    .roles(user.getRoles().stream().map(role -> role.getName().name()).toList())
+                    .build();
+        } else {
+            return UserInfoResponse.builder()
+                    .name(user.getName())
+                    .lastRole("USER")
+                    .imageUrl(user.getImageUrl())
+                    .roles(user.getRoles().stream().map(role -> role.getName().name()).toList())
+                    .build();
+        }
+
     }
 }

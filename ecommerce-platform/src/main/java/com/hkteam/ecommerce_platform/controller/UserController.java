@@ -131,4 +131,13 @@ public class UserController {
                 .result(userService.getAllAdmins(page, size, tab, sort, search))
                 .build();
     }
+
+    @GetMapping("/info")
+    ApiResponse<UserInfoResponse
+
+            > getUserInfo() {
+        return ApiResponse.<UserInfoResponse>builder()
+                .result(userService.getUserInfo())
+                .build();
+    }
 }

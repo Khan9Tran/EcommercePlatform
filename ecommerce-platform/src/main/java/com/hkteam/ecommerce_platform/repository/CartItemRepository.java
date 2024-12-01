@@ -13,10 +13,11 @@ import com.hkteam.ecommerce_platform.entity.user.User;
 
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
-    @Query("SELECT e FROM CartItem e WHERE e.cart.user = ?1 ORDER BY e.cart.lastUpdatedAt DESC")
-    List<CartItem> findByUpdatedAtAndUser(User user, Pageable pageable);
 
     Optional<CartItem> findByProductIdAndCartUserAndCartCartItemsIsCheckout(String id, User user, boolean isCheckout);
 
     Optional<CartItem> findByVariantIdAndCartUserAndCartCartItemsIsCheckout(String id, User user, boolean isCheckout);
+
+    @Query("select c from CartItem c where c.cart.user = ?1 and c.isCheckout = false ORDER BY c.cart.lastUpdatedAt DESC")
+    List<CartItem> findByCart_UserAndIsCheckoutFalse(User user, Pageable pageable);
 }
