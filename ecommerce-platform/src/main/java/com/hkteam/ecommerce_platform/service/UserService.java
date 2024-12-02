@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class UserService {
+    private final ProductRepository productRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     UserRepository userRepository;
@@ -349,5 +352,24 @@ public class UserService {
                     .build();
         }
 
+    }
+
+    public UserFollowProductResponse followProduct(String productId) {
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (Boolean.FALSE.equals(product.isAvailable()) || Boolean.TRUE.equals(product.isBlocked())) {
+            throw  new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+        if (user.getFollowingProducts().contains(product)) {
+            throw new AppException(ErrorCode.PRODUCT_HAS_FOLLOWED);
+        }
+
+        if (user.getFollowingProducts().size() >= 40) {
+            throw  new AppException(ErrorCode.LIMIT_FOLLOW_40_PRODUCT);
+        }
+        user.getFollowingProducts().add(product);
+        userRepository.save(user);
+
+        return  UserFollowProductResponse.builder().productId(productId).userId(user.getId()).build();
     }
 }

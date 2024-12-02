@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
@@ -35,14 +36,17 @@ public class ProductCreationRequest {
 
     @NonNull
     @Min(value = 0)
+    @Max(value = 999)
     int quantity;
 
     @NonNull
     @Min(value = 0, message = "PRICE_INVALID")
+    @Max(value = 999999999, message = "PRICE_INVALID")
     BigDecimal originalPrice;
 
     @NonNull
     @Min(value = 0, message = "PRICE_INVALID")
+    @Max(value = 999999999, message = "PRICE_INVALID")
     BigDecimal salePrice;
 
     @NonNull

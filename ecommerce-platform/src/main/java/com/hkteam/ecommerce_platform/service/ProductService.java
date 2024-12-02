@@ -66,7 +66,9 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
         var product = productMapper.toProduct(request);
-
+        if (request.getSalePrice().compareTo(request.getOriginalPrice()) == 1) {
+            throw  new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
+        }
         product.setSlug(SlugUtils.getSlug(product.getName(), TypeSlug.PRODUCT));
 
         var owner = authenticatedUserUtil.getAuthenticatedUser();
@@ -241,6 +243,10 @@ public class ProductService {
                 .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         Long brandId = esPro.getBrandId();
+
+        if (request.getSalePrice().compareTo(request.getOriginalPrice()) == 1) {
+            throw  new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
+        }
 
         if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product)))
             throw new AppException(ErrorCode.UNAUTHORIZED);

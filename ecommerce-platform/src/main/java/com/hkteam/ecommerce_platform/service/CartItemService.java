@@ -73,7 +73,7 @@ public class CartItemService {
             if (!variant.isAvailable()) throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
         }
 
-        if (isAvailableQuantity(product, variant, request.getQuantity()))
+        if (isNotAvailableQuantity(product, variant, request.getQuantity()))
             throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
         CartItem cartItem;
@@ -81,7 +81,7 @@ public class CartItemService {
         if (ci.isPresent() && (variant == null || ci.get().getVariant().equals(variant))) {
             cartItem = addQuantityForCartItem(ci.get(), request.getQuantity());
             cartItem.getCart().setAvailable(Boolean.TRUE);
-            if (isAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), cartItem.getQuantity()))
+            if (isNotAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), cartItem.getQuantity()))
                 throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
         } else {
             var cart = cartRepository
@@ -105,7 +105,7 @@ public class CartItemService {
         return cartItemMapper.toCartItemResponse(cartItem);
     }
 
-    boolean isAvailableQuantity(Product product, Variant variant, int quantity) {
+    boolean isNotAvailableQuantity(Product product, Variant variant, int quantity) {
         if (Objects.isNull(variant)) {
             return product.getQuantity() < quantity;
         }
@@ -143,7 +143,7 @@ public class CartItemService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        if (isAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), request.getQuantity()))
+        if (isNotAvailableQuantity(cartItem.getProduct(), cartItem.getVariant(), request.getQuantity()))
             throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
         cartItem.setQuantity(request.getQuantity());

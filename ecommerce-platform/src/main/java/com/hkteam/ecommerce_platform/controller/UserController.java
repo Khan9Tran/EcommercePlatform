@@ -140,4 +140,9 @@ public class UserController {
                 .result(userService.getUserInfo())
                 .build();
     }
+
+    @PostMapping("/follow/{productId}")
+    ApiResponse<UserFollowProductResponse> followProduct(@PathVariable("productId") String productId) {
+        return  ApiResponse.<UserFollowProductResponse>builder().result(userService.followProduct(productId)).build();
+    }
 }
