@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.hkteam.ecommerce_platform.entity.user.User;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +50,10 @@ public class CartItemService {
     @Transactional
     public CartItemResponse addProductToCart(CartItemCreationRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
+        if (countItem(user) >= 100) {
+            throw new AppException(ErrorCode.HAS_MORE_PRODUCT_IN_CART);
+        }
+
         Optional<CartItem> ci;
         if (request.getVariantId().isEmpty()) {
             ci = cartItemRepository.findByProductIdAndCartUserAndCartCartItemsIsCheckout(
@@ -183,14 +188,17 @@ public class CartItemService {
         }
     }
 
-    public QuantityCartItemsResponse countCartItems() {
-        var user = authenticatedUserUtil.getAuthenticatedUser();
-        Integer count = user.getCarts().stream()
+    private Integer countItem(User user){
+        return  user.getCarts().stream()
                 .mapToInt(cart -> cart.getCartItems().stream().filter(cartItem -> !cartItem.isCheckout())
                         .mapToInt(CartItem::getQuantity)
                         .sum())
                 .sum();
-        return QuantityCartItemsResponse.builder().quantity(count).build();
+    }
+
+    public QuantityCartItemsResponse countCartItems() {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+        return QuantityCartItemsResponse.builder().quantity(countItem(user)).build();
     }
 
     public List<MiniCartItemResponse> getCartItemNewest() {

@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.dto.request;
 import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
 import lombok.*;
@@ -22,12 +23,16 @@ public class VariantOfProductRequest {
 
     @NonNull
     @Min(value = 0, message = "PRICE_INVALID")
+    @Max(value = 999999999, message = "PRICE_INVALID")
     BigDecimal originalPrice;
 
     @NonNull
+    @Min(value = 0)
+    @Max(value = 999)
     int quantity;
 
     @NonNull
     @Min(value = 0, message = "PRICE_INVALID")
+    @Max(value = 999999999, message = "PRICE_INVALID")
     BigDecimal salePrice;
 }

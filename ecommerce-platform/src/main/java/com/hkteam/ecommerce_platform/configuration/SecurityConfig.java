@@ -30,7 +30,7 @@ public class SecurityConfig {
         "/external-auths/authentication/google",
         "/external-auths/authentication/facebook",
         "/emails/reset-request",
-        "/emails/reset-password"
+        "/emails/reset-password",
     };
 
     private static final String[] VN_PAY_ENDPOINTS = {"payments/vn-pay-callback"};
@@ -41,7 +41,9 @@ public class SecurityConfig {
         "/brands/all",
         "/categories/tree-view",
         "categories/with-id/{id}",
-        "/products/slug/{slug}"
+        "/products/slug/{slug}",
+            "/stores/{storeId}",
+            "/products/top3/store/{storeId}"
     };
 
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {

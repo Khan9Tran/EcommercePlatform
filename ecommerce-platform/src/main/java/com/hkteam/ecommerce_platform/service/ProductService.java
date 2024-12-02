@@ -41,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class ProductService {
+    private final StoreRepository storeRepository;
     private final CategoryMapper categoryMapper;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
@@ -422,6 +423,8 @@ public class ProductService {
     }
 
     public List<MiniProductResponse> getProductNewest(String storeId) {
+        var store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+
         Pageable pageable = PageRequest.of(0, 3);
         return productRepository.findByLastUpdatedAtAndStoreId(storeId, pageable).stream()
                 .map(product -> MiniProductResponse.builder()
@@ -429,14 +432,8 @@ public class ProductService {
                         .name(product.getName())
                         .slug(product.getSlug())
                         .mainImageUrl(product.getMainImageUrl())
-                        .originalPrice(
-                                product.getVariants() != null
-                                        ? product.getVariants().getLast().getOriginalPrice()
-                                        : product.getOriginalPrice())
-                        .salePrice(
-                                product.getVariants() != null
-                                        ? product.getVariants().getLast().getSalePrice()
-                                        : product.getSalePrice())
+                        .originalPrice(product.getOriginalPrice())
+                        .salePrice(product.getSalePrice())
                         .rating(product.getRating())
                         .brandName(product.getBrand().getName())
                         .build())

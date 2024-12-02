@@ -54,6 +54,7 @@ public class ESUtils {
                     brandIds.stream().map(FieldValue::of).collect(Collectors.toList());
             queries.add(Query.of(q -> q.terms(t -> t.field("brandId").terms(terms -> terms.value(brandFieldValues)))));
         }
+
         if (storeId != null) {
             queries.add(Query.of(q -> q.term(t -> t.field("storeId").value(storeId))));
         }

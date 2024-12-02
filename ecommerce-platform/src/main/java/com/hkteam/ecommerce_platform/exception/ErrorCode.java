@@ -126,7 +126,10 @@ public enum ErrorCode {
     STORE_BANNED(1708, "Store is banned", HttpStatus.BAD_REQUEST),
     PRODUCT_HAS_FOLLOWED(1709,"Product has been followed", HttpStatus.BAD_REQUEST ),
     LIMIT_FOLLOW_40_PRODUCT(1710,"You has limit follow product is 40" ,HttpStatus.BAD_REQUEST ),
-    SALE_CANT_GREATER_THAN_ORIGINAL_PRICE(1711,"Sale price can't greater than original price" , HttpStatus.BAD_REQUEST );
+    SALE_CANT_GREATER_THAN_ORIGINAL_PRICE(1711,"Sale price can't greater than original price" , HttpStatus.BAD_REQUEST ),
+    HAS_MORE_PRODUCT_IN_CART(1712, "You has more products...." , HttpStatus.BAD_REQUEST),
+    RETRY_LOGIN(9900, "You need re login", HttpStatus.BAD_REQUEST)
+    ;
 
     int code;
     String message;

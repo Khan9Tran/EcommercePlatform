@@ -80,7 +80,9 @@ public class StoreService {
 
     public StoreInformationResponse getOneStoreById(String id) {
         Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
-
+        if (store.isBanned()) {
+            throw  new AppException(ErrorCode.STORE_NOT_FOUND);
+        }
         String defaultAddressStr = null;
         if (store.getDefaultAddressId() != null) {
             Address defaultAddress = addressRepository
