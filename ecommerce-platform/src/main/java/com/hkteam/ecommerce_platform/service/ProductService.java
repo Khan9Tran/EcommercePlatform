@@ -67,7 +67,7 @@ public class ProductService {
     @PreAuthorize("hasRole('SELLER')")
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
         var product = productMapper.toProduct(request);
-        if (request.getSalePrice().compareTo(request.getOriginalPrice()) == 1) {
+        if (request.getSalePrice().compareTo(request.getOriginalPrice()) > 0) {
             throw  new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
         }
         product.setSlug(SlugUtils.getSlug(product.getName(), TypeSlug.PRODUCT));
@@ -245,7 +245,7 @@ public class ProductService {
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         Long brandId = esPro.getBrandId();
 
-        if (request.getSalePrice().compareTo(request.getOriginalPrice()) == 1) {
+        if (request.getSalePrice().compareTo(request.getOriginalPrice()) > 0) {
             throw  new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
         }
 
