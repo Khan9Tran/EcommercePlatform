@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.hkteam.ecommerce_platform.entity.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,4 +52,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.store.id = ?1 ORDER BY p.lastUpdatedAt DESC")
     List<Product> findByLastUpdatedAtAndStoreId(@NotNull String storeId, Pageable pageable);
+
+    List<Product> findByFollowersAndIsAvailableTrueAndIsBlockedFalse(User followers);
+
 }

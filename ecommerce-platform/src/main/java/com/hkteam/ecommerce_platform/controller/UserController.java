@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -145,4 +147,16 @@ public class UserController {
     ApiResponse<UserFollowProductResponse> followProduct(@PathVariable("productId") String productId) {
         return  ApiResponse.<UserFollowProductResponse>builder().result(userService.followProduct(productId)).build();
     }
+
+    @GetMapping("/listFollowedProduct")
+    ApiResponse<List<ProductFollowedResponse>> getWatchedProducts() {
+        return  ApiResponse.<List<ProductFollowedResponse>>builder().result(userService.getWatchedProducts()).build();
+    }
+
+    @DeleteMapping("/unFollow/{productId}")
+    ApiResponse<Void> unfollowProduct(@PathVariable("productId") String productId) {
+        userService.unFollowProduct(productId);
+        return  ApiResponse.<Void>builder().build();
+    }
+
 }

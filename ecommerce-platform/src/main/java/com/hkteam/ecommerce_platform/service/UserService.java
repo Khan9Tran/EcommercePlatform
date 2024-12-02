@@ -372,4 +372,37 @@ public class UserService {
 
         return  UserFollowProductResponse.builder().productId(productId).userId(user.getId()).build();
     }
+
+    public List<ProductFollowedResponse> getWatchedProducts() {
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+        var rs = productRepository.findByFollowersAndIsAvailableTrueAndIsBlockedFalse(user);
+        List<ProductFollowedResponse> res = rs.stream().map(
+                (product) -> {
+                    return  ProductFollowedResponse.builder()
+                            .productId(product.getId())
+                            .slug(product.getSlug())
+                            .mainImageUrl(product.getMainImageUrl())
+                            .logoBrand(product.getBrand().getLogoUrl())
+                            .brandName(product.getBrand().getName())
+                            .storeId(product.getStore().getId())
+                            .storeImageUrl(product.getStore().getUser().getImageUrl())
+                            .storeName(product.getStore().getName())
+                            .productName(product.getName())
+                            .build();
+                }).toList();
+        return  res;
+
+    }
+
+    public void unFollowProduct(String productId) {
+        var product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+        if (Boolean.FALSE.equals(user.getFollowingProducts().contains(product))) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+
+        user.getFollowingProducts().remove(product);
+
+        userRepository.save(user);
+    }
 }
