@@ -57,6 +57,11 @@ public class ReviewService {
             throw new AppException(ErrorCode.NOT_PURCHASED);
         }
 
+        boolean hasReviewed = reviewRepository.hasUserAlreadyReviewedOrder(user.getId(), order.getId());
+        if (hasReviewed) {
+            throw new AppException(ErrorCode.ALREADY_REVIEWED);
+        }
+
         var products = order.getOrderItems().stream().map(OrderItem::getProduct).collect(Collectors.toSet());
 
         Review review = reviewMapper.toReview(request);

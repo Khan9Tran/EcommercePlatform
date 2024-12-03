@@ -136,6 +136,7 @@ public enum ErrorCode {
     PRODUCT_MIN_PRICE(1718, "You need set price > 0", HttpStatus.BAD_REQUEST),
     PRODUCT_MAX_PRICE(1719, "You need set price < 999,999,999d", HttpStatus.BAD_REQUEST),
     ADDRESS_LIMIT_EXCEEDED(1720, "The number of addresses created has reached the limit.", HttpStatus.BAD_REQUEST),
+    ALREADY_REVIEWED(1721, "You reviewed this order", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
