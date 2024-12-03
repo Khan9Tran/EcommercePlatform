@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -109,7 +111,7 @@ public class AddressService {
                 .toList();
 
         for (UserAddressResponse address : addressList) {
-            if (user.getDefaultAddressId().equals(address.getId())) {
+            if (Objects.nonNull(user.getDefaultAddressId()) && user.getDefaultAddressId().equals(address.getId())) {
                 address.setIsDefault(Boolean.TRUE);
             }
             if (user.getStore() != null

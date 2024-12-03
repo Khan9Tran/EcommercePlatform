@@ -628,8 +628,8 @@ public class OrderService {
                 }
                 OrderItem orderItem = OrderItem.builder()
                         .product(product)
-                        .price(totalOriginalPrice)
-                        .discount(totalOriginalPrice.subtract(totalSalePrice))
+                        .price(hasVariant ? variant.getOriginalPrice() : product.getOriginalPrice())
+                        .discount(hasVariant ? variant.getOriginalPrice().subtract(variant.getSalePrice()) : product.getOriginalPrice().subtract(product.getSalePrice()))
                         .quantity(orderItemRequest.getQuantity())
                         .values(
                                 Boolean.FALSE.equals(hasVariant)
@@ -669,8 +669,8 @@ public class OrderService {
             Order order = Order.builder()
                     .store(store)
                     .user(user)
-                    .total(total)
-                    .discount(discount)
+                    .total(totalOriginalPrice)
+                    .discount(totalOriginalPrice.subtract(totalSalePrice))
                     .phone(address.getPhone())
                     .recipientName(address.getRecipientName())
                     .district(address.getDistrict())
@@ -680,11 +680,11 @@ public class OrderService {
                     .detailLocate(address.getDetailLocate())
                     .province(address.getProvince())
                     .note(listOrder.getNote())
-                    .grandTotal(amount)
-                    .promo(discount)
+                    .grandTotal(totalSalePrice.add(ShippingFeeUtil.calculateShippingFee()))
+                    .promo(totalOriginalPrice.subtract(totalSalePrice))
                     .shippingDiscount(BigDecimal.ZERO)
                     .orderItems(orderItems)
-                    .shippingTotal(shippingFee)
+                    .shippingTotal(ShippingFeeUtil.calculateShippingFee())
                     .orderStatusHistories(new ArrayList<>(List.of(orderStatusHistory)))
                     .build();
 

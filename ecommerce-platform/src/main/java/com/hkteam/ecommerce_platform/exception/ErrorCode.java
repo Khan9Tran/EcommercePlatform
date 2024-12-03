@@ -116,7 +116,6 @@ public enum ErrorCode {
     STATUS_HISTORY_NOT_FOUND(1700, "Order history status not found", HttpStatus.NOT_FOUND),
     SELLER_PREPARING_COMPLETED_ORDER(
             1701, "Seller is preparing goods or order has been delivered successfully", HttpStatus.BAD_REQUEST),
-    ADDRESS_LIMIT_EXCEEDED(1701, "The number of addresses created has reached the limit.", HttpStatus.BAD_REQUEST),
     CANNOT_UN_DEFAULT(1702, "Cannot un-default address", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_DEFAULT_ADDRESS(1703, "Cannot delete default address", HttpStatus.BAD_REQUEST),
     NOT_NULL(1704, "{field} must not be null", HttpStatus.BAD_REQUEST),
@@ -134,6 +133,9 @@ public enum ErrorCode {
     REVIEW_NOT_FOUND(1715, "Review not found", HttpStatus.NOT_FOUND),
     ORDER_NOT_DELIVERED(1716, "Order not delivered", HttpStatus.BAD_REQUEST),
     RATING_INVALID(1717, "Rating must be between 0 and 5 star", HttpStatus.BAD_REQUEST),
+    PRODUCT_MIN_PRICE(1718, "You need set price > 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_MAX_PRICE(1719, "You need set price < 999,999,999d", HttpStatus.BAD_REQUEST),
+    ADDRESS_LIMIT_EXCEEDED(1720, "The number of addresses created has reached the limit.", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
