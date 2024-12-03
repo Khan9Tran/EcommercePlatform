@@ -44,7 +44,7 @@ public class VariantService {
         if (!authenticatedUserUtil.isOwner(variant)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         if (request.getSalePrice().compareTo(request.getOriginalPrice()) > 0) {
-            throw  new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
+            throw new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
         }
 
         var product = variant.getProduct();

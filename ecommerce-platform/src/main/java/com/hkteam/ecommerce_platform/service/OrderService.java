@@ -629,7 +629,10 @@ public class OrderService {
                 OrderItem orderItem = OrderItem.builder()
                         .product(product)
                         .price(hasVariant ? variant.getOriginalPrice() : product.getOriginalPrice())
-                        .discount(hasVariant ? variant.getOriginalPrice().subtract(variant.getSalePrice()) : product.getOriginalPrice().subtract(product.getSalePrice()))
+                        .discount(
+                                hasVariant
+                                        ? variant.getOriginalPrice().subtract(variant.getSalePrice())
+                                        : product.getOriginalPrice().subtract(product.getSalePrice()))
                         .quantity(orderItemRequest.getQuantity())
                         .values(
                                 Boolean.FALSE.equals(hasVariant)
