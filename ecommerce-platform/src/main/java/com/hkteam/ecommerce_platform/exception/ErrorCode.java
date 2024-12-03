@@ -128,7 +128,10 @@ public enum ErrorCode {
     LIMIT_FOLLOW_40_PRODUCT(1710,"You has limit follow product is 40" ,HttpStatus.BAD_REQUEST ),
     SALE_CANT_GREATER_THAN_ORIGINAL_PRICE(1711,"Sale price can't greater than original price" , HttpStatus.BAD_REQUEST ),
     HAS_MORE_PRODUCT_IN_CART(1712, "You has more products...." , HttpStatus.BAD_REQUEST),
-    RETRY_LOGIN(9900, "You need re login", HttpStatus.BAD_REQUEST)
+    RETRY_LOGIN(9900, "You need re login", HttpStatus.BAD_REQUEST),
+    PRODUCT_MIN_PRICE(1713, "You need set price > 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_MAX_PRICE(1714, "You need set price < 999,999,999d", HttpStatus.BAD_REQUEST),
+
     ;
 
     int code;

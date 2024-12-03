@@ -56,10 +56,10 @@ public class CartItemService {
 
         Optional<CartItem> ci;
         if (request.getVariantId().isEmpty()) {
-            ci = cartItemRepository.findByProductIdAndCartUserAndCartCartItemsIsCheckout(
+            ci = cartItemRepository.findByProductIdAndCartUserAndCartCartItemsAndIsCheckout(
                     request.getProductId(), user, false);
         } else {
-            ci = cartItemRepository.findByVariantIdAndCartUserAndCartCartItemsIsCheckout(
+            ci = cartItemRepository.findByVariantIdAndCartUserAndCartCartItemsAndIsCheckout(
                     request.getVariantId(), user, false);
         }
         var product = productRepository
@@ -81,6 +81,7 @@ public class CartItemService {
         if (isNotAvailableQuantity(product, variant, request.getQuantity()))
             throw new AppException(ErrorCode.QUANTITY_NOT_ENOUGH);
 
+        log.info("HAHAHAHAHHA");
         CartItem cartItem;
 
         if (ci.isPresent() && (variant == null || ci.get().getVariant().equals(variant))) {
