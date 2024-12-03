@@ -3,8 +3,6 @@ package com.hkteam.ecommerce_platform.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor

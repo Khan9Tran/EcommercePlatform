@@ -7,14 +7,17 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.constant.ImageAttribute;
 import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
+import com.hkteam.ecommerce_platform.dto.response.ReviewImageOfUploadDeleteResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.entity.image.ProductImage;
+import com.hkteam.ecommerce_platform.entity.image.ReviewImage;
 import com.hkteam.ecommerce_platform.entity.product.Brand;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.enums.TypeImage;
@@ -42,6 +45,9 @@ public class ImageService {
     BrandRepository brandRepository;
     ProductRepository productRepository;
     ProductImageRepository productImageRepository;
+    ReviewRepository reviewRepository;
+    OrderRepository orderRepository;
+    ReviewImageRepository reviewImageRepository;
 
     RabbitTemplate rabbitTemplate;
 
@@ -455,5 +461,51 @@ public class ImageService {
             byteArrayList.add(bytes);
         }
         return byteArrayList;
+    }
+
+    @Transactional
+    public ReviewImageOfUploadDeleteResponse uploadReviewImageList(ReviewImageUploadRequest request, String reviewId) {
+        request.getImages().forEach(ImageUtils::validateImage);
+
+        Long longReviewId = Long.parseLong(reviewId);
+        var review =
+                reviewRepository.findById(longReviewId).orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
+
+        List<ImageResponse> imageResponses = request.getImages().stream()
+                .map(image -> {
+                    try {
+                        Map<String, Object> uploadResult = cloudinaryService.uploadImage(
+                                image, TypeImage.LIST_IMAGE_REVIEW.name().toLowerCase());
+
+                        if (uploadResult.get("url") == null) {
+                            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+                        }
+
+                        ReviewImage reviewImage = ReviewImage.builder()
+                                .url(uploadResult.get("url").toString())
+                                .review(review)
+                                .build();
+                        reviewImageRepository.save(reviewImage);
+
+                        return ImageResponse.builder()
+                                .format((String) uploadResult.get("format"))
+                                .secureUrl((String) uploadResult.get("secure_url"))
+                                .createdAt((String) uploadResult.get("created_at"))
+                                .url((String) uploadResult.get("url"))
+                                .bytes((Integer) uploadResult.get("bytes"))
+                                .width((Integer) uploadResult.get("width"))
+                                .height((Integer) uploadResult.get("height"))
+                                .build();
+
+                    } catch (Exception e) {
+                        log.error("Error while uploading review image: {}", e.getMessage());
+                        throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+                    }
+                })
+                .toList();
+
+        return ReviewImageOfUploadDeleteResponse.builder()
+                .images(imageResponses)
+                .build();
     }
 }

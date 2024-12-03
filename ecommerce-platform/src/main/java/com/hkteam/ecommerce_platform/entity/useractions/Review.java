@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.useractions;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -29,11 +30,15 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     User user;
 
-    @ManyToOne
-    Product product;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "review_product",
+            joinColumns = @JoinColumn(name = "review_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id"))
+    List<Product> products;
 
     float rating;
 

@@ -3,8 +3,10 @@ package com.hkteam.ecommerce_platform.controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hkteam.ecommerce_platform.dto.request.ReviewVideoUploadRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.VideoResponse;
+import com.hkteam.ecommerce_platform.dto.response.VideoReviewResponse;
 import com.hkteam.ecommerce_platform.service.VideoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +40,15 @@ public class VideoController {
         videoService.deleteProductVideo(productId);
         return ApiResponse.<Void>builder()
                 .message("Deleted product video successfully")
+                .build();
+    }
+
+    @Operation(summary = "Upload Review Video", description = "Api upload review video")
+    @PostMapping(value = "/reviews/{reviewId}", consumes = "multipart/form-data")
+    public ApiResponse<VideoReviewResponse> uploadProductVideo(
+            @ModelAttribute ReviewVideoUploadRequest request, @PathVariable("reviewId") String reviewId) {
+        return ApiResponse.<VideoReviewResponse>builder()
+                .result(videoService.uploadVideoReview(request, reviewId))
                 .build();
     }
 }

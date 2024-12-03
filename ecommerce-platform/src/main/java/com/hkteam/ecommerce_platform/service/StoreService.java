@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,7 +80,7 @@ public class StoreService {
     public StoreInformationResponse getOneStoreById(String id) {
         Store store = storeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
         if (store.isBanned()) {
-            throw  new AppException(ErrorCode.STORE_NOT_FOUND);
+            throw new AppException(ErrorCode.STORE_NOT_FOUND);
         }
         String defaultAddressStr = null;
         if (store.getDefaultAddressId() != null) {
@@ -94,8 +93,7 @@ public class StoreService {
                     defaultAddress.getDetailAddress(),
                     defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
-                    defaultAddress.getProvince()
-            )) {
+                    defaultAddress.getProvince())) {
                 if (part != null && !part.isEmpty()) {
                     addressParts.add(part);
                 }
@@ -138,8 +136,7 @@ public class StoreService {
                     defaultAddress.getDetailAddress(),
                     defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
-                    defaultAddress.getProvince()
-            )) {
+                    defaultAddress.getProvince())) {
                 if (part != null && !part.isEmpty()) {
                     addressParts.add(part);
                 }
@@ -219,8 +216,7 @@ public class StoreService {
                     defaultAddress.getDetailAddress(),
                     defaultAddress.getSubDistrict(),
                     defaultAddress.getDistrict(),
-                    defaultAddress.getProvince()
-            )) {
+                    defaultAddress.getProvince())) {
                 if (part != null && !part.isEmpty()) {
                     addressParts.add(part);
                 }
@@ -276,8 +272,7 @@ public class StoreService {
     public void blockStore(String storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
         store.setBanned(true);
-        store.getProducts().forEach(product ->
-            product.setBlocked(true));
+        store.getProducts().forEach(product -> product.setBlocked(true));
         var esPro = elasticsearchRepository.findByStoreId(storeId);
         esPro.forEach(product -> {
             product.setBlocked(true);
@@ -291,8 +286,7 @@ public class StoreService {
     public void unblockStore(String storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
         store.setBanned(false);
-        store.getProducts().forEach(product ->
-            product.setBlocked(false));
+        store.getProducts().forEach(product -> product.setBlocked(false));
         var esPro = elasticsearchRepository.findByStoreId(storeId);
         esPro.forEach(product -> {
             product.setBlocked(false);

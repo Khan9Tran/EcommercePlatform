@@ -68,7 +68,7 @@ public class ProductService {
     public ProductCreationResponse createProduct(ProductCreationRequest request) {
         var product = productMapper.toProduct(request);
         if (request.getSalePrice().compareTo(request.getOriginalPrice()) > 0) {
-            throw  new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
+            throw new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
         }
         product.setSlug(SlugUtils.getSlug(product.getName(), TypeSlug.PRODUCT));
 
@@ -246,7 +246,7 @@ public class ProductService {
         Long brandId = esPro.getBrandId();
 
         if (request.getSalePrice().compareTo(request.getOriginalPrice()) > 0) {
-            throw  new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
+            throw new AppException(ErrorCode.SALE_CANT_GREATER_THAN_ORIGINAL_PRICE);
         }
 
         if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product)))

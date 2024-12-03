@@ -3,7 +3,6 @@ package com.hkteam.ecommerce_platform.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.hkteam.ecommerce_platform.entity.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.entity.user.User;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -54,5 +54,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByLastUpdatedAtAndStoreId(@NotNull String storeId, Pageable pageable);
 
     List<Product> findByFollowersAndIsAvailableTrueAndIsBlockedFalse(User followers);
-
 }

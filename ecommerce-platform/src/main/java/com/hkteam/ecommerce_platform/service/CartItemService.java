@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.hkteam.ecommerce_platform.entity.user.User;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +19,7 @@ import com.hkteam.ecommerce_platform.entity.cart.CartItem;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.CartItemMapper;
@@ -188,9 +188,10 @@ public class CartItemService {
         }
     }
 
-    private Integer countItem(User user){
-        return  user.getCarts().stream()
-                .mapToInt(cart -> cart.getCartItems().stream().filter(cartItem -> !cartItem.isCheckout())
+    private Integer countItem(User user) {
+        return user.getCarts().stream()
+                .mapToInt(cart -> cart.getCartItems().stream()
+                        .filter(cartItem -> !cartItem.isCheckout())
                         .mapToInt(CartItem::getQuantity)
                         .sum())
                 .sum();

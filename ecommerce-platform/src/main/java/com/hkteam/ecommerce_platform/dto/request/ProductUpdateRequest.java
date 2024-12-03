@@ -38,12 +38,12 @@ public class ProductUpdateRequest {
 
     @NonNull
     @Min(value = 0, message = "PRICE_INVALID")
-    @Max(value = 999999999, message= "PRICE_INVALID")
+    @Max(value = 999999999, message = "PRICE_INVALID")
     BigDecimal originalPrice;
 
     @NonNull
     @Min(value = 0, message = "PRICE_INVALID")
-    @Max(value = 999999999, message= "PRICE_INVALID")
+    @Max(value = 999999999, message = "PRICE_INVALID")
     BigDecimal salePrice;
 
     @NonNull

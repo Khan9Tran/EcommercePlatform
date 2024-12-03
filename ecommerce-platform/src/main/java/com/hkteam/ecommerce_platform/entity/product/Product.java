@@ -82,8 +82,8 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     List<Variant> variants;
 
-    @OneToMany(mappedBy = "product")
-    Set<Review> reviews;
+    @ManyToMany(mappedBy = "products")
+    List<Review> reviews;
 
     @OneToMany(mappedBy = "product")
     Set<OrderItem> orderItems;

@@ -8,4 +8,6 @@ public enum TypeImage {
     MAIN_LOGO_OF_BRAND,
     MAIN_VIDEO_OF_PRODUCT,
     CATEGORY_ICON,
+    LIST_IMAGE_REVIEW,
+    VIDEO_REVIEW;
 }

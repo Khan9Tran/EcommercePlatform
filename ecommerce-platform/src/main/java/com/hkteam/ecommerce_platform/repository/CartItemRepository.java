@@ -18,6 +18,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     Optional<CartItem> findByVariantIdAndCartUserAndCartCartItemsIsCheckout(String id, User user, boolean isCheckout);
 
-    @Query("select c from CartItem c where c.cart.user = ?1 and c.isCheckout = false ORDER BY c.cart.lastUpdatedAt DESC")
+    @Query(
+            "select c from CartItem c where c.cart.user = ?1 and c.isCheckout = false ORDER BY c.cart.lastUpdatedAt DESC")
     List<CartItem> findByCart_UserAndIsCheckoutFalse(User user, Pageable pageable);
 }

@@ -3,9 +3,6 @@ package com.hkteam.ecommerce_platform.service;
 import java.util.HashSet;
 import java.util.List;
 
-import com.hkteam.ecommerce_platform.entity.authorization.Role;
-import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,12 +14,15 @@ import org.springframework.util.StringUtils;
 
 import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.*;
+import com.hkteam.ecommerce_platform.entity.authorization.Role;
+import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.UserMapper;
 import com.hkteam.ecommerce_platform.repository.AddressRepository;
+import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import com.hkteam.ecommerce_platform.repository.RoleRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
@@ -334,30 +334,36 @@ public class UserService {
                     .name(user.getName())
                     .lastRole("ADMIN")
                     .imageUrl(user.getImageUrl())
-                    .roles(user.getRoles().stream().map(role -> role.getName().name()).toList())
+                    .roles(user.getRoles().stream()
+                            .map(role -> role.getName().name())
+                            .toList())
                     .build();
         } else if (isSeller) {
             return UserInfoResponse.builder()
                     .name(user.getName())
                     .lastRole("SELLER")
                     .imageUrl(user.getImageUrl())
-                    .roles(user.getRoles().stream().map(role -> role.getName().name()).toList())
+                    .roles(user.getRoles().stream()
+                            .map(role -> role.getName().name())
+                            .toList())
                     .build();
         } else {
             return UserInfoResponse.builder()
                     .name(user.getName())
                     .lastRole("USER")
                     .imageUrl(user.getImageUrl())
-                    .roles(user.getRoles().stream().map(role -> role.getName().name()).toList())
+                    .roles(user.getRoles().stream()
+                            .map(role -> role.getName().name())
+                            .toList())
                     .build();
         }
-
     }
 
     public UserFollowProductResponse followProduct(String productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        Product product =
+                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         if (Boolean.FALSE.equals(product.isAvailable()) || Boolean.TRUE.equals(product.isBlocked())) {
-            throw  new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
         }
         var user = authenticatedUserUtil.getAuthenticatedUser();
         if (user.getFollowingProducts().contains(product)) {
@@ -365,20 +371,23 @@ public class UserService {
         }
 
         if (user.getFollowingProducts().size() >= 40) {
-            throw  new AppException(ErrorCode.LIMIT_FOLLOW_40_PRODUCT);
+            throw new AppException(ErrorCode.LIMIT_FOLLOW_40_PRODUCT);
         }
         user.getFollowingProducts().add(product);
         userRepository.save(user);
 
-        return  UserFollowProductResponse.builder().productId(productId).userId(user.getId()).build();
+        return UserFollowProductResponse.builder()
+                .productId(productId)
+                .userId(user.getId())
+                .build();
     }
 
     public List<ProductFollowedResponse> getWatchedProducts() {
         var user = authenticatedUserUtil.getAuthenticatedUser();
         var rs = productRepository.findByFollowersAndIsAvailableTrueAndIsBlockedFalse(user);
-        List<ProductFollowedResponse> res = rs.stream().map(
-                (product) -> {
-                    return  ProductFollowedResponse.builder()
+        List<ProductFollowedResponse> res = rs.stream()
+                .map((product) -> {
+                    return ProductFollowedResponse.builder()
                             .productId(product.getId())
                             .slug(product.getSlug())
                             .mainImageUrl(product.getMainImageUrl())
@@ -389,13 +398,14 @@ public class UserService {
                             .storeName(product.getStore().getName())
                             .productName(product.getName())
                             .build();
-                }).toList();
-        return  res;
-
+                })
+                .toList();
+        return res;
     }
 
     public void unFollowProduct(String productId) {
-        var product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        var product =
+                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         var user = authenticatedUserUtil.getAuthenticatedUser();
         if (Boolean.FALSE.equals(user.getFollowingProducts().contains(product))) {
             throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);

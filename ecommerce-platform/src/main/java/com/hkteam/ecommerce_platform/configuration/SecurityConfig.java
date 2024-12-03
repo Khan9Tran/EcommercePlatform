@@ -42,8 +42,8 @@ public class SecurityConfig {
         "/categories/tree-view",
         "categories/with-id/{id}",
         "/products/slug/{slug}",
-            "/stores/{storeId}",
-            "/products/top3/store/{storeId}"
+        "/stores/{storeId}",
+        "/products/top3/store/{storeId}"
     };
 
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {

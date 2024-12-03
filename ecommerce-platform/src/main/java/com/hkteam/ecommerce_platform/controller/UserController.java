@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -16,8 +18,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -135,9 +135,8 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    ApiResponse<UserInfoResponse
+    ApiResponse<UserInfoResponse> getUserInfo() {
 
-            > getUserInfo() {
         return ApiResponse.<UserInfoResponse>builder()
                 .result(userService.getUserInfo())
                 .build();
@@ -145,18 +144,21 @@ public class UserController {
 
     @PostMapping("/follow/{productId}")
     ApiResponse<UserFollowProductResponse> followProduct(@PathVariable("productId") String productId) {
-        return  ApiResponse.<UserFollowProductResponse>builder().result(userService.followProduct(productId)).build();
+        return ApiResponse.<UserFollowProductResponse>builder()
+                .result(userService.followProduct(productId))
+                .build();
     }
 
     @GetMapping("/listFollowedProduct")
     ApiResponse<List<ProductFollowedResponse>> getWatchedProducts() {
-        return  ApiResponse.<List<ProductFollowedResponse>>builder().result(userService.getWatchedProducts()).build();
+        return ApiResponse.<List<ProductFollowedResponse>>builder()
+                .result(userService.getWatchedProducts())
+                .build();
     }
 
     @DeleteMapping("/unFollow/{productId}")
     ApiResponse<Void> unfollowProduct(@PathVariable("productId") String productId) {
         userService.unFollowProduct(productId);
-        return  ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder().build();
     }
-
 }

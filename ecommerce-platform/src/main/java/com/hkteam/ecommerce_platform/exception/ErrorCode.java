@@ -124,11 +124,16 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND(1706, "Payment not found", HttpStatus.NOT_FOUND),
     TRANSACTION_STATUS_HISTORY_NOT_FOUND(1707, "Transaction status history not found", HttpStatus.NOT_FOUND),
     STORE_BANNED(1708, "Store is banned", HttpStatus.BAD_REQUEST),
-    PRODUCT_HAS_FOLLOWED(1709,"Product has been followed", HttpStatus.BAD_REQUEST ),
-    LIMIT_FOLLOW_40_PRODUCT(1710,"You has limit follow product is 40" ,HttpStatus.BAD_REQUEST ),
-    SALE_CANT_GREATER_THAN_ORIGINAL_PRICE(1711,"Sale price can't greater than original price" , HttpStatus.BAD_REQUEST ),
-    HAS_MORE_PRODUCT_IN_CART(1712, "You has more products...." , HttpStatus.BAD_REQUEST),
-    RETRY_LOGIN(9900, "You need re login", HttpStatus.BAD_REQUEST)
+    PRODUCT_HAS_FOLLOWED(1709, "Product has been followed", HttpStatus.BAD_REQUEST),
+    LIMIT_FOLLOW_40_PRODUCT(1710, "You has limit follow product is 40", HttpStatus.BAD_REQUEST),
+    SALE_CANT_GREATER_THAN_ORIGINAL_PRICE(1711, "Sale price can't greater than original price", HttpStatus.BAD_REQUEST),
+    HAS_MORE_PRODUCT_IN_CART(1712, "You has more products....", HttpStatus.BAD_REQUEST),
+    RETRY_LOGIN(9900, "You need re login", HttpStatus.BAD_REQUEST),
+    COMMENT_INVALID(1713, "{field} be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
+    NOT_PURCHASED(1714, "You haven't purchased this products", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_FOUND(1715, "Review not found", HttpStatus.NOT_FOUND),
+    ORDER_NOT_DELIVERED(1716, "Order not delivered", HttpStatus.BAD_REQUEST),
+    RATING_INVALID(1717, "Rating must be between 0 and 5 star", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

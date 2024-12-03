@@ -92,4 +92,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Nullable String productName,
             @Nullable String statusName,
             Pageable pageable);
+
+    @NotNull
+    Optional<Order> findById(@NotNull String id);
 }

@@ -45,8 +45,7 @@ public class StoreController {
     @Operation(summary = "Update store status by id", description = "Api update store status by id")
     public ApiResponse<Void> updateStoreStatus(@PathVariable String storeId) {
         storeService.changeStoreStatus(storeId);
-        return ApiResponse.<Void>builder()
-                .build();
+        return ApiResponse.<Void>builder().build();
     }
 
     @GetMapping("/{storeId}")
