@@ -2,7 +2,6 @@ package com.hkteam.ecommerce_platform.dto.request;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import lombok.AllArgsConstructor;
@@ -21,8 +20,7 @@ public class ReviewCreationRequest {
     @DecimalMax(value = "5.0", message = "RATING_INVALID")
     float rating;
 
-    @NotBlank(message = "NOT_BLANK")
-    @Size(min = 1, max = 255, message = "COMMENT_INVALID")
+    @Size(max = 255, message = "COMMENT_INVALID")
     String comment;
 
     String orderId;

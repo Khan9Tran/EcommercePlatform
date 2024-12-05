@@ -128,7 +128,7 @@ public enum ErrorCode {
     SALE_CANT_GREATER_THAN_ORIGINAL_PRICE(1711, "Sale price can't greater than original price", HttpStatus.BAD_REQUEST),
     HAS_MORE_PRODUCT_IN_CART(1712, "You has more products....", HttpStatus.BAD_REQUEST),
     RETRY_LOGIN(9900, "You need re login", HttpStatus.BAD_REQUEST),
-    COMMENT_INVALID(1713, "{field} be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
+    COMMENT_INVALID(1713, "{field} must less than {max} characters", HttpStatus.BAD_REQUEST),
     NOT_PURCHASED(1714, "You haven't purchased this products", HttpStatus.BAD_REQUEST),
     REVIEW_NOT_FOUND(1715, "Review not found", HttpStatus.NOT_FOUND),
     ORDER_NOT_DELIVERED(1716, "Order not delivered", HttpStatus.BAD_REQUEST),

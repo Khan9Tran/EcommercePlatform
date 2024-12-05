@@ -43,7 +43,9 @@ public class SecurityConfig {
         "categories/with-id/{id}",
         "/products/slug/{slug}",
         "/stores/{storeId}",
-        "/products/top3/store/{storeId}"
+        "/products/top3/store/{storeId}",
+        "/reviews/product/{productId}",
+            "reviews/product/{productId}/comment-media-total"
     };
 
     private static final String[] SWAGGER_WHITELIST_ENDPOINTS = {

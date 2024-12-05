@@ -18,7 +18,7 @@ import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.user.User;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, String> {
     boolean existsByNameIgnoreCase(String name);
 
     Optional<Product> findBySlug(String slug);
@@ -27,7 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findAll(@NotNull Pageable pageable);
 
     @NotNull
-    List<Product> findAllById(@NotNull Iterable<Long> ids);
+    List<Product> findAllById(@NotNull Iterable<String> ids);
 
     Integer countByStore(Store store);
 
@@ -54,4 +54,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByLastUpdatedAtAndStoreId(@NotNull String storeId, Pageable pageable);
 
     List<Product> findByFollowersAndIsAvailableTrueAndIsBlockedFalse(User followers);
+
+    boolean existsById(@NotNull String productId);
 }
