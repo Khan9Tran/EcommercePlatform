@@ -14,6 +14,12 @@ public class RabbitMQConfig {
     public static final String DELETE_IMAGE_QUEUE = "deleteImageQueue";
     public static final String CATE_ES_PRODUCT_QUEUE = "updateCategoryEsProductQueue";
     public static final String BRAND_ES_PRODUCT_QUEUE = "updateBrandEsProductQueue";
+    public static final String SEND_MAIL_AFTER_ORDER_QUEUE = "sendMailAfterOrderQueue";
+
+    @Bean
+    public Queue sendMailAfterOrderQueue() {
+        return new Queue(SEND_MAIL_AFTER_ORDER_QUEUE, true);
+    }
 
     @Bean
     public Queue emailQueue() {

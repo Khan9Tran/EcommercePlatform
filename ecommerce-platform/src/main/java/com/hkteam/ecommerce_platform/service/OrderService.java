@@ -3,8 +3,11 @@ package com.hkteam.ecommerce_platform.service;
 import java.math.BigDecimal;
 import java.util.*;
 
+import com.hkteam.ecommerce_platform.dto.request.SendMailAfterOrderRequest;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Pageable;
@@ -71,6 +74,7 @@ public class OrderService {
     CartItemRepository cartItemRepository;
     CartRepository cartRepository;
     ProductMapper productMapper;
+    RabbitTemplate rabbitTemplate;
 
     static String[] SORT_BY_SELLER = {"createdAt"};
     static String[] SORT_BY_ADMIN = {"createdAt"};
@@ -735,6 +739,15 @@ public class OrderService {
                 cartRepository.save(cart);
             }
         });
+
+        if (Objects.nonNull(user.getEmail()) && !user.getEmail().isBlank()) {
+            rabbitTemplate.convertAndSend(RabbitMQConfig.SEND_MAIL_AFTER_ORDER_QUEUE,
+                    SendMailAfterOrderRequest.builder()
+                            .email(user.getEmail())
+                            .name(user.getName())
+                            .paymentId(payment.getId())
+                            .build());
+        }
 
         return OrderCreationResponse.builder()
                 .paymentUrl(

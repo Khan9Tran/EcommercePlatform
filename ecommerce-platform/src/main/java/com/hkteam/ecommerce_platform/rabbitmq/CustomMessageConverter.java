@@ -41,6 +41,9 @@ public class CustomMessageConverter implements MessageConverter {
             messageProperties.setHeader("messageType", "updateCategoryEsProduct");
         } else if (object instanceof UpdateBrandEsProductRequest) {
             messageProperties.setHeader("messageType", "updateBrandEsProduct");
+        }
+        else if (object instanceof SendMailAfterOrderRequest) {
+            messageProperties.setHeader("messageType", "sendMailAfterOrder");
         } else {
             throw new MessageConversionException("Unknown message type");
         }
@@ -62,7 +65,8 @@ public class CustomMessageConverter implements MessageConverter {
                 return objectMapper.readValue(message.getBody(), UpdateCategoryEsProductRequest.class);
             } else if ("updateBrandEsProduct".equals(messageType)) {
                 return objectMapper.readValue(message.getBody(), UpdateBrandEsProductRequest.class);
-
+            } else if ("sendMailAfterOrder".equals(messageType)) {
+                return objectMapper.readValue(message.getBody(), SendMailAfterOrderRequest.class);
             } else {
                 throw new MessageConversionException("Unknown message type");
             }
