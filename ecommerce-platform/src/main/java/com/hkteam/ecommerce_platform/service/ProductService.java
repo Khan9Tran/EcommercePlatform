@@ -35,6 +35,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -402,6 +403,7 @@ public class ProductService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
+    @Transactional
     public Void updateProductStatus(String id) {
         var product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product)))
@@ -409,7 +411,12 @@ public class ProductService {
         product.setAvailable(!product.isAvailable());
 
         try {
+            var productElasticsearch = productElasticsearchRepository
+                    .findById(id)
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            productElasticsearch.setAvailable(product.isAvailable());
             productRepository.save(product);
+            productElasticsearchRepository.save(productElasticsearch);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
