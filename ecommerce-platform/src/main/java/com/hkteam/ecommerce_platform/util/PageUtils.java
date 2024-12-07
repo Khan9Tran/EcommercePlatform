@@ -21,7 +21,7 @@ public class PageUtils {
             size = Integer.parseInt(sizeStr);
 
             if (size > 80) {
-                throw  new AppException(ErrorCode.SIZE_TOO_LARGE);
+                throw new AppException(ErrorCode.SIZE_TOO_LARGE);
             }
         } catch (NumberFormatException e) {
             throw new AppException(ErrorCode.PAGE_NOT_FOUND);

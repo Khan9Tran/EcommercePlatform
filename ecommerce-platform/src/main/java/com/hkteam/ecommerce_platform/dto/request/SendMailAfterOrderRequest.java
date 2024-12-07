@@ -1,6 +1,5 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
-import com.hkteam.ecommerce_platform.entity.payment.Payment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

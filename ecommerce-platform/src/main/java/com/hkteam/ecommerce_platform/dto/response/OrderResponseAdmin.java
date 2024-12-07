@@ -41,6 +41,11 @@ public class OrderResponseAdmin {
     String orderPhone;
     String currentStatusTransaction;
     String paymentMethod;
+    String avatarStore;
+    String storeName;
+    Float ratingStore;
+    String storeId;
+    Instant lastUpdatedAt;
 
     List<OrderItemResponseAdmin> orderItems;
 }
