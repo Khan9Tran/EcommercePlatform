@@ -341,6 +341,7 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public void updateOrderStatusByAdmin(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
@@ -359,6 +360,17 @@ public class OrderService {
                         .remarks(order.getOrderStatusHistories().getLast().getRemarks())
                         .build());
         try {
+            if (order.getTransaction().getPayment().getPaymentMethod().name().equals(PaymentMethod.COD.name()) && nextStatus.equals(orderStatusRepository.findByName(OrderStatusName.DELIVERED.name()).orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))) {
+
+                order.getTransaction().getTransactionStatusHistories().add(TransactionStatusHistory.builder()
+                        .transactionStatus(
+                                transactionStatusRepository.findById(TransactionStatusName.SUCCESS.name())
+                                        .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND))
+                                        )
+                        .remarks("Payment COD completed.")
+                        .transaction(order.getTransaction())
+                        .build());
+            }
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             log.info("Error while updating order status: {}", e.getMessage());
