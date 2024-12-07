@@ -1,9 +1,9 @@
 package com.hkteam.ecommerce_platform.dto.response.email;
 
+import java.math.BigDecimal;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -17,4 +17,3 @@ public class OrderItemEmail {
     private BigDecimal price;
     private String imageUrl;
 }
-

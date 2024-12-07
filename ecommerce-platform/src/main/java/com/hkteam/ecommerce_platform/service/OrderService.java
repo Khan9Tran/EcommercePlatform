@@ -3,8 +3,6 @@ package com.hkteam.ecommerce_platform.service;
 import java.math.BigDecimal;
 import java.util.*;
 
-import com.hkteam.ecommerce_platform.dto.request.SendMailAfterOrderRequest;
-import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -22,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hkteam.ecommerce_platform.dto.request.ListOrder;
 import com.hkteam.ecommerce_platform.dto.request.OrderItemRequest;
 import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
+import com.hkteam.ecommerce_platform.dto.request.SendMailAfterOrderRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
@@ -45,6 +44,7 @@ import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.OrderItemMapper;
 import com.hkteam.ecommerce_platform.mapper.OrderMapper;
 import com.hkteam.ecommerce_platform.mapper.ProductMapper;
+import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
@@ -741,7 +741,8 @@ public class OrderService {
         });
 
         if (Objects.nonNull(user.getEmail()) && !user.getEmail().isBlank()) {
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SEND_MAIL_AFTER_ORDER_QUEUE,
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.SEND_MAIL_AFTER_ORDER_QUEUE,
                     SendMailAfterOrderRequest.builder()
                             .email(user.getEmail())
                             .name(user.getName())

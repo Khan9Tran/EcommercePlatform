@@ -5,14 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-import com.hkteam.ecommerce_platform.dto.request.SendMailAfterOrderRequest;
-import com.hkteam.ecommerce_platform.dto.response.email.OrderEmail;
-import com.hkteam.ecommerce_platform.dto.response.email.OrderItemEmail;
-import com.hkteam.ecommerce_platform.entity.order.Order;
-import com.hkteam.ecommerce_platform.entity.payment.Payment;
-import com.hkteam.ecommerce_platform.entity.payment.Transaction;
-import com.hkteam.ecommerce_platform.enums.PaymentMethod;
-import com.hkteam.ecommerce_platform.repository.PaymentRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -25,6 +17,14 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.hkteam.ecommerce_platform.dto.request.EmailMessageRequest;
+import com.hkteam.ecommerce_platform.dto.request.SendMailAfterOrderRequest;
+import com.hkteam.ecommerce_platform.dto.response.email.OrderEmail;
+import com.hkteam.ecommerce_platform.dto.response.email.OrderItemEmail;
+import com.hkteam.ecommerce_platform.entity.order.Order;
+import com.hkteam.ecommerce_platform.entity.payment.Payment;
+import com.hkteam.ecommerce_platform.entity.payment.Transaction;
+import com.hkteam.ecommerce_platform.enums.PaymentMethod;
+import com.hkteam.ecommerce_platform.repository.PaymentRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -76,11 +76,14 @@ public class EmailSender {
     public void sendMailAfterOrder(SendMailAfterOrderRequest request) throws MessagingException {
         Payment payment = paymentRepository.findById(request.getPaymentId()).orElseThrow();
         for (Transaction transaction : payment.getTransactions()) {
-            sendMailAfterOrder(request.getName(), request.getEmail(), transaction, payment.getPaymentMethod(), payment.getId());
+            sendMailAfterOrder(
+                    request.getName(), request.getEmail(), transaction, payment.getPaymentMethod(), payment.getId());
         }
     }
 
-    private void sendMailAfterOrder(String name, String email, Transaction transaction, PaymentMethod paymentMethod, String paymentId) throws MessagingException {
+    private void sendMailAfterOrder(
+            String name, String email, Transaction transaction, PaymentMethod paymentMethod, String paymentId)
+            throws MessagingException {
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -89,50 +92,47 @@ public class EmailSender {
 
         Order order = transaction.getOrder();
         List<OrderItemEmail> itemEmails = new ArrayList<>();
-        order.getOrderItems().forEach(
-            orderItem -> {
-                String values = "";
-                if (Objects.nonNull(orderItem.getValues())) {
-                    for (String value : orderItem.getValues()) {
-                        values += value + ", ";
-                    }
+        order.getOrderItems().forEach(orderItem -> {
+            String values = "";
+            if (Objects.nonNull(orderItem.getValues())) {
+                for (String value : orderItem.getValues()) {
+                    values += value + ", ";
                 }
-                if (!values.isEmpty()) {
-                    values = values.substring(0, values.length() - 2);
-                }
+            }
+            if (!values.isEmpty()) {
+                values = values.substring(0, values.length() - 2);
+            }
 
-                OrderItemEmail itemEmail = OrderItemEmail.builder()
+            OrderItemEmail itemEmail = OrderItemEmail.builder()
                     .name(orderItem.getProduct().getName())
-                        .imageUrl(orderItem.getProduct().getMainImageUrl())
+                    .imageUrl(orderItem.getProduct().getMainImageUrl())
                     .values(values)
                     .quantity(orderItem.getQuantity())
-                    .price((orderItem.getPrice().subtract(orderItem.getDiscount())).multiply(BigDecimal.valueOf(orderItem.getQuantity())))
+                    .price((orderItem.getPrice().subtract(orderItem.getDiscount()))
+                            .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
                     .build();
-                itemEmails.add(itemEmail);
-            }
-        );
-        LocalDateTime localDateTimeSpecificZone = LocalDateTime.ofInstant(order.getCreatedAt(), ZoneId.of("Asia/Ho_Chi_Minh"));
+            itemEmails.add(itemEmail);
+        });
+        LocalDateTime localDateTimeSpecificZone =
+                LocalDateTime.ofInstant(order.getCreatedAt(), ZoneId.of("Asia/Ho_Chi_Minh"));
 
         OrderEmail orderResponse = OrderEmail.builder()
-            .id(order.getId())
-            .orderDate(localDateTimeSpecificZone)
-            .seller(order.getStore().getName())
-            .items(itemEmails)
-            .subtotal(order.getTotal())
-            .shopDiscount(order.getDiscount())
-            .shippingFee(order.getShippingFee())
-            .total(order.getGrandTotal())
-            .paymentMethod(paymentMethod.name())
-            .paymentStatusUrl("http://localhost:3000/status/" + paymentId )
-            .build();
-
-
+                .id(order.getId())
+                .orderDate(localDateTimeSpecificZone)
+                .seller(order.getStore().getName())
+                .items(itemEmails)
+                .subtotal(order.getTotal())
+                .shopDiscount(order.getDiscount())
+                .shippingFee(order.getShippingFee())
+                .total(order.getGrandTotal())
+                .paymentMethod(paymentMethod.name())
+                .paymentStatusUrl("http://localhost:3000/status/" + paymentId)
+                .build();
 
         Map<String, Object> variables = new HashMap<>();
         variables.putAll(Map.of(
-            "name", name,
-            "order", orderResponse
-        ));
+                "name", name,
+                "order", orderResponse));
 
         String htmlContent = renderTemplate("order-confirmation", variables);
 
@@ -146,5 +146,4 @@ public class EmailSender {
 
         log.info("Email sent to {}", email);
     }
-
 }

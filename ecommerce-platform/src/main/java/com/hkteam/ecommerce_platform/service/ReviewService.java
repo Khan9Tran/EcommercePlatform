@@ -6,23 +6,21 @@ import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hkteam.ecommerce_platform.dto.request.ReviewCreationRequest;
+import com.hkteam.ecommerce_platform.dto.request.ReviewUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.product.Product;
-import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.ReviewMapper;
-import com.hkteam.ecommerce_platform.repository.OrderRepository;
-import com.hkteam.ecommerce_platform.repository.ProductRepository;
-import com.hkteam.ecommerce_platform.repository.ReviewRepository;
-import com.hkteam.ecommerce_platform.repository.StoreRepository;
+import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 
@@ -42,6 +40,7 @@ public class ReviewService {
     OrderRepository orderRepository;
     ProductRepository productRepository;
     StoreRepository storeRepository;
+    ProductElasticsearchRepository productElasticsearchRepository;
 
     static String[] SORT_BY = {"createdAt"};
     static String[] ORDER_BY = {"asc", "desc"};
@@ -66,22 +65,34 @@ public class ReviewService {
             throw new AppException(ErrorCode.NOT_PURCHASED);
         }
 
-        boolean hasReviewed = reviewRepository.hasUserAlreadyReviewedOrder(user.getId(), order.getId());
-        if (hasReviewed) {
+        var products = order.getOrderItems().stream()
+                .map(OrderItem::getProduct)
+                .filter(product -> !reviewRepository.hasUserAlreadyReviewedProduct(user.getId(), product.getId()))
+                .collect(Collectors.toSet());
+        if (products.isEmpty()) {
             throw new AppException(ErrorCode.ALREADY_REVIEWED);
         }
-
-        var products = order.getOrderItems().stream().map(OrderItem::getProduct).collect(Collectors.toSet());
 
         Review review = reviewMapper.toReview(request);
         review.setUser(user);
         review.setProducts(new ArrayList<>(products));
 
         try {
-            reviewRepository.save(review);
             for (Product product : products) {
-                updateProductRating(product);
+                updateProductRating(product, request.getRating());
             }
+
+            reviewRepository.save(review);
+
+            var store = products.stream().toList().getFirst().getStore();
+            double newRating = store.getProducts().stream()
+                    .map((Product::getRating))
+                    .filter((Objects::nonNull))
+                    .mapToDouble(Float::doubleValue)
+                    .average()
+                    .orElse(0.0);
+
+            store.setRating(((float) newRating));
         } catch (DataIntegrityViolationException e) {
             log.error("Error while creating review: " + e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
@@ -90,27 +101,24 @@ public class ReviewService {
         return reviewMapper.toReviewResponse(review);
     }
 
-    private void updateProductRating(Product product) {
-        List<Review> reviews = reviewRepository.findAllReviewProductIdCommentAndMediaTotal(product.getId());
-        double averageRating =
-                reviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
-        float roundedRating = (float) (Math.round(averageRating * 10) / 10.0);
-        product.setRating(roundedRating);
+    private void updateProductRating(Product product, float ratingNew) {
+        var esPro = productElasticsearchRepository
+                .findById(product.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        float rating = 0;
+        if (Objects.isNull(product.getRating())) {
+            rating = ratingNew;
+        } else {
+            int numberOfRating = product.getReviews().size();
+            rating = (product.getRating() * numberOfRating + ratingNew) / (numberOfRating + 1);
+        }
+
+        product.setRating(rating);
+        esPro.setRating(rating);
+
         productRepository.save(product);
-
-        updateStoreRating(product.getStore());
-    }
-
-    private void updateStoreRating(Store store) {
-        Set<Product> products = store.getProducts();
-        double averageRating = products.stream()
-                .filter(p -> p.getRating() != null)
-                .mapToDouble(Product::getRating)
-                .average()
-                .orElse(0.0);
-        float storeRating = (float) (Math.round(averageRating * 10) / 10.0);
-        store.setRating(storeRating);
-        storeRepository.save(store);
+        productElasticsearchRepository.save(esPro);
     }
 
     public PaginationResponse<ReviewOneProductResponse> getReviewOneProduct(
@@ -204,5 +212,38 @@ public class ReviewService {
                 .totalComments(totalComments)
                 .totalWithMedia(totalWithMedia)
                 .build();
+    }
+
+    public ReviewResponse updateReview(Long reviewId, ReviewUpdateRequest request) {
+        Review review =
+                reviewRepository.findById(reviewId).orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
+
+        var user = authenticatedUserUtil.getAuthenticatedUser();
+        if (!review.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        reviewMapper.updateReview(review, request);
+
+        try {
+            reviewRepository.save(review);
+        } catch (Exception e) {
+            log.error("Error when update review: " + e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        return reviewMapper.toReviewResponse(review);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteReview(Long reviewId) {
+        Review review =
+                reviewRepository.findById(reviewId).orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
+        try {
+            reviewRepository.delete(review);
+        } catch (Exception e) {
+            log.error("Error when delete review: " + e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
     }
 }

@@ -23,6 +23,11 @@ public interface OrderMapper {
     @Mapping(source = "user.phone", target = "userPhone")
     @Mapping(source = "phone", target = "orderPhone")
     @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "store.name", target = "storeName")
+    @Mapping(source = "store.rating", target = "ratingStore")
+    @Mapping(source = "store.user.imageUrl", target = "avatarStore")
+    @Mapping(source = "store.id", target = "storeId")
+    @Mapping(source = "lastUpdatedAt", target = "lastUpdatedAt")
     @Mapping(source = "transaction.payment.paymentMethod", target = "paymentMethod")
     OrderResponseAdmin toOrderResponseAdmin(Order order);
 
