@@ -66,7 +66,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     @Query(
             value =
                     """
-					select o from Order o
+					select distinct o from Order o
 					join o.orderStatusHistories osh
 					join o.orderItems oi
 					join oi.product p
@@ -76,7 +76,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 						or (:storeName = '' or o.store.name like concat('%', :storeName, '%'))
 						or (:productName = '' or p.name like concat('%', :productName, '%'))
 					)
-					and osh = (
+					and osh in (
 						select osh1 from OrderStatusHistory osh1
 						where osh1.order = o
 						and (:statusName = '' or osh1.orderStatus.name = :statusName)

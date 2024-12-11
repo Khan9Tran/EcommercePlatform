@@ -60,7 +60,7 @@ public class OrderController {
     public ApiResponse<Void> cancelOrderBySeller(@PathVariable String orderId) {
         orderService.cancelOrderBySeller(orderId);
         return ApiResponse.<Void>builder()
-                .message("Cancelled order successfully")
+                .message("Cancelled order by seller successfully")
                 .build();
     }
 
@@ -100,7 +100,7 @@ public class OrderController {
     public ApiResponse<Void> cancelOrderByAdmin(@PathVariable String orderId) {
         orderService.cancelOrderByAdmin(orderId);
         return ApiResponse.<Void>builder()
-                .message("Cancelled order successfully")
+                .message("Cancelled order by admin successfully")
                 .build();
     }
 
@@ -131,7 +131,7 @@ public class OrderController {
     public ApiResponse<Void> cancelOrderByUser(@PathVariable String orderId) {
         orderService.cancelOrderByUser(orderId);
         return ApiResponse.<Void>builder()
-                .message("Cancelled order successfully")
+                .message("Cancelled order by user successfully")
                 .build();
     }
 

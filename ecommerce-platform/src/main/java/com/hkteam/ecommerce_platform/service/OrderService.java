@@ -31,10 +31,12 @@ import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.payment.Payment;
 import com.hkteam.ecommerce_platform.entity.payment.Transaction;
 import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
+import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.enums.PaymentMethod;
@@ -43,7 +45,6 @@ import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.OrderItemMapper;
 import com.hkteam.ecommerce_platform.mapper.OrderMapper;
-import com.hkteam.ecommerce_platform.mapper.ProductMapper;
 import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
@@ -73,13 +74,15 @@ public class OrderService {
     AddressRepository addressRepository;
     CartItemRepository cartItemRepository;
     CartRepository cartRepository;
-    ProductMapper productMapper;
     RabbitTemplate rabbitTemplate;
+    ProductElasticsearchRepository productElasticsearchRepository;
+    VariantRepository variantRepository;
 
     static String[] SORT_BY_SELLER = {"createdAt"};
     static String[] SORT_BY_ADMIN = {"createdAt"};
     static String[] SORT_BY_USER = {"createdAt"};
     static String[] ORDER_BY = {"asc", "desc"};
+    private final ProductService productService;
 
     @PreAuthorize("hasRole('SELLER')")
     public PaginationResponse<OrderResponseSeller> getAllOrderBySeller(
@@ -207,6 +210,7 @@ public class OrderService {
         }
     }
 
+    @Transactional
     @PreAuthorize("hasRole('SELLER')")
     public void cancelOrderBySeller(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
@@ -234,10 +238,32 @@ public class OrderService {
 
         order.getOrderStatusHistories().add(cancelledStatusHistory);
 
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Product product = orderItem.getProduct();
+            var esPro = productElasticsearchRepository
+                    .findById(orderItem.getProduct().getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            if (Objects.nonNull(product.getVariants()) && !product.getVariants().isEmpty()) {
+                Variant variant = product.getVariants().stream()
+                        .filter(v -> v.getValues().stream()
+                                .map(Value::getValue)
+                                .toList()
+                                .equals(orderItem.getValues()))
+                        .findFirst()
+                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+
+                variantRepository.updateQuantityById(variant.getQuantity() + orderItem.getQuantity(), variant.getId());
+            }
+            product.setQuantity(product.getQuantity() + orderItem.getQuantity());
+            productRepository.save(product);
+            esPro.setQuantity(esPro.getQuantity() + orderItem.getQuantity());
+            productElasticsearchRepository.save(esPro);
+        }
+
         try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
-            log.error("Error while cancelling order: {}", e.getMessage());
+            log.error("Error while cancelling order by seller: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -292,6 +318,15 @@ public class OrderService {
             orderResponseAdmin.setCurrentStatusTransaction(
                     lastTransactionStatusHistory.getTransactionStatus().getName());
 
+            Address address = addressRepository
+                    .findById(order.getStore().getDefaultAddressId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
+            orderResponseAdmin.setStoreProvince(address.getProvince());
+            orderResponseAdmin.setStoreDistrict(address.getDistrict());
+            orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
+            orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
+            orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+
             List<OrderItemResponseAdmin> orderItemResponseAdmins =
                     orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
             orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
@@ -337,6 +372,15 @@ public class OrderService {
                 orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
         orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
 
+        Address address = addressRepository
+                .findById(order.getStore().getDefaultAddressId())
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
+        orderResponseAdmin.setStoreProvince(address.getProvince());
+        orderResponseAdmin.setStoreDistrict(address.getDistrict());
+        orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
+        orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
+        orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+
         return orderResponseAdmin;
     }
 
@@ -360,16 +404,20 @@ public class OrderService {
                         .remarks(order.getOrderStatusHistories().getLast().getRemarks())
                         .build());
         try {
-            if (order.getTransaction().getPayment().getPaymentMethod().name().equals(PaymentMethod.COD.name()) && nextStatus.equals(orderStatusRepository.findByName(OrderStatusName.DELIVERED.name()).orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))) {
+            if (order.getTransaction().getPayment().getPaymentMethod().name().equals(PaymentMethod.COD.name())
+                    && nextStatus.equals(orderStatusRepository
+                            .findByName(OrderStatusName.DELIVERED.name())
+                            .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))) {
 
-                order.getTransaction().getTransactionStatusHistories().add(TransactionStatusHistory.builder()
-                        .transactionStatus(
-                                transactionStatusRepository.findById(TransactionStatusName.SUCCESS.name())
-                                        .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND))
-                                        )
-                        .remarks("Payment COD completed.")
-                        .transaction(order.getTransaction())
-                        .build());
+                order.getTransaction()
+                        .getTransactionStatusHistories()
+                        .add(TransactionStatusHistory.builder()
+                                .transactionStatus(transactionStatusRepository
+                                        .findById(TransactionStatusName.SUCCESS.name())
+                                        .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))
+                                .remarks("Payment COD completed.")
+                                .transaction(order.getTransaction())
+                                .build());
             }
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
@@ -378,6 +426,7 @@ public class OrderService {
         }
     }
 
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public void cancelOrderByAdmin(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
@@ -401,10 +450,32 @@ public class OrderService {
 
         order.getOrderStatusHistories().add(cancelledStatusHistory);
 
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Product product = orderItem.getProduct();
+            var esPro = productElasticsearchRepository
+                    .findById(orderItem.getProduct().getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            if (Objects.nonNull(product.getVariants()) && !product.getVariants().isEmpty()) {
+                Variant variant = product.getVariants().stream()
+                        .filter(v -> v.getValues().stream()
+                                .map(Value::getValue)
+                                .toList()
+                                .equals(orderItem.getValues()))
+                        .findFirst()
+                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+
+                variantRepository.updateQuantityById(variant.getQuantity() + orderItem.getQuantity(), variant.getId());
+            }
+            product.setQuantity(product.getQuantity() + orderItem.getQuantity());
+            productRepository.save(product);
+            esPro.setQuantity(esPro.getQuantity() + orderItem.getQuantity());
+            productElasticsearchRepository.save(esPro);
+        }
+
         try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
-            log.error("Error while cancelling order: {}", e.getMessage());
+            log.error("Error while cancelling order by admin: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -518,6 +589,7 @@ public class OrderService {
         return orderResponseUser;
     }
 
+    @Transactional
     @PreAuthorize("hasRole('USER')")
     public void cancelOrderByUser(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
@@ -546,10 +618,33 @@ public class OrderService {
 
         order.getOrderStatusHistories().add(cancelledStatusHistory);
 
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Product product = orderItem.getProduct();
+
+            var esPro = productElasticsearchRepository
+                    .findById(orderItem.getProduct().getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            if (Objects.nonNull(product.getVariants()) && !product.getVariants().isEmpty()) {
+                Variant variant = product.getVariants().stream()
+                        .filter(v -> v.getValues().stream()
+                                .map(Value::getValue)
+                                .toList()
+                                .equals(orderItem.getValues()))
+                        .findFirst()
+                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+
+                variantRepository.updateQuantityById(variant.getQuantity() + orderItem.getQuantity(), variant.getId());
+            }
+            product.setQuantity(product.getQuantity() + orderItem.getQuantity());
+            productRepository.save(product);
+            esPro.setQuantity(esPro.getQuantity() + orderItem.getQuantity());
+            productElasticsearchRepository.save(esPro);
+        }
+
         try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
-            log.error("Error while cancelling order: {}", e.getMessage());
+            log.error("Error while cancelling order by user: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }

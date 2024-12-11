@@ -245,7 +245,7 @@ public class StoreService {
 
         Set<Address> addresses = user.getAddresses();
         if (addresses == null || addresses.isEmpty()) {
-            throw new AppException(ErrorCode.ADDRESS_NOT_FOUND);
+            throw new AppException(ErrorCode.ADDRESS_MESSAGE);
         }
 
         return addresses.stream()

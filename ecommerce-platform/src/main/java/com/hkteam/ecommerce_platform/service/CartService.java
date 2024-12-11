@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -73,7 +74,10 @@ public class CartService {
     }
 
     List<CartItem> filterNotCheckout(List<CartItem> cartItems) {
-        return cartItems.stream().filter(cartItem -> !cartItem.isCheckout()).toList();
+        return cartItems.stream()
+                .filter(cartItem -> !cartItem.isCheckout())
+                .sorted(Comparator.comparing(CartItem::getCreatedAt).reversed())
+                .toList();
     }
 
     CartResponse setItems(CartResponse cartResponse, Cart cart) {

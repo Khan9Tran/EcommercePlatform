@@ -46,6 +46,13 @@ public class OrderResponseAdmin {
     Float ratingStore;
     String storeId;
     Instant lastUpdatedAt;
+    String storeAccountName;
+    String storePhone;
+    String storeProvince;
+    String storeDistrict;
+    String storeSubDistrict;
+    String storeDetailAddress;
+    String storeDetailLocate;
 
     List<OrderItemResponseAdmin> orderItems;
 }
