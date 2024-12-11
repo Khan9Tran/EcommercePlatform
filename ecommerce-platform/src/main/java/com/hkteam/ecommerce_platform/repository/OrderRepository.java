@@ -23,7 +23,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 					select o from Order o
 					join o.orderStatusHistories osh
 					where o.store.id = :storeId
-					and (:orderId = '' or o.id like %:orderId%)
+					and (:orderId = '' or lower(o.id) like lower(concat('%', :orderId, '%')))
 					and osh in (
 							select osh1 from OrderStatusHistory osh1
 							where osh1.order = o
@@ -33,7 +33,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 							)
 						)
 			""")
-    Page<Order> findAllOrderByStore(
+    Page<Order> findAllOrderBySeller(
             @Nullable String storeId, @Nullable String orderId, @Nullable String statusName, Pageable pageable);
 
     @Query(
@@ -43,9 +43,9 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 					join o.orderStatusHistories osh
 					where
 					(
-						(:orderId = '' or o.id like concat('%', :orderId, '%'))
-						or (:phone = '' or o.phone like concat('%', :phone, '%'))
-						or (:province = '' or o.province like concat('%', :province, '%'))
+						(:orderId = '' or lower(o.id) like lower(concat('%', :orderId, '%')))
+						or (:phone = '' or lower(o.phone) like lower(concat('%', :phone, '%')))
+						or (:province = '' or lower(o.province) like lower(concat('%', :province, '%')))
 					)
 					and osh = (
 						select osh1 from OrderStatusHistory osh1
@@ -72,9 +72,9 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 					join oi.product p
 					where o.user.id = :userId
 					and (
-						(:orderId = '' or o.id like concat('%', :orderId, '%'))
-						or (:storeName = '' or o.store.name like concat('%', :storeName, '%'))
-						or (:productName = '' or p.name like concat('%', :productName, '%'))
+						(:orderId = '' or lower(o.id) like lower(concat('%', :orderId, '%')))
+						or (:storeName = '' or lower(o.store.name) like lower(concat('%', :storeName, '%')))
+						or (:productName = '' or lower(p.name) like lower(concat('%', :productName, '%')))
 					)
 					and osh in (
 						select osh1 from OrderStatusHistory osh1

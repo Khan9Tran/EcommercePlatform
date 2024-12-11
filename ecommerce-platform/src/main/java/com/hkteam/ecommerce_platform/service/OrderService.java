@@ -100,7 +100,7 @@ public class OrderService {
                 : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
 
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = orderRepository.findAllOrderByStore(storeId, search, filter, pageable);
+        var pageData = orderRepository.findAllOrderBySeller(storeId, search, filter, pageable);
 
         int page = Integer.parseInt(pageStr);
 
