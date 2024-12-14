@@ -101,4 +101,12 @@ public class StoreController {
         storeService.unblockStore(storeId);
         return ApiResponse.<Void>builder().build();
     }
+
+    @Operation(summary = "Get store statistic", description = "Api get store statistic")
+    @GetMapping("/statistic")
+    public ApiResponse<StoreStatisticsResponse> getStoreStatistic() {
+        return ApiResponse.<StoreStatisticsResponse>builder()
+                .result(storeService.getStoreStatistic())
+                .build();
+    }
 }

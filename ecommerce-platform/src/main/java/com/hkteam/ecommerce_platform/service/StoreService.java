@@ -1,7 +1,11 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
 import com.hkteam.ecommerce_platform.dto.request.StoreUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
+import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
+import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.enums.RoleName;
@@ -293,5 +299,112 @@ public class StoreService {
         });
         elasticsearchRepository.saveAll(esPro);
         storeRepository.save(store);
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    public StoreStatisticsResponse getStoreStatistic() {
+        var store = authenticatedUserUtil.getAuthenticatedUser().getStore();
+        if (Objects.isNull(store)) {
+            throw new AppException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        Map<String, Long> orderStatusCounts = store.getOrders().stream()
+                .filter(order -> Objects.nonNull(order.getOrderStatusHistories())
+                        && !order.getOrderStatusHistories().isEmpty())
+                .collect(Collectors.groupingBy(
+                        order -> {
+                            var latestStatusHistory = order.getOrderStatusHistories().stream()
+                                    .max(Comparator.comparing(OrderStatusHistory::getCreatedAt));
+                            return latestStatusHistory
+                                    .map(orderStatusHistory ->
+                                            orderStatusHistory.getOrderStatus().getName())
+                                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
+                        },
+                        Collectors.counting()));
+
+        long numberOfOrdersConfirmed = orderStatusCounts.getOrDefault("CONFIRMED", 0L);
+        long numberOfOrdersPreparing = orderStatusCounts.getOrDefault("PREPARING", 0L);
+        long numberOfOrdersWaitingForShipping = orderStatusCounts.getOrDefault("WAITING_FOR_SHIPPING", 0L);
+        long numberOfOrdersCancelled = orderStatusCounts.getOrDefault("CANCELLED", 0L);
+
+        long numberOfProductsTemporarilyBlocked =
+                store.getProducts().stream().filter(Product::isBlocked).count();
+        long numberOfProductsOutOfStock = store.getProducts().stream()
+                .filter(product -> product.getQuantity() == 0 && !product.isBlocked())
+                .count();
+
+        List<StoreSalesLastSevenDay> storeSalesLastSevenDays = IntStream.rangeClosed(0, 6)
+                .mapToObj(day -> {
+                    LocalDate targetDate = LocalDate.now().minusDays(day);
+                    BigDecimal dailySales = store.getOrders().stream()
+                            .filter(order -> {
+                                var latestStatusHistory = order.getOrderStatusHistories().stream()
+                                        .max(Comparator.comparing(OrderStatusHistory::getCreatedAt));
+
+                                return latestStatusHistory.isPresent()
+                                        && "DELIVERED"
+                                                .equals(latestStatusHistory
+                                                        .get()
+                                                        .getOrderStatus()
+                                                        .getName());
+                            })
+                            .filter(order -> {
+                                LocalDate latestStatusDate = order.getOrderStatusHistories().stream()
+                                        .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
+                                        .map(OrderStatusHistory::getCreatedAt)
+                                        .map(instant -> instant.atZone(ZoneId.systemDefault())
+                                                .toLocalDate())
+                                        .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
+                                return latestStatusDate.equals(targetDate);
+                            })
+                            .map(order -> order.getTotal().subtract(order.getDiscount()))
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    return StoreSalesLastSevenDay.builder()
+                            .date(targetDate.toString())
+                            .revenue(dailySales)
+                            .build();
+                })
+                .toList();
+
+        BigDecimal dailyRevenue = store.getOrders().stream()
+                .filter(order -> {
+                    var latestStatusHistory = order.getOrderStatusHistories().stream()
+                            .max(Comparator.comparing(OrderStatusHistory::getCreatedAt));
+
+                    return latestStatusHistory.isPresent()
+                            && "DELIVERED"
+                                    .equals(latestStatusHistory
+                                            .get()
+                                            .getOrderStatus()
+                                            .getName());
+                })
+                .filter(order -> {
+                    LocalDate latestStatusDate = order.getOrderStatusHistories().stream()
+                            .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
+                            .map(OrderStatusHistory::getCreatedAt)
+                            .map(instant ->
+                                    instant.atZone(ZoneId.systemDefault()).toLocalDate())
+                            .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
+                    return latestStatusDate.equals(LocalDate.now());
+                })
+                .map(order -> order.getTotal().subtract(order.getDiscount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        long numberOfOrdersDelivered = orderStatusCounts.getOrDefault("DELIVERED", 0L);
+        long numberOfOrdersPending = orderStatusCounts.getOrDefault("PENDING", 0L);
+
+        return StoreStatisticsResponse.builder()
+                .numberOfOrdersConfirmed(numberOfOrdersConfirmed)
+                .numberOfOrdersPreparing(numberOfOrdersPreparing)
+                .numberOfOrdersWaitingForShipping(numberOfOrdersWaitingForShipping)
+                .numberOfOrdersCancelled(numberOfOrdersCancelled)
+                .numberOfProductsTemporarilyBlocked(numberOfProductsTemporarilyBlocked)
+                .numberOfProductsOutOfStock(numberOfProductsOutOfStock)
+                .storeSalesLastSevenDays(storeSalesLastSevenDays)
+                .dailyRevenue(dailyRevenue)
+                .numberOfOrdersDelivered(numberOfOrdersDelivered)
+                .numberOfOrdersPending(numberOfOrdersPending)
+                .build();
     }
 }

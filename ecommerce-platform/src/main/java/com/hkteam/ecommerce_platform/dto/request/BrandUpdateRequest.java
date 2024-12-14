@@ -1,11 +1,8 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
-import com.hkteam.ecommerce_platform.validator.ValidSpace;
+import jakarta.validation.constraints.NotBlank;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
@@ -14,9 +11,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class BrandUpdateRequest {
-    @ValidSpace
+    @NonNull
+    @NotBlank(message = "NOT_BLANK")
     String name;
 
-    @ValidSpace
     String description;
 }
