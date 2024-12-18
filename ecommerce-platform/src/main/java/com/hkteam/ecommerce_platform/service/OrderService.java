@@ -82,7 +82,6 @@ public class OrderService {
     static String[] SORT_BY_ADMIN = {"createdAt"};
     static String[] SORT_BY_USER = {"createdAt"};
     static String[] ORDER_BY = {"asc", "desc"};
-    private final ProductService productService;
 
     @PreAuthorize("hasRole('SELLER')")
     public PaginationResponse<OrderResponseSeller> getAllOrderBySeller(
@@ -295,37 +294,31 @@ public class OrderService {
         PageUtils.validatePageBounds(page, pageData);
         List<OrderResponseAdmin> orderResponseAdmins = new ArrayList<>();
         pageData.getContent().forEach((order -> {
-            OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
-                    .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
-                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
+                OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
+                        .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
+                        .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
 
-            TransactionStatusHistory lastTransactionStatusHistory =
-                    order.getTransaction().getTransactionStatusHistories().stream()
-                            .max(Comparator.comparing(TransactionStatusHistory::getCreatedAt))
-                            .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_STATUS_HISTORY_NOT_FOUND));
-            OrderResponseAdmin orderResponseAdmin = orderMapper.toOrderResponseAdmin(order);
+                TransactionStatusHistory lastTransactionStatusHistory =
+                        order.getTransaction().getTransactionStatusHistories().stream()
+                                .max(Comparator.comparing(TransactionStatusHistory::getCreatedAt))
+                                .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_STATUS_HISTORY_NOT_FOUND));
+                OrderResponseAdmin orderResponseAdmin = orderMapper.toOrderResponseAdmin(order);
 
-            String defaultAddressStr = String.format(
-                    "%s%s, %s, %s, %s",
-                    order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
-                    order.getDetailAddress(),
-                    order.getSubDistrict(),
-                    order.getDistrict(),
-                    order.getProvince());
-            orderResponseAdmin.setDefaultAddressStr(defaultAddressStr);
-            orderResponseAdmin.setCurrentStatus(
-                    lastStatusHistory.getOrderStatus().getName());
-            orderResponseAdmin.setCurrentStatusTransaction(
-                    lastTransactionStatusHistory.getTransactionStatus().getName());
+                String defaultAddressStr = String.format(
+                        "%s%s, %s, %s, %s",
+                        order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
+                        order.getDetailAddress(),
+                        order.getSubDistrict(),
+                        order.getDistrict(),
+                        order.getProvince());
+                orderResponseAdmin.setDefaultAddressStr(defaultAddressStr);
+                orderResponseAdmin.setCurrentStatus(
+                        lastStatusHistory.getOrderStatus().getName());
+                orderResponseAdmin.setCurrentStatusTransaction(
+                        lastTransactionStatusHistory.getTransactionStatus().getName());
 
-            Address address = addressRepository
-                    .findById(order.getStore().getDefaultAddressId())
-                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
-            orderResponseAdmin.setStoreProvince(address.getProvince());
-            orderResponseAdmin.setStoreDistrict(address.getDistrict());
-            orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
-            orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
-            orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+
+            addStoreAddress(order, orderResponseAdmin);
 
             List<OrderItemResponseAdmin> orderItemResponseAdmins =
                     orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
@@ -372,16 +365,23 @@ public class OrderService {
                 orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
         orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
 
-        Address address = addressRepository
-                .findById(order.getStore().getDefaultAddressId())
-                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
-        orderResponseAdmin.setStoreProvince(address.getProvince());
-        orderResponseAdmin.setStoreDistrict(address.getDistrict());
-        orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
-        orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
-        orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+        addStoreAddress(order, orderResponseAdmin);
 
         return orderResponseAdmin;
+    }
+
+    private void addStoreAddress(Order order, OrderResponseAdmin orderResponseAdmin) {
+        if (Objects.nonNull(order.getStore().getDefaultAddressId())) {
+            Address address = addressRepository
+                    .findById(order.getStore().getDefaultAddressId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
+
+            orderResponseAdmin.setStoreProvince(address.getProvince());
+            orderResponseAdmin.setStoreDistrict(address.getDistrict());
+            orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
+            orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
+            orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
