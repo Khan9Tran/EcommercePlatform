@@ -155,42 +155,6 @@ public class AdminService {
                 .build();
     }
 
-    //    @PreAuthorize("hasRole('ADMIN')")
-    //    public RevenueOneYearResponse getRevenueOneYear(String year) {
-    //        int yearInt;
-    //        try {
-    //            yearInt = Integer.parseInt(year);
-    //        } catch (NumberFormatException e) {
-    //            yearInt = LocalDate.now().getYear();
-    //        }
-    //
-    //        Instant startDate = LocalDate.of(yearInt, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC);
-    //        Instant endDate = LocalDate.of(yearInt, 12, 31).atStartOfDay().toInstant(ZoneOffset.UTC);
-    //
-    //        List<RevenueOneDayResponse> revenueOneDayResponses = new ArrayList<>();
-    //        Instant currentDate = startDate;
-    //
-    //        while (!currentDate.isAfter(endDate)) {
-    //            Instant nextDate = currentDate.plusSeconds(86400);
-    //
-    //            BigDecimal dailyRevenue = oshRepository.calculateDailyRevenue("DELIVERED", currentDate, nextDate);
-    //
-    //            String formattedDate =
-    //                    LocalDate.ofInstant(currentDate, ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE);
-    //
-    //            revenueOneDayResponses.add(RevenueOneDayResponse.builder()
-    //                    .revenue(dailyRevenue != null ? dailyRevenue : BigDecimal.ZERO)
-    //                    .date(formattedDate)
-    //                    .build());
-    //
-    //            currentDate = nextDate;
-    //        }
-    //
-    //        return RevenueOneYearResponse.builder()
-    //                .revenueOneDayResponses(revenueOneDayResponses)
-    //                .build();
-    //    }
-
     @PreAuthorize("hasRole('ADMIN')")
     public RevenueOneYearResponse getRevenueOneYear(String year, String month) {
         int yearInt;
@@ -198,17 +162,20 @@ public class AdminService {
 
         try {
             yearInt = Integer.parseInt(year);
+            if (yearInt < 2020) {
+                throw new AppException(ErrorCode.INVALID_YEAR);
+            }
         } catch (NumberFormatException e) {
-            yearInt = LocalDate.now().getYear();
+            throw new AppException(ErrorCode.INVALID_YEAR);
         }
 
         try {
             monthInt = Integer.parseInt(month);
             if (monthInt < 1 || monthInt > 12) {
-                throw new AppException(ErrorCode.UNKNOWN_ERROR);
+                throw new AppException(ErrorCode.INVALID_MONTH);
             }
         } catch (NumberFormatException e) {
-            monthInt = LocalDate.now().getMonthValue();
+            throw new AppException(ErrorCode.INVALID_MONTH);
         }
 
         LocalDate firstDayOfMonth = LocalDate.of(yearInt, monthInt, 1);
@@ -236,8 +203,11 @@ public class AdminService {
             currentDate = nextDate;
         }
 
+        BigDecimal totalRevenueOneYear = oshRepository.calculateTotalRevenueOneYear(yearInt);
+
         return RevenueOneYearResponse.builder()
                 .revenueOneDayResponses(revenueOneDayResponses)
+                .totalRevenueOneYear(totalRevenueOneYear)
                 .build();
     }
 }

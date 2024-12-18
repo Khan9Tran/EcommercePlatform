@@ -37,8 +37,8 @@ public class AdminController {
     @Operation(summary = "Get revenue one year", description = "Api get revenue one year")
     @GetMapping("/revenue")
     public ApiResponse<RevenueOneYearResponse> getRevenueOneYear(
-            @RequestParam(value = "year", required = false, defaultValue = "") String year,
-            @RequestParam(value = "month", required = false, defaultValue = "") String month) {
+            @RequestParam(value = "year", required = false) String year,
+            @RequestParam(value = "month", required = false) String month) {
         return ApiResponse.<RevenueOneYearResponse>builder()
                 .result(adminService.getRevenueOneYear(year, month))
                 .build();

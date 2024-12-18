@@ -139,6 +139,8 @@ public enum ErrorCode {
     ALREADY_REVIEWED(1721, "You reviewed this product", HttpStatus.BAD_REQUEST),
     SIZE_TOO_LARGE(1722, "Size too large", HttpStatus.BAD_REQUEST),
     ADDRESS_MESSAGE(1051, "Please add pickup address", HttpStatus.NOT_FOUND),
+    INVALID_MONTH(1723, "Month must be a positive integer between 1 and 12", HttpStatus.BAD_REQUEST),
+    INVALID_YEAR(1724, "Year must be a positive integer greater than 2020", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

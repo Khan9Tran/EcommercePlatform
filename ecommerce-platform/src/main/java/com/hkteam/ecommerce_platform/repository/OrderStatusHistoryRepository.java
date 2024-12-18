@@ -13,11 +13,16 @@ import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 
 @Repository
 public interface OrderStatusHistoryRepository extends JpaRepository<OrderStatusHistory, String> {
-    @Query("select count(osh) " + "from OrderStatusHistory osh "
-            + "where osh.orderStatus.name = :statusName "
-            + "and osh.createdAt = (select max(subOsh.createdAt) "
-            + "                     from OrderStatusHistory subOsh "
-            + "                     where subOsh.order.id = osh.order.id)")
+    @Query(
+            """
+			select count(osh) from OrderStatusHistory osh
+			where osh.orderStatus.name = :statusName
+			and osh.createdAt = (
+				select max(osh2.createdAt)
+				from OrderStatusHistory osh2
+				where osh2.order.id = osh.order.id
+			)
+			""")
     long countByLatestStatus(@Param("statusName") String statusName);
 
     @Query(
@@ -66,12 +71,34 @@ public interface OrderStatusHistoryRepository extends JpaRepository<OrderStatusH
 	""")
     List<Object[]> findTop5StoresByRevenueRaw();
 
-    @Query("SELECT SUM(o.grandTotal) FROM OrderStatusHistory osh " + "JOIN osh.order o "
-            + "WHERE osh.orderStatus.name = :statusName "
-            + "AND osh.createdAt = (SELECT MAX(sub.createdAt) FROM OrderStatusHistory sub WHERE sub.order = osh.order) "
-            + "AND osh.createdAt >= :startDate AND osh.createdAt < :endDate")
+    @Query(
+            """
+			select sum(o.grandTotal) from OrderStatusHistory osh join osh.order o
+			where osh.orderStatus.name = :statusName
+			and osh.createdAt = (
+				select max (osh2.createdAt)
+				from OrderStatusHistory osh2
+				where osh2.order.id = osh.order.id
+			)
+			and osh.createdAt >= :startDate and osh.createdAt < :endDate
+			""")
     BigDecimal calculateDailyRevenue(
             @Param("statusName") String statusName,
             @Param("startDate") Instant startDate,
             @Param("endDate") Instant endDate);
+
+    @Query(
+            """
+			select distinct coalesce(sum(o.grandTotal), 0)
+			from OrderStatusHistory osh
+			join osh.order o
+			where osh.orderStatus.name = 'DELIVERED'
+			and osh.createdAt = (
+				select max (osh2.createdAt)
+				from OrderStatusHistory osh2
+				where osh2.order = osh.order
+			)
+			and date_part('year', cast(osh.createdAt as timestamp)) = :year
+			""")
+    BigDecimal calculateTotalRevenueOneYear(@Param("year") int year);
 }

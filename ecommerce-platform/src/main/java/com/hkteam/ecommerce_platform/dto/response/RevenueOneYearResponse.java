@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -15,4 +16,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class RevenueOneYearResponse {
     List<RevenueOneDayResponse> revenueOneDayResponses;
+    BigDecimal totalRevenueOneYear;
 }
