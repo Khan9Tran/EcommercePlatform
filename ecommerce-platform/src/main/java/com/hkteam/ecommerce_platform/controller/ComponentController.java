@@ -64,8 +64,10 @@ public class ComponentController {
     @GetMapping()
     public ApiResponse<PaginationResponse<ComponentResponse>> getAllComponents(
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
-            @RequestParam(value = "size", required = false, defaultValue = "10") String size) {
-        PaginationResponse<ComponentResponse> paginationResponse = componentService.getAllComponents(page, size);
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search
+            ) {
+        PaginationResponse<ComponentResponse> paginationResponse = componentService.getAllComponents(page, size, search);
 
         return ApiResponse.<PaginationResponse<ComponentResponse>>builder()
                 .result(paginationResponse)

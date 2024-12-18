@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 import com.hkteam.ecommerce_platform.entity.category.Component;
@@ -22,4 +23,7 @@ public interface ComponentRepository extends JpaRepository<Component, Long> {
     Page<Component> findAll(@NotNull Pageable pageable);
 
     List<Component> findByCategoriesId(Long id);
+
+    Page<Component> findByNameContainsIgnoreCase(@Nullable String name, Pageable pageable);
+
 }
