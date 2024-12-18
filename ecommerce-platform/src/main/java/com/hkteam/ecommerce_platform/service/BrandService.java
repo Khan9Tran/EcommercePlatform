@@ -38,7 +38,7 @@ public class BrandService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public BrandResponse createBrand(BrandCreationRequest request) {
-        if (brandRepository.existsByNameIgnoreCase(request.getName())) {
+        if (brandRepository.existsByNameIgnoreCaseAndIsDeletedFalse(request.getName())) {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
 
@@ -48,7 +48,7 @@ public class BrandService {
             brandRepository.save(brand);
         } catch (DataIntegrityViolationException e) {
             log.info("Error while creating brand: {}", e.getMessage());
-            throw new AppException(ErrorCode.BRAND_LATER_EXISTED);
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         return brandMapper.toBrandResponse(brand);
@@ -58,7 +58,7 @@ public class BrandService {
     public BrandResponse updateBrand(Long id, BrandUpdateRequest request) {
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
-        boolean isDuplicateName = brandRepository.existsByNameIgnoreCase(request.getName())
+        boolean isDuplicateName = brandRepository.existsByNameIgnoreCaseAndIsDeletedFalse(request.getName())
                 && !brand.getName().equalsIgnoreCase(request.getName());
         if (isDuplicateName) {
             throw new AppException(ErrorCode.BRAND_DUPLICATE);

@@ -320,7 +320,7 @@ public class OrderService {
 
             Address address = addressRepository
                     .findById(order.getStore().getDefaultAddressId())
-                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
             orderResponseAdmin.setStoreProvince(address.getProvince());
             orderResponseAdmin.setStoreDistrict(address.getDistrict());
             orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
@@ -374,7 +374,7 @@ public class OrderService {
 
         Address address = addressRepository
                 .findById(order.getStore().getDefaultAddressId())
-                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
         orderResponseAdmin.setStoreProvince(address.getProvince());
         orderResponseAdmin.setStoreDistrict(address.getDistrict());
         orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());

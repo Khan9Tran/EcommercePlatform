@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.repository;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.hkteam.ecommerce_platform.entity.user.User;
@@ -46,4 +48,14 @@ public interface UserRepository extends JpaRepository<User, String> {
 		or lower(u.name) like lower(concat('%', ?3, '%')))
 		""")
     Page<User> search(Collection<RoleName> names, String username, String name, Pageable pageable);
+
+    long countByRolesName(@NotNull RoleName roleName);
+
+    @Query(
+            """
+		select count(u) from User u join u.roles roles
+		where roles.name in :roleName and u.createdAt < :startDate
+		""")
+    long countCustomersCreatedSince(
+            @Param("roleName") Collection<RoleName> roleName, @Param("startDate") Instant startDate);
 }
