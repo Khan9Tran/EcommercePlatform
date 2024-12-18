@@ -82,7 +82,6 @@ public class OrderService {
     static String[] SORT_BY_ADMIN = {"createdAt"};
     static String[] SORT_BY_USER = {"createdAt"};
     static String[] ORDER_BY = {"asc", "desc"};
-    private final ProductService productService;
 
     @PreAuthorize("hasRole('SELLER')")
     public PaginationResponse<OrderResponseSeller> getAllOrderBySeller(
@@ -318,14 +317,7 @@ public class OrderService {
             orderResponseAdmin.setCurrentStatusTransaction(
                     lastTransactionStatusHistory.getTransactionStatus().getName());
 
-            Address address = addressRepository
-                    .findById(order.getStore().getDefaultAddressId())
-                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-            orderResponseAdmin.setStoreProvince(address.getProvince());
-            orderResponseAdmin.setStoreDistrict(address.getDistrict());
-            orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
-            orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
-            orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+            addStoreAddress(order, orderResponseAdmin);
 
             List<OrderItemResponseAdmin> orderItemResponseAdmins =
                     orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
@@ -372,16 +364,23 @@ public class OrderService {
                 orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
         orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
 
-        Address address = addressRepository
-                .findById(order.getStore().getDefaultAddressId())
-                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
-        orderResponseAdmin.setStoreProvince(address.getProvince());
-        orderResponseAdmin.setStoreDistrict(address.getDistrict());
-        orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
-        orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
-        orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+        addStoreAddress(order, orderResponseAdmin);
 
         return orderResponseAdmin;
+    }
+
+    private void addStoreAddress(Order order, OrderResponseAdmin orderResponseAdmin) {
+        if (Objects.nonNull(order.getStore().getDefaultAddressId())) {
+            Address address = addressRepository
+                    .findById(order.getStore().getDefaultAddressId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
+
+            orderResponseAdmin.setStoreProvince(address.getProvince());
+            orderResponseAdmin.setStoreDistrict(address.getDistrict());
+            orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
+            orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
+            orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")

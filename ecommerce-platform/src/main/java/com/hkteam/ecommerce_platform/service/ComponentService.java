@@ -50,11 +50,11 @@ public class ComponentService {
         return componentMapper.toComponentResponse(component);
     }
 
-    public PaginationResponse<ComponentResponse> getAllComponents(String pageStr, String sizeStr) {
+    public PaginationResponse<ComponentResponse> getAllComponents(String pageStr, String sizeStr, String search) {
         Sort sort = Sort.by("createdAt").descending();
         Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sort);
 
-        var pageData = componentRepository.findAll(pageable);
+        var pageData = componentRepository.findByNameContainsIgnoreCase(search, pageable);
         int page = Integer.parseInt(pageStr);
 
         PageUtils.validatePageBounds(page, pageData);
