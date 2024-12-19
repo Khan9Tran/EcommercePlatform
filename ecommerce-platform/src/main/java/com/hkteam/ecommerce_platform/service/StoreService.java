@@ -163,7 +163,7 @@ public class StoreService {
     public StoreRegistrationResponse registerStore(StoreRegistrationRequest request) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
-        if (!Objects.isNull(user.getStore())) {
+        if (Objects.nonNull(user.getStore())) {
             throw new AppException(ErrorCode.SELLER_ALREADY_REGISTER);
         }
 
@@ -180,7 +180,7 @@ public class StoreService {
         try {
             storeRepository.save(store);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while creating category: {}", e.getMessage());
+            log.info("Error while register store: " + e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 

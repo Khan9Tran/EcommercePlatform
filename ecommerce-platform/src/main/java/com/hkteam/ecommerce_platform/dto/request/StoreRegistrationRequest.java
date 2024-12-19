@@ -1,11 +1,8 @@
 package com.hkteam.ecommerce_platform.dto.request;
 
-import com.hkteam.ecommerce_platform.validator.ValidSpace;
+import jakarta.validation.constraints.Size;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
@@ -14,8 +11,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class StoreRegistrationRequest {
-    @ValidSpace
+    @Size(min = 3, max = 30, message = "MIN_MAX_INVALID")
     String name;
 
+    @Size(max = 255, message = "MAX_INVALID")
     String bio;
 }

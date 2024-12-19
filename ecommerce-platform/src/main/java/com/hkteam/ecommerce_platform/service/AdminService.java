@@ -21,6 +21,7 @@ import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.OrderStatusHistoryRepository;
+import com.hkteam.ecommerce_platform.repository.StoreRepository;
 import com.hkteam.ecommerce_platform.repository.UserRepository;
 
 import lombok.AccessLevel;
@@ -35,90 +36,96 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminService {
     OrderStatusHistoryRepository oshRepository;
     UserRepository userRepository;
+    StoreRepository storeRepository;
+
+    static final String IS_DAY = "isDay";
+    static final String IS_WEEK = "isWeek";
+    static final String IS_MONTH = "isMonth";
+    static final String IS_YEAR = "isYear";
 
     @PreAuthorize("hasRole('ADMIN')")
     public AdminStatisticsResponse getAdminStatistic() {
-        long numberOfOrdersWaitingForShipping = oshRepository.countByLatestStatus("WAITING_FOR_SHIPPING");
-        long numberOfOrdersPickedUp = oshRepository.countByLatestStatus("PICKED_UP");
-        long numberOfOrdersOutForDelivery = oshRepository.countByLatestStatus("OUT_FOR_DELIVERY");
-        long numberOfOrdersCancelled = oshRepository.countByLatestStatus("CANCELLED");
-        long numberOfOrdersDelivered = oshRepository.countByLatestStatus("DELIVERED");
-        long numberOfOrdersPending = oshRepository.countByLatestStatus("PENDING");
+        long numberOfOrdersWaitingForShipping = getNumberOfOrdersByStatus("WAITING_FOR_SHIPPING");
+        long numberOfOrdersPickedUp = getNumberOfOrdersByStatus("PICKED_UP");
+        long numberOfOrdersOutForDelivery = getNumberOfOrdersByStatus("OUT_FOR_DELIVERY");
+        long numberOfOrdersCancelled = getNumberOfOrdersByStatus("CANCELLED");
+        long numberOfOrdersDelivered = getNumberOfOrdersByStatus("DELIVERED");
+        long numberOfOrdersPending = getNumberOfOrdersByStatus("PENDING");
 
         Instant today = Instant.now();
 
-        BigDecimal dailyRevenue = oshRepository.calculateRevenueByIntervalAndTime("isDay", today);
-        BigDecimal weeklyRevenue = oshRepository.calculateRevenueByIntervalAndTime("isWeek", today);
-        BigDecimal monthlyRevenue = oshRepository.calculateRevenueByIntervalAndTime("isMonth", today);
-        BigDecimal yearlyRevenue = oshRepository.calculateRevenueByIntervalAndTime("isYear", today);
+        BigDecimal dailyRevenue = calculateRevenue(IS_DAY, today);
+        BigDecimal weeklyRevenue = calculateRevenue(IS_WEEK, today);
+        BigDecimal monthlyRevenue = calculateRevenue(IS_MONTH, today);
+        BigDecimal yearlyRevenue = calculateRevenue(IS_YEAR, today);
 
-        BigDecimal yesterdayRevenue =
-                oshRepository.calculateRevenueByIntervalAndTime("isDay", today.minusSeconds(86400));
-        BigDecimal lastWeekRevenue =
-                oshRepository.calculateRevenueByIntervalAndTime("isWeek", today.minusSeconds(7L * 86400));
-        BigDecimal lastMonthRevenue =
-                oshRepository.calculateRevenueByIntervalAndTime("isMonth", today.minusSeconds(30L * 86400));
-        BigDecimal lastYearRevenue =
-                oshRepository.calculateRevenueByIntervalAndTime("isYear", today.minusSeconds(365L * 86400));
+        BigDecimal yesterdayRevenue = calculateRevenue(IS_DAY, today.minusSeconds(86400));
+        BigDecimal lastWeekRevenue = calculateRevenue(IS_WEEK, today.minusSeconds(7L * 86400));
+        BigDecimal lastMonthRevenue = calculateRevenue(IS_MONTH, today.minusSeconds(30L * 86400));
+        BigDecimal lastYearRevenue = calculateRevenue(IS_YEAR, today.minusSeconds(365L * 86400));
 
-        BigDecimal revenueIncreaseCompareYesterday = dailyRevenue.subtract(yesterdayRevenue);
-        BigDecimal revenueIncreaseCompareLastWeek = weeklyRevenue.subtract(lastWeekRevenue);
-        BigDecimal revenueIncreaseCompareLastMonth = monthlyRevenue.subtract(lastMonthRevenue);
-        BigDecimal revenueIncreaseCompareLastYear = yearlyRevenue.subtract(lastYearRevenue);
+        BigDecimal revenueIncreaseCompareYesterday = calculateRevenueIncrease(dailyRevenue, yesterdayRevenue);
+        BigDecimal revenueIncreaseCompareLastWeek = calculateRevenueIncrease(weeklyRevenue, lastWeekRevenue);
+        BigDecimal revenueIncreaseCompareLastMonth = calculateRevenueIncrease(monthlyRevenue, lastMonthRevenue);
+        BigDecimal revenueIncreaseCompareLastYear = calculateRevenueIncrease(yearlyRevenue, lastYearRevenue);
 
-        int dailyRevenueGrowthRate = 0;
-        if (Objects.nonNull(yesterdayRevenue) && yesterdayRevenue.compareTo(BigDecimal.ZERO) > 0) {
-            dailyRevenueGrowthRate = dailyRevenue
-                    .subtract(yesterdayRevenue)
-                    .divide(yesterdayRevenue, 2, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100))
-                    .intValue();
-        }
-
-        int weeklyRevenueGrowthRate = 0;
-        if (Objects.nonNull(lastMonthRevenue) && lastWeekRevenue.compareTo(BigDecimal.ZERO) > 0) {
-            weeklyRevenueGrowthRate = weeklyRevenue
-                    .subtract(lastWeekRevenue)
-                    .divide(lastWeekRevenue, 2, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100))
-                    .intValue();
-        }
-
-        int monthlyRevenueGrowthRate = 0;
-        if (Objects.nonNull(lastMonthRevenue) && lastMonthRevenue.compareTo(BigDecimal.ZERO) > 0) {
-            monthlyRevenueGrowthRate = monthlyRevenue
-                    .subtract(lastMonthRevenue)
-                    .divide(lastMonthRevenue, 2, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100))
-                    .intValue();
-        }
-
-        int yearlyRevenueGrowthRate = 0;
-        if (Objects.nonNull(lastYearRevenue) && lastYearRevenue.compareTo(BigDecimal.ZERO) > 0) {
-            yearlyRevenueGrowthRate = yearlyRevenue
-                    .subtract(lastYearRevenue)
-                    .divide(lastYearRevenue, 2, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100))
-                    .intValue();
-        }
+        int dailyRevenueGrowthRate = calculateRevenueGrowthRate(dailyRevenue, yesterdayRevenue);
+        int weeklyRevenueGrowthRate = calculateRevenueGrowthRate(weeklyRevenue, lastWeekRevenue);
+        int monthlyRevenueGrowthRate = calculateRevenueGrowthRate(monthlyRevenue, lastMonthRevenue);
+        int yearlyRevenueGrowthRate = calculateRevenueGrowthRate(yearlyRevenue, lastYearRevenue);
 
         long totalNumberOfCustomers = userRepository.countByRolesName(RoleName.USER);
         long totalNumberOfSellers = userRepository.countByRolesName(RoleName.SELLER);
         long totalNumberOfAdmins = userRepository.countByRolesName(RoleName.ADMIN);
 
-        long customersYesterday =
-                userRepository.countCustomersCreatedSince(List.of(RoleName.USER), today.minusSeconds(86400));
-        long customersLastWeek =
-                userRepository.countCustomersCreatedSince(List.of(RoleName.USER), today.minusSeconds(7L * 86400));
-        long customersLastMonth =
-                userRepository.countCustomersCreatedSince(List.of(RoleName.USER), today.minusSeconds(30L * 86400));
-        long customersLastYear =
-                userRepository.countCustomersCreatedSince(List.of(RoleName.USER), today.minusSeconds(365L * 86400));
+        long dailyNumberOfCustomer = countUserByIntervalAndTime(List.of(RoleName.USER), IS_DAY, today);
+        long weeklyNumberOfCustomer = countUserByIntervalAndTime(List.of(RoleName.USER), IS_WEEK, today);
+        long monthlyNumberOfCustomer = countUserByIntervalAndTime(List.of(RoleName.USER), IS_MONTH, today);
+        long yearlyNumberOfCustomer = countUserByIntervalAndTime(List.of(RoleName.USER), IS_YEAR, today);
 
-        long numberOfCustomersIncreaseCompareYesterday = totalNumberOfCustomers - customersYesterday;
-        long numberOfCustomersIncreaseCompareLastWeek = totalNumberOfCustomers - customersLastWeek;
-        long numberOfCustomersIncreaseCompareLastMonth = totalNumberOfCustomers - customersLastMonth;
-        long numberOfCustomersIncreaseCompareLastYear = totalNumberOfCustomers - customersLastYear;
+        long yesterdayNumberOfCustomer =
+                countUserByIntervalAndTime(List.of(RoleName.USER), IS_DAY, today.minusSeconds(86400));
+        long lastWeekNumberOfCustomer =
+                countUserByIntervalAndTime(List.of(RoleName.USER), IS_WEEK, today.minusSeconds(7L * 86400));
+        long lastMonthNumberOfCustomer =
+                countUserByIntervalAndTime(List.of(RoleName.USER), IS_MONTH, today.minusSeconds(30L * 86400));
+        long lastYearNumberOfCustomer =
+                countUserByIntervalAndTime(List.of(RoleName.USER), IS_YEAR, today.minusSeconds(365L * 86400));
+
+        long numberOfCICYesterday = calculateCustomerIncrease(dailyNumberOfCustomer, yesterdayNumberOfCustomer);
+        long numberOfCICLastWeek = calculateCustomerIncrease(weeklyNumberOfCustomer, lastWeekNumberOfCustomer);
+        long numberOfCICLastMonth = calculateCustomerIncrease(monthlyNumberOfCustomer, lastMonthNumberOfCustomer);
+        long numberOfCICLastYear = calculateCustomerIncrease(yearlyNumberOfCustomer, lastYearNumberOfCustomer);
+
+        int dailyCustomerGrowthRate = calculateGrowthRateByRoleName(dailyNumberOfCustomer, yesterdayNumberOfCustomer);
+        int weeklyCustomerGrowthRate = calculateGrowthRateByRoleName(weeklyNumberOfCustomer, lastWeekNumberOfCustomer);
+        int monthlyCustomerGrowthRate =
+                calculateGrowthRateByRoleName(monthlyNumberOfCustomer, lastMonthNumberOfCustomer);
+        int yearlyCustomerGrowthRate = calculateGrowthRateByRoleName(yearlyNumberOfCustomer, lastYearNumberOfCustomer);
+
+        long dailyNumberOfSeller = countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_DAY, today);
+        long weeklyNumberOfSeller = countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_WEEK, today);
+        long monthlyNumberOfSeller = countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_MONTH, today);
+        long yearlyNumberOfSeller = countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_YEAR, today);
+
+        long yesterdayNumberOfSeller =
+                countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_DAY, today.minusSeconds(86400));
+        long lastWeekNumberOfSeller =
+                countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_WEEK, today.minusSeconds(7L * 86400));
+        long lastMonthNumberOfSeller =
+                countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_MONTH, today.minusSeconds(30L * 86400));
+        long lastYearNumberOfSeller =
+                countStoreByIntervalAndTime(List.of(RoleName.SELLER), IS_YEAR, today.minusSeconds(365L * 86400));
+
+        long numberOfSICYesterday = calculateSellerIncrease(dailyNumberOfSeller, yesterdayNumberOfSeller);
+        long numberOfSICLastWeek = calculateSellerIncrease(weeklyNumberOfSeller, lastWeekNumberOfSeller);
+        long numberOfSICLastMonth = calculateSellerIncrease(monthlyNumberOfSeller, lastMonthNumberOfSeller);
+        long numberOfSICLastYear = calculateSellerIncrease(yearlyNumberOfSeller, lastYearNumberOfSeller);
+
+        int dailySellerGrowthRate = calculateGrowthRateByRoleName(dailyNumberOfSeller, yesterdayNumberOfSeller);
+        int weeklySellerGrowthRate = calculateGrowthRateByRoleName(weeklyNumberOfSeller, lastWeekNumberOfSeller);
+        int monthlySellerGrowthRate = calculateGrowthRateByRoleName(monthlyNumberOfSeller, lastMonthNumberOfSeller);
+        int yearlySellerGrowthRate = calculateGrowthRateByRoleName(yearlyNumberOfSeller, lastYearNumberOfSeller);
 
         List<Object[]> rawTop5Stores = oshRepository.findTop5StoresByRevenueRaw();
         List<StoreRevenueResponse> top5StoresByRevenue = rawTop5Stores.stream()
@@ -147,12 +154,78 @@ public class AdminService {
                 .totalNumberOfCustomers(totalNumberOfCustomers)
                 .totalNumberOfSellers(totalNumberOfSellers)
                 .totalNumberOfAdmins(totalNumberOfAdmins)
-                .numberOfCustomersIncreaseCompareYesterday(numberOfCustomersIncreaseCompareYesterday)
-                .numberOfCustomersIncreaseCompareLastWeek(numberOfCustomersIncreaseCompareLastWeek)
-                .numberOfCustomersIncreaseCompareLastMonth(numberOfCustomersIncreaseCompareLastMonth)
-                .numberOfCustomersIncreaseCompareLastYear(numberOfCustomersIncreaseCompareLastYear)
+                .dailyNumberOfCustomer(dailyNumberOfCustomer)
+                .weeklyNumberOfCustomer(weeklyNumberOfCustomer)
+                .monthlyNumberOfCustomer(monthlyNumberOfCustomer)
+                .yearlyNumberOfCustomer(yearlyNumberOfCustomer)
+                .numberOfCustomersIncreaseCompareYesterday(numberOfCICYesterday)
+                .numberOfCustomersIncreaseCompareLastWeek(numberOfCICLastWeek)
+                .numberOfCustomersIncreaseCompareLastMonth(numberOfCICLastMonth)
+                .numberOfCustomersIncreaseCompareLastYear(numberOfCICLastYear)
+                .dailyCustomerGrowthRate(dailyCustomerGrowthRate)
+                .weeklyCustomerGrowthRate(weeklyCustomerGrowthRate)
+                .monthlyCustomerGrowthRate(monthlyCustomerGrowthRate)
+                .yearlyCustomerGrowthRate(yearlyCustomerGrowthRate)
+                .dailyNumberOfSeller(dailyNumberOfSeller)
+                .weeklyNumberOfSeller(weeklyNumberOfSeller)
+                .monthlyNumberOfSeller(monthlyNumberOfSeller)
+                .yearlyNumberOfSeller(yearlyNumberOfSeller)
+                .numberOfSellersIncreaseCompareYesterday(numberOfSICYesterday)
+                .numberOfSellersIncreaseCompareLastWeek(numberOfSICLastWeek)
+                .numberOfSellersIncreaseCompareLastMonth(numberOfSICLastMonth)
+                .numberOfSellersIncreaseCompareLastYear(numberOfSICLastYear)
+                .dailySellerGrowthRate(dailySellerGrowthRate)
+                .weeklySellerGrowthRate(weeklySellerGrowthRate)
+                .monthlySellerGrowthRate(monthlySellerGrowthRate)
+                .yearlySellerGrowthRate(yearlySellerGrowthRate)
                 .top5StoresByRevenue(top5StoresByRevenue)
                 .build();
+    }
+
+    long getNumberOfOrdersByStatus(String status) {
+        return oshRepository.countByLatestStatus(status);
+    }
+
+    BigDecimal calculateRevenue(String interval, Instant time) {
+        return oshRepository.calculateRevenueByIntervalAndTime(interval, time);
+    }
+
+    BigDecimal calculateRevenueIncrease(BigDecimal currentRevenue, BigDecimal previousRevenue) {
+        return currentRevenue.subtract(previousRevenue);
+    }
+
+    long calculateCustomerIncrease(long current, long previous) {
+        return current - previous;
+    }
+
+    long calculateSellerIncrease(long current, long previous) {
+        return current - previous;
+    }
+
+    long countUserByIntervalAndTime(List<RoleName> roles, String interval, Instant time) {
+        return userRepository.countUserByIntervalAndTime(roles, interval, time);
+    }
+
+    long countStoreByIntervalAndTime(List<RoleName> roles, String interval, Instant time) {
+        return storeRepository.countStoreByIntervalAndTime(roles, interval, time);
+    }
+
+    int calculateRevenueGrowthRate(BigDecimal currentRevenue, BigDecimal previousRevenue) {
+        if (Objects.nonNull(previousRevenue) && previousRevenue.compareTo(BigDecimal.ZERO) > 0) {
+            return currentRevenue
+                    .subtract(previousRevenue)
+                    .divide(previousRevenue, 2, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .intValue();
+        }
+        return 0;
+    }
+
+    int calculateGrowthRateByRoleName(long current, long previous) {
+        if (previous > 0) {
+            return (int) (((double) (current - previous) / previous) * 100);
+        }
+        return 0;
     }
 
     @PreAuthorize("hasRole('ADMIN')")

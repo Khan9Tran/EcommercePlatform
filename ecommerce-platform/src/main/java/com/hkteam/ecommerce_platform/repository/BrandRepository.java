@@ -14,7 +14,7 @@ import com.hkteam.ecommerce_platform.entity.product.Brand;
 
 @Repository
 public interface BrandRepository extends JpaRepository<Brand, Long> {
-    boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+    boolean existsByNameIgnoreCase(String name);
 
     @NotNull
     Optional<Brand> findById(@NotNull Long id);

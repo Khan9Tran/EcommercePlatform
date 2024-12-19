@@ -27,7 +27,7 @@ public interface OrderStatusHistoryRepository extends JpaRepository<OrderStatusH
 
     @Query(
             """
-			select distinct coalesce(sum(o.grandTotal), 0)
+			select coalesce(sum(o.grandTotal), 0)
 			from OrderStatusHistory osh
 			join osh.order o
 			where osh.orderStatus.name = 'DELIVERED'
@@ -89,7 +89,7 @@ public interface OrderStatusHistoryRepository extends JpaRepository<OrderStatusH
 
     @Query(
             """
-			select distinct coalesce(sum(o.grandTotal), 0)
+			select coalesce(sum(o.grandTotal), 0)
 			from OrderStatusHistory osh
 			join osh.order o
 			where osh.orderStatus.name = 'DELIVERED'

@@ -54,8 +54,25 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query(
             """
 		select count(u) from User u join u.roles roles
-		where roles.name in :roleName and u.createdAt < :startDate
+		where roles.name in :roleName
+		and (
+				(:interval = 'isDay' and date_part('year', cast(u.createdAt as timestamp) ) = date_part('year', cast(:time as timestamp))
+				and date_part('month', cast(u.createdAt as timestamp)) = date_part('month', cast(:time as timestamp))
+				and date_part('week', cast(u.createdAt as timestamp)) = date_part('week', cast(:time as timestamp))
+				and date_part('day', cast(u.createdAt as timestamp)) = date_part('day', cast(:time as timestamp)))
+				or
+				(:interval = 'isWeek' and date_part('year', cast(u.createdAt as timestamp)) = date_part('year', cast(:time as timestamp))
+				and date_part('month', cast(u.createdAt as timestamp)) = date_part('month', cast(:time as timestamp))
+				and date_part('week', cast(u.createdAt as timestamp)) = date_part('week', cast(:time as timestamp)))
+				or
+				(:interval = 'isMonth' and date_part('year', cast(u.createdAt as timestamp)) = date_part('year', cast(:time as timestamp))
+				and date_part('month', cast(u.createdAt as timestamp)) = date_part('month', cast(:time as timestamp)))
+				or
+				(:interval = 'isYear' and date_part('year', cast(u.createdAt as timestamp)) = date_part('year', cast(:time as timestamp)))
+			)
 		""")
-    long countCustomersCreatedSince(
-            @Param("roleName") Collection<RoleName> roleName, @Param("startDate") Instant startDate);
+    long countUserByIntervalAndTime(
+            @Param("roleName") Collection<RoleName> roleName,
+            @Param("interval") String interval,
+            @Param("time") Instant time);
 }

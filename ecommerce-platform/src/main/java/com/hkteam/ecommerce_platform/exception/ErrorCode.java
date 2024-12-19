@@ -141,6 +141,8 @@ public enum ErrorCode {
     ADDRESS_MESSAGE(1051, "Please add pickup address", HttpStatus.NOT_FOUND),
     INVALID_MONTH(1723, "Month must be a positive integer between 1 and 12", HttpStatus.BAD_REQUEST),
     INVALID_YEAR(1724, "Year must be a positive integer greater than 2020", HttpStatus.BAD_REQUEST),
+    MAX_INVALID(1725, "{field} must not exceed {max} characters", HttpStatus.BAD_REQUEST),
+    MIN_MAX_INVALID(1725, "{field} must be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

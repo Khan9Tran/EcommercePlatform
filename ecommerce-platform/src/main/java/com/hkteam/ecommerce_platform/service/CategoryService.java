@@ -80,7 +80,8 @@ public class CategoryService {
         Category parentCategory = null;
 
         boolean isDuplicateName = categoryRepository.existsByNameIgnoreCase(request.getName())
-                && !category.getName().equalsIgnoreCase(request.getName());
+                && !category.getName().equalsIgnoreCase(request.getName())
+                && !category.isDeleted();
         if (isDuplicateName) {
             throw new AppException(ErrorCode.CATEGORY_DUPLICATE);
         }
@@ -100,7 +101,6 @@ public class CategoryService {
         category.setParent(parentCategory);
 
         try {
-
             categoryRepository.save(category);
             if (!oldName.equals(category.getName())) {
                 rabbitTemplate.convertAndSend(
@@ -113,7 +113,7 @@ public class CategoryService {
             }
         } catch (DataIntegrityViolationException e) {
             log.info("Error while updating category: {}", e.getMessage());
-            throw new AppException(ErrorCode.CATEGORY_LATER_EXISTED);
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
         Objects.requireNonNull(cacheManager.getCache("categoryCache")).evict(category.getSlug());

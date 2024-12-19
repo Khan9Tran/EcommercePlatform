@@ -38,10 +38,32 @@ public class AdminStatisticsResponse {
     long totalNumberOfCustomers;
     long totalNumberOfSellers;
     long totalNumberOfAdmins;
+
+    long dailyNumberOfCustomer;
+    long weeklyNumberOfCustomer;
+    long monthlyNumberOfCustomer;
+    long yearlyNumberOfCustomer;
     long numberOfCustomersIncreaseCompareYesterday;
     long numberOfCustomersIncreaseCompareLastWeek;
     long numberOfCustomersIncreaseCompareLastMonth;
     long numberOfCustomersIncreaseCompareLastYear;
+    int dailyCustomerGrowthRate;
+    int weeklyCustomerGrowthRate;
+    int monthlyCustomerGrowthRate;
+    int yearlyCustomerGrowthRate;
+
+    long dailyNumberOfSeller;
+    long weeklyNumberOfSeller;
+    long monthlyNumberOfSeller;
+    long yearlyNumberOfSeller;
+    long numberOfSellersIncreaseCompareYesterday;
+    long numberOfSellersIncreaseCompareLastWeek;
+    long numberOfSellersIncreaseCompareLastMonth;
+    long numberOfSellersIncreaseCompareLastYear;
+    int dailySellerGrowthRate;
+    int weeklySellerGrowthRate;
+    int monthlySellerGrowthRate;
+    int yearlySellerGrowthRate;
 
     List<StoreRevenueResponse> top5StoresByRevenue;
 }

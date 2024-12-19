@@ -14,7 +14,7 @@ import com.hkteam.ecommerce_platform.entity.category.Component;
 
 @Repository
 public interface ComponentRepository extends JpaRepository<Component, Long> {
-    boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+    boolean existsByNameIgnoreCase(String name);
 
     @NotNull
     Optional<Component> findById(@NotNull Long id);
