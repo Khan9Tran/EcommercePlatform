@@ -32,10 +32,8 @@ public class ComponentController {
     @Operation(summary = "Create component", description = "Api create component")
     @PostMapping()
     public ApiResponse<ComponentResponse> createComponent(@RequestBody @Valid ComponentCreationRequest request) {
-        ComponentResponse componentResponse = componentService.createComponent(request);
-
         return ApiResponse.<ComponentResponse>builder()
-                .result(componentResponse)
+                .result(componentService.createComponent(request))
                 .build();
     }
 
@@ -43,11 +41,8 @@ public class ComponentController {
     @PutMapping("/{id}")
     public ApiResponse<ComponentResponse> updateComponent(
             @PathVariable Long id, @RequestBody @Valid ComponentUpdateRequest request) {
-
-        ComponentResponse componentResponse = componentService.updateComponent(id, request);
-
         return ApiResponse.<ComponentResponse>builder()
-                .result(componentResponse)
+                .result(componentService.updateComponent(id, request))
                 .build();
     }
 
@@ -66,21 +61,17 @@ public class ComponentController {
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
             @RequestParam(value = "search", required = false, defaultValue = "") String search) {
-        PaginationResponse<ComponentResponse> paginationResponse =
-                componentService.getAllComponents(page, size, search);
 
         return ApiResponse.<PaginationResponse<ComponentResponse>>builder()
-                .result(paginationResponse)
+                .result(componentService.getAllComponents(page, size, search))
                 .build();
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get one component by id", description = "Api get one component by id")
     public ApiResponse<ComponentResponse> getOneComponentById(@PathVariable Long id) {
-        ComponentResponse componentResponse = componentService.getOneComponentById(id);
-
         return ApiResponse.<ComponentResponse>builder()
-                .result(componentResponse)
+                .result(componentService.getOneComponentById(id))
                 .build();
     }
 
