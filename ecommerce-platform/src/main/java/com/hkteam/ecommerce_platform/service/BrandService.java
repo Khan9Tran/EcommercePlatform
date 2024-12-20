@@ -67,7 +67,7 @@ public class BrandService {
 
         String oldName = brand.getName();
         brandMapper.updateBrandFromRequest(request, brand);
-
+        log.info("UPDATEEEEEEEE");
         try {
             brandRepository.save(brand);
 
@@ -77,7 +77,7 @@ public class BrandService {
                         UpdateBrandEsProductRequest.builder()
                                 .name(brand.getName())
                                 .id(brand.getId())
-                                .isDeleted(Boolean.FALSE));
+                                .isDeleted(Boolean.FALSE).build());
             }
 
             return brandMapper.toBrandResponse(brand);
