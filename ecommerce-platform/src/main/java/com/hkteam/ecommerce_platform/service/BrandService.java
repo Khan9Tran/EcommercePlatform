@@ -76,7 +76,8 @@ public class BrandService {
                         UpdateBrandEsProductRequest.builder()
                                 .name(brand.getName())
                                 .id(brand.getId())
-                                .isDeleted(Boolean.FALSE).build());
+                                .isDeleted(Boolean.FALSE)
+                                .build());
             }
 
             return brandMapper.toBrandResponse(brand);
