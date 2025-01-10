@@ -11,9 +11,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class BrandUpdateRequest {
-    @Size(min = 2, max = 30, message = "MIN_MAX_INVALID")
+    @Size(min = 2, max = 30, message = "BRAND_NAME_INVALID")
     String name;
 
-    @Size(max = 255, message = "MAX_INVALID")
+    @Size(max = 255, message = "BRAND_DESCRIPTION_INVALID")
     String description;
 }

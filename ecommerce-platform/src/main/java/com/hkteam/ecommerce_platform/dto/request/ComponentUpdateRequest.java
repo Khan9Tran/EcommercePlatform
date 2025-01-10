@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class ComponentUpdateRequest {
-    @Size(min = 3, max = 100, message = "MIN_MAX_INVALID")
+    @Size(min = 2, max = 50, message = "MIN_MAX_INVALID")
     String name;
 
     boolean required;

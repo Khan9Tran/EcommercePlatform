@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Service;
 import com.hkteam.ecommerce_platform.dto.request.BrandCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.BrandUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.request.UpdateBrandEsProductRequest;
+import com.hkteam.ecommerce_platform.dto.response.BrandCreationResponse;
 import com.hkteam.ecommerce_platform.dto.response.BrandResponse;
+import com.hkteam.ecommerce_platform.dto.response.BrandUpdateResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.product.Brand;
 import com.hkteam.ecommerce_platform.exception.AppException;
@@ -36,8 +39,15 @@ public class BrandService {
     BrandMapper brandMapper;
     RabbitTemplate rabbitTemplate;
 
+    private static final String CREATED_AT = "createdAt";
+    private static final String NAME = "name";
+    private static final String ASC = "asc";
+    private static final String DESC = "desc";
+    private static final String[] SORT_BY = {CREATED_AT, NAME};
+    private static final String[] ORDER_BY = {ASC, DESC};
+
     @PreAuthorize("hasRole('ADMIN')")
-    public BrandResponse createBrand(BrandCreationRequest request) {
+    public BrandCreationResponse createBrand(BrandCreationRequest request) {
         if (brandRepository.existsByNameIgnoreCase(request.getName())) {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
@@ -46,22 +56,19 @@ public class BrandService {
 
         try {
             brandRepository.save(brand);
+            return brandMapper.toBrandCreationResponse(brand);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while creating brand: {}", e.getMessage());
+            log.error("Error while creating brand: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
-
-        return brandMapper.toBrandResponse(brand);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public BrandResponse updateBrand(Long id, BrandUpdateRequest request) {
-        Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+    public BrandUpdateResponse updateBrand(Long brandId, BrandUpdateRequest request) {
+        Brand brand = brandRepository.findById(brandId).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
-        boolean isDuplicateName = brandRepository.existsByNameIgnoreCase(request.getName())
-                && !brand.getName().equalsIgnoreCase(request.getName())
-                && !brand.isDeleted();
-        if (isDuplicateName) {
+        if (brandRepository.existsByNameIgnoreCase(request.getName())
+                && !brand.getName().equalsIgnoreCase(request.getName())) {
             throw new AppException(ErrorCode.BRAND_DUPLICATE);
         }
 
@@ -80,16 +87,16 @@ public class BrandService {
                                 .build());
             }
 
-            return brandMapper.toBrandResponse(brand);
+            return brandMapper.toBrandUpdateResponse(brand);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while updating brand {}", e.getMessage());
+            log.error("Error while updating brand: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteBrand(Long id) {
-        Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+    public void deleteBrand(Long brandId) {
+        Brand brand = brandRepository.findById(brandId).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
         try {
             brandRepository.delete(brand);
@@ -97,42 +104,40 @@ public class BrandService {
                     RabbitMQConfig.BRAND_ES_PRODUCT_QUEUE,
                     UpdateBrandEsProductRequest.builder()
                             .isDeleted(Boolean.TRUE)
-                            .id(id)
+                            .id(brandId)
                             .build());
         } catch (Exception e) {
-            log.error("Error when delete brand: {}", e.getMessage());
+            log.error("Error while deleting brand: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public PaginationResponse<BrandResponse> getAllBrands(
-            String pageStr, String sizeStr, String tab, String sort, String search) {
-        Sort sortable =
-                switch (sort) {
-                    case "newest" -> Sort.by("createdAt").descending();
-                    case "oldest" -> Sort.by("createdAt").ascending();
-                    case "az" -> Sort.by("name").ascending();
-                    case "za" -> Sort.by("name").descending();
-                    default -> Sort.unsorted();
-                };
+    public PaginationResponse<BrandResponse> getAllBrand(
+            String page, String size, String sortBy, String orderBy, String search) {
 
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = brandRepository.findByNameContainingIgnoreCase(search, pageable);
+        if (!Arrays.asList(SORT_BY).contains(sortBy)) sortBy = null;
+        if (!Arrays.asList(ORDER_BY).contains(orderBy)) orderBy = null;
+        Sort sortable = (sortBy == null || orderBy == null)
+                ? Sort.unsorted()
+                : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
 
-        int page = Integer.parseInt(pageStr);
+        Pageable pageable = PageUtils.createPageable(page, size, sortable);
+        var pageData = brandRepository.findAllBrand(search, pageable);
 
-        PageUtils.validatePageBounds(page, pageData);
+        int pageInt = Integer.parseInt(page);
+
+        PageUtils.validatePageBounds(pageInt, pageData);
 
         return PaginationResponse.<BrandResponse>builder()
-                .currentPage(Integer.parseInt(pageStr))
+                .currentPage(pageInt)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? page + 1 : null)
-                .previousPage(pageData.hasPrevious() ? page - 1 : null)
+                .nextPage(pageData.hasNext() ? pageInt + 1 : null)
+                .previousPage(pageData.hasPrevious() ? pageInt - 1 : null)
                 .data(pageData.getContent().stream()
                         .map(brandMapper::toBrandResponse)
                         .toList())

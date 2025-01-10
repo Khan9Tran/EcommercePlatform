@@ -9,8 +9,8 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
 public enum ErrorCode {
-    INVALID_KEY(1001, "Invalid key", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized Error", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_KEY(1001, "Invalid key", HttpStatus.BAD_REQUEST),
     USER_EXISTED(1002, "User existed", HttpStatus.BAD_REQUEST),
     USERNAME_INVALID(1003, "{field} be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
     PASSWORD_INVALID(1004, "{field} must be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
@@ -19,6 +19,9 @@ public enum ErrorCode {
     UNAUTHENTICATED(1007, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(1009, "Role not found", HttpStatus.NOT_FOUND),
+    BRAND_NAME_INVALID(1010, "Brand name must be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
+    BRAND_DESCRIPTION_INVALID(
+            1011, "Brand description must be no longer than {max} characters", HttpStatus.BAD_REQUEST),
     NOT_BLANK(1014, "{field} must not be empty", HttpStatus.BAD_REQUEST),
     PASSWORD_FORMAT_INVALID(
             1015,
@@ -45,8 +48,8 @@ public enum ErrorCode {
     BRAND_EXISTED(1032, "Brand already exists", HttpStatus.BAD_REQUEST),
     BRAND_NOT_FOUND(1033, "Brand not found", HttpStatus.NOT_FOUND),
     BRAND_DUPLICATE(1034, "Brand name is duplicated with another name", HttpStatus.BAD_REQUEST),
-    FILE_LIMIT_OF_1MB(1035, "File size exceeds the maximum limit of 1MB", HttpStatus.BAD_REQUEST),
-    ACCEPTED_IMAGE_TYPES(1036, "Invalid file type only JPG, PNG, JPEG, GIF are accepted", HttpStatus.BAD_REQUEST),
+    FILE_LIMIT_OF_20MB(1035, "File size exceeds the maximum limit of 20MB", HttpStatus.BAD_REQUEST),
+    ACCEPTED_IMAGE_TYPES(1036, "Invalid file type only jpg, png, jpeg, webp are accepted", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_BLANK(1037, "Email must not be empty", HttpStatus.BAD_REQUEST),
     INVALID_EMAIL_FORMAT(1038, "Please provide a valid email address", HttpStatus.BAD_REQUEST),
     NEW_EMAIL_SAME_CURRENT_EMAIL(

@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.util;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,11 +17,11 @@ import lombok.experimental.UtilityClass;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ImageUtils {
     long MAX_FILE_SIZE = 20L * 1024 * 1024;
-    List<String> ACCEPTED_IMAGE_TYPES = Arrays.asList("jpg", "png", "jpeg");
+    List<String> ACCEPTED_IMAGE_TYPES = Arrays.asList("jpg", "png", "jpeg", "webp");
 
     public void validateImage(MultipartFile image) {
         if (image.getSize() > MAX_FILE_SIZE) {
-            throw new AppException(ErrorCode.FILE_LIMIT_OF_1MB);
+            throw new AppException(ErrorCode.FILE_LIMIT_OF_20MB);
         }
 
         String extension = getFileExtension(image.getOriginalFilename());
@@ -34,9 +35,10 @@ public class ImageUtils {
     }
 
     private String getFileExtension(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
+        if (Objects.isNull(fileName) || fileName.isEmpty()) {
             throw new AppException(ErrorCode.FILE_NULL);
         }
+
         return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
     }
 }

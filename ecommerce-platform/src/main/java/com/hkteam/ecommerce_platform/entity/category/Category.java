@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.category;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -49,13 +50,13 @@ public class Category {
     Set<Product> products;
 
     @ManyToMany
-    Set<Component> components;
+    List<Component> components;
 
     @CreationTimestamp(source = SourceType.DB)
-    private Instant createdAt;
+    Instant createdAt;
 
     @UpdateTimestamp(source = SourceType.DB)
-    private Instant lastUpdatedAt;
+    Instant lastUpdatedAt;
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;

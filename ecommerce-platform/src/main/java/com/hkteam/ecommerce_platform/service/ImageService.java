@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class ImageService {
-    private final UserRepository userRepository;
+    UserRepository userRepository;
     CloudinaryService cloudinaryService;
     CategoryRepository categoryRepository;
     AuthenticatedUserUtil authenticatedUserUtil;
@@ -253,15 +253,14 @@ public class ImageService {
         Brand brand = brandRepository.findById(brandId).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
 
         try {
-            @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
                     logoUrl, TypeImage.MAIN_LOGO_OF_BRAND.name().toLowerCase()));
 
-            if (img.get("url") == null) {
+            if (Objects.isNull(img.get("url"))) {
                 throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
             }
 
-            if (brand.getLogoUrl() != null) {
+            if (Objects.nonNull(brand.getLogoUrl())) {
                 rabbitTemplate.convertAndSend(
                         RabbitMQConfig.DELETE_IMAGE_QUEUE,
                         DeleteImageRequest.builder()
@@ -275,9 +274,8 @@ public class ImageService {
             brandRepository.save(brand);
 
             return getResult(img);
-
         } catch (Exception e) {
-            log.info("Error while uploading at upload brand logo: {}", e.getMessage());
+            log.info("Error while uploading brand logo: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
     }

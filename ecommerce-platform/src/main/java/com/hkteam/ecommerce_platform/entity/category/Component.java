@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.entity.category;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -31,7 +32,7 @@ public class Component {
     boolean required = false;
 
     @ManyToMany(mappedBy = "components")
-    Set<Category> categories;
+    List<Category> categories;
 
     @OneToMany(mappedBy = "component")
     Set<ProductComponentValue> productComponentValues;

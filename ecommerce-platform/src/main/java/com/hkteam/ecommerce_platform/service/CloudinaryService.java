@@ -22,9 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 public class CloudinaryService {
     Cloudinary cloudinary;
 
+    private static final String FOLDER = "folder";
+
     public Map<String, Object> uploadImage(MultipartFile file, String folder) {
         try {
-            Map<String, Object> options = Map.of("folder", folder);
+            Map<String, Object> options = Map.of(FOLDER, folder);
 
             @SuppressWarnings("unchecked")
             Map<String, Object> upload = cloudinary.uploader().upload(file.getBytes(), options);
@@ -36,7 +38,7 @@ public class CloudinaryService {
 
     public Map<String, Object> uploadImage(byte[] file, String folder) {
         try {
-            Map<String, Object> options = Map.of("folder", folder);
+            Map<String, Object> options = Map.of(FOLDER, folder);
 
             @SuppressWarnings("unchecked")
             Map<String, Object> upload = cloudinary.uploader().upload(file, options);
@@ -48,7 +50,7 @@ public class CloudinaryService {
 
     public Map<String, Object> uploadVideo(byte[] file, String folder) {
         try {
-            Map<String, Object> options = Map.of("resource_type", "video", "folder", folder);
+            Map<String, Object> options = Map.of("resource_type", "video", FOLDER, folder);
 
             @SuppressWarnings("unchecked")
             Map<String, Object> upload = cloudinary.uploader().upload(file, options);
@@ -61,7 +63,7 @@ public class CloudinaryService {
     public void deleteImage(String imageUrl) throws IOException {
         log.info("Attempting to delete image with URL: {}", imageUrl);
         String publicId = extractPublicId(imageUrl);
-        log.info("Extracted publicId: {}", publicId);
+        log.info("Extracted image publicId: {}", publicId);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> result = cloudinary.uploader().destroy(publicId, Map.of());
@@ -77,7 +79,7 @@ public class CloudinaryService {
     public void deleteVideo(String videoUrl) throws IOException {
         log.info("Attempting to delete video with URL: {}", videoUrl);
         String publicId = extractPublicId(videoUrl);
-        log.info("Extracted publicId: {}", publicId);
+        log.info("Extracted video publicId: {}", publicId);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> result = cloudinary.uploader().destroy(publicId, Map.of("resource_type", "video"));
