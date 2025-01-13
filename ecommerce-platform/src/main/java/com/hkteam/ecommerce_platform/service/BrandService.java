@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import com.hkteam.ecommerce_platform.dto.request.BrandCreationRequest;
 import com.hkteam.ecommerce_platform.dto.request.BrandUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.request.UpdateBrandEsProductRequest;
-import com.hkteam.ecommerce_platform.dto.response.BrandCreationResponse;
-import com.hkteam.ecommerce_platform.dto.response.BrandResponse;
-import com.hkteam.ecommerce_platform.dto.response.BrandUpdateResponse;
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
+import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.product.Brand;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
@@ -113,7 +110,7 @@ public class BrandService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public PaginationResponse<BrandResponse> getAllBrand(
+    public PaginationResponse<BrandGetAllResponse> getAllBrand(
             String page, String size, String sortBy, String orderBy, String search) {
 
         if (!Arrays.asList(SORT_BY).contains(sortBy)) sortBy = null;
@@ -129,7 +126,7 @@ public class BrandService {
 
         PageUtils.validatePageBounds(pageInt, pageData);
 
-        return PaginationResponse.<BrandResponse>builder()
+        return PaginationResponse.<BrandGetAllResponse>builder()
                 .currentPage(pageInt)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
@@ -139,7 +136,7 @@ public class BrandService {
                 .nextPage(pageData.hasNext() ? pageInt + 1 : null)
                 .previousPage(pageData.hasPrevious() ? pageInt - 1 : null)
                 .data(pageData.getContent().stream()
-                        .map(brandMapper::toBrandResponse)
+                        .map(brandMapper::toBrandGetAllResponse)
                         .toList())
                 .build();
     }
@@ -152,10 +149,5 @@ public class BrandService {
             brands = brandRepository.findByNameIgnoreCase(search);
         }
         return brands.stream().map(brandMapper::toBrandResponse).toList();
-    }
-
-    public BrandResponse getOneBrandById(Long id) {
-        Brand brand = brandRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
-        return brandMapper.toBrandResponse(brand);
     }
 }

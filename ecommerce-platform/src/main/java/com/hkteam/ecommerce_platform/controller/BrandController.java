@@ -51,13 +51,13 @@ public class BrandController {
 
     @Operation(summary = "Get all brand", description = "Api get all brand")
     @GetMapping()
-    ApiResponse<PaginationResponse<BrandResponse>> getAllBrand(
+    ApiResponse<PaginationResponse<BrandGetAllResponse>> getAllBrand(
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
             @RequestParam(value = "sortBy", required = false, defaultValue = "") String sortBy,
             @RequestParam(value = "orderBy", required = false, defaultValue = "") String orderBy,
             @RequestParam(value = "search", required = false, defaultValue = "") String search) {
-        return ApiResponse.<PaginationResponse<BrandResponse>>builder()
+        return ApiResponse.<PaginationResponse<BrandGetAllResponse>>builder()
                 .result(brandService.getAllBrand(page, size, sortBy, orderBy, search))
                 .build();
     }
@@ -68,14 +68,6 @@ public class BrandController {
             @RequestParam(value = "search", required = false, defaultValue = "") String search) {
         return ApiResponse.<List<BrandResponse>>builder()
                 .result(brandService.getAllBrands(search))
-                .build();
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Get one brand by id", description = "Api get one brand by id")
-    public ApiResponse<BrandResponse> getOneBrandById(@PathVariable Long id) {
-        return ApiResponse.<BrandResponse>builder()
-                .result(brandService.getOneBrandById(id))
                 .build();
     }
 }
