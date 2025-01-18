@@ -14,14 +14,13 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class OrderItemResponseSeller {
+public class OrderItemGetOneSellerResponse {
     Long id;
+    String productName;
+    String productMainImageUrl;
+    String productSlug;
+    String productNameBrand;
     List<String> values;
     int quantity;
     BigDecimal price;
-    BigDecimal discount;
-    String productName;
-    String productMainImageUrl;
-    String productNameBrand;
-    String productSlug;
 }

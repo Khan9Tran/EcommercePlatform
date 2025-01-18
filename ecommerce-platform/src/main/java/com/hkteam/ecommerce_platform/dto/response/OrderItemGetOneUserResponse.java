@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-import java.time.Instant;
+import java.math.BigDecimal;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +14,13 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class OrderStatusHistoryResponseUser {
-    String id;
-    String orderStatusName;
-    String remarks;
-    Instant createdAt;
-    Instant lastUpdatedAt;
+public class OrderItemGetOneUserResponse {
+    Long id;
+    String productSlug;
+    String productName;
+    String productMainImageUrl;
+    List<String> values;
+    int quantity;
+    BigDecimal price;
+    BigDecimal discount;
 }

@@ -1,37 +1,35 @@
 package com.hkteam.ecommerce_platform.mapper;
 
-import java.util.List;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.hkteam.ecommerce_platform.dto.response.OrderItemResponseAdmin;
-import com.hkteam.ecommerce_platform.dto.response.OrderItemResponseSeller;
-import com.hkteam.ecommerce_platform.dto.response.OrderItemResponseUser;
+import com.hkteam.ecommerce_platform.dto.response.OrderItemGetAllUserResponse;
+import com.hkteam.ecommerce_platform.dto.response.OrderItemGetOneAdminResponse;
+import com.hkteam.ecommerce_platform.dto.response.OrderItemGetOneSellerResponse;
+import com.hkteam.ecommerce_platform.dto.response.OrderItemGetOneUserResponse;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 
 @Mapper(componentModel = "spring")
 public interface OrderItemMapper {
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.mainImageUrl", target = "productMainImageUrl")
+    @Mapping(source = "product.brand.name", target = "productNameBrand")
     @Mapping(source = "product.slug", target = "productSlug")
-    OrderItemResponseUser toOrderItemResponseUser(OrderItem orderItem);
-
-    List<OrderItemResponseUser> toOrderItemResponseList(List<OrderItem> orderItems);
+    OrderItemGetOneSellerResponse toOrderItemGetOneSellerResponse(OrderItem orderItem);
 
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.mainImageUrl", target = "productMainImageUrl")
     @Mapping(source = "product.brand.name", target = "productNameBrand")
     @Mapping(source = "product.slug", target = "productSlug")
-    OrderItemResponseSeller toOrderItemResponseSeller(OrderItem orderItem);
-
-    List<OrderItemResponseSeller> toOrderItemResponseSellerList(List<OrderItem> orderItems);
+    OrderItemGetOneAdminResponse toOrderItemGetOneAdminResponse(OrderItem orderItem);
 
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.mainImageUrl", target = "productMainImageUrl")
-    @Mapping(source = "product.brand.name", target = "productNameBrand")
     @Mapping(source = "product.slug", target = "productSlug")
-    OrderItemResponseAdmin toOrderItemResponseAdmin(OrderItem orderItem);
+    OrderItemGetOneUserResponse toOrderItemGetOneUserResponse(OrderItem orderItem);
 
-    List<OrderItemResponseAdmin> toOrderItemResponseAdmins(List<OrderItem> orderItems);
+    @Mapping(source = "product.slug", target = "productSlug")
+    @Mapping(source = "product.name", target = "productName")
+    @Mapping(source = "product.mainImageUrl", target = "productMainImageUrl")
+    OrderItemGetAllUserResponse toOrderItemGetAllUserResponse(OrderItem orderItem);
 }

@@ -46,6 +46,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 						(:orderId = '' or lower(o.id) like lower(concat('%', :orderId, '%')))
 						or (:phone = '' or lower(o.phone) like lower(concat('%', :phone, '%')))
 						or (:province = '' or lower(o.province) like lower(concat('%', :province, '%')))
+						or (:grandTotal = '' or cast(o.grandTotal as string) like lower(concat('%', :grandTotal, '%')))
 					)
 					and osh = (
 						select osh1 from OrderStatusHistory osh1
@@ -60,6 +61,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Nullable String orderId,
             @Nullable String phone,
             @Nullable String province,
+            @Nullable String grandTotal,
             @Nullable String statusName,
             Pageable pageable);
 
@@ -79,7 +81,11 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 					and osh in (
 						select osh1 from OrderStatusHistory osh1
 						where osh1.order = o
-						and (:statusName = '' or osh1.orderStatus.name = :statusName)
+						and (
+								(:statusName = '' or osh1.orderStatus.name = :statusName)
+								or (:statusName = 'WAITING_DELIVERY' and osh1.orderStatus.name in ('PICKED_UP', 'OUT_FOR_DELIVERY'))
+								or (:statusName = 'IN_TRANSIT' and osh1.orderStatus.name in ('PENDING', 'CONFIRMED', 'PREPARING', 'WAITING_FOR_SHIPPING'))
+						)
 						and osh1.createdAt = (
 							select max(osh2.createdAt) from OrderStatusHistory osh2 where osh2.order = osh1.order
 						)
@@ -92,7 +98,4 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Nullable String productName,
             @Nullable String statusName,
             Pageable pageable);
-
-    @NotNull
-    Optional<Order> findById(@NotNull String id);
 }

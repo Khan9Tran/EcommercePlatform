@@ -26,22 +26,22 @@ public class OrderController {
 
     @GetMapping("/{orderId}/seller")
     @Operation(summary = "Get one order by seller", description = "Api get one order by seller")
-    public ApiResponse<OrderResponseSeller> getOneOrderBySeller(@PathVariable String orderId) {
-        return ApiResponse.<OrderResponseSeller>builder()
+    public ApiResponse<OrderDetailSellerResponse> getOneOrderBySeller(@PathVariable String orderId) {
+        return ApiResponse.<OrderDetailSellerResponse>builder()
                 .result(orderService.getOneOrderBySeller(orderId))
                 .build();
     }
 
     @Operation(summary = "Get all order by seller", description = "Api get all order by seller")
     @GetMapping("/seller")
-    public ApiResponse<PaginationResponse<OrderResponseSeller>> getAllOrderBySeller(
-            @RequestParam(value = "sort", required = false) String sortBy,
-            @RequestParam(value = "order", required = false) String orderBy,
+    public ApiResponse<PaginationResponse<OrderGetAllSellerResponse>> getAllOrderBySeller(
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "") String sortBy,
+            @RequestParam(value = "orderBy", required = false, defaultValue = "") String orderBy,
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
             @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
-        return ApiResponse.<PaginationResponse<OrderResponseSeller>>builder()
+        return ApiResponse.<PaginationResponse<OrderGetAllSellerResponse>>builder()
                 .result(orderService.getAllOrderBySeller(page, size, sortBy, orderBy, search, filter))
                 .build();
     }
@@ -66,22 +66,22 @@ public class OrderController {
 
     @GetMapping("/{orderId}/admin")
     @Operation(summary = "Get one order by admin", description = "Api get one order by admin")
-    public ApiResponse<OrderResponseAdmin> getOneOrderByAdmin(@PathVariable String orderId) {
-        return ApiResponse.<OrderResponseAdmin>builder()
+    public ApiResponse<OrderDetailAdminResponse> getOneOrderByAdmin(@PathVariable String orderId) {
+        return ApiResponse.<OrderDetailAdminResponse>builder()
                 .result(orderService.getOneOrderByAdmin(orderId))
                 .build();
     }
 
     @Operation(summary = "Get all order by admin", description = "Api get all order by admin")
     @GetMapping("/admin")
-    public ApiResponse<PaginationResponse<OrderResponseAdmin>> getAllOrderByAdmin(
-            @RequestParam(value = "sort", required = false) String sortBy,
-            @RequestParam(value = "order", required = false) String orderBy,
+    public ApiResponse<PaginationResponse<OrderGetAllAdminResponse>> getAllOrderByAdmin(
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "") String sortBy,
+            @RequestParam(value = "orderBy", required = false, defaultValue = "") String orderBy,
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
             @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
-        return ApiResponse.<PaginationResponse<OrderResponseAdmin>>builder()
+        return ApiResponse.<PaginationResponse<OrderGetAllAdminResponse>>builder()
                 .result(orderService.getAllOrderByAdmin(page, size, sortBy, orderBy, search, filter))
                 .build();
     }
@@ -106,22 +106,22 @@ public class OrderController {
 
     @GetMapping("/{orderId}/user")
     @Operation(summary = "Get one order by user", description = "Api get one order by user")
-    public ApiResponse<OrderResponseUser> getOneOrderByUser(@PathVariable String orderId) {
-        return ApiResponse.<OrderResponseUser>builder()
+    public ApiResponse<OrderGetOneUserResponse> getOneOrderByUser(@PathVariable String orderId) {
+        return ApiResponse.<OrderGetOneUserResponse>builder()
                 .result(orderService.getOneOrderByUser(orderId))
                 .build();
     }
 
     @Operation(summary = "Get all order by user", description = "Api get all order by user")
     @GetMapping("/user")
-    public ApiResponse<PaginationResponse<OrderResponseUser>> getAllOrderByUser(
-            @RequestParam(value = "sort", required = false) String sortBy,
-            @RequestParam(value = "order", required = false) String orderBy,
+    public ApiResponse<PaginationResponse<OrderGetAllUserResponse>> getAllOrderByUser(
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "") String sortBy,
+            @RequestParam(value = "orderBy", required = false, defaultValue = "") String orderBy,
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
             @RequestParam(value = "filter", required = false, defaultValue = "") String filter) {
-        return ApiResponse.<PaginationResponse<OrderResponseUser>>builder()
+        return ApiResponse.<PaginationResponse<OrderGetAllUserResponse>>builder()
                 .result(orderService.getAllOrderByUser(page, size, sortBy, orderBy, search, filter))
                 .build();
     }

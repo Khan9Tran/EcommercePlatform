@@ -36,7 +36,6 @@ import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
-import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.enums.PaymentMethod;
@@ -45,9 +44,11 @@ import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.OrderItemMapper;
 import com.hkteam.ecommerce_platform.mapper.OrderMapper;
+import com.hkteam.ecommerce_platform.mapper.OrderStatusHistoryMapper;
 import com.hkteam.ecommerce_platform.rabbitmq.RabbitMQConfig;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
+import com.hkteam.ecommerce_platform.util.OrderUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
 import com.hkteam.ecommerce_platform.util.ShippingFeeUtil;
 
@@ -68,6 +69,8 @@ public class OrderService {
     OrderStatusRepository orderStatusRepository;
     OrderMapper orderMapper;
     OrderItemMapper orderItemMapper;
+    OrderStatusHistoryMapper orderStatusHistoryMapper;
+    OrderUtil orderUtil;
     PaymentService paymentService;
     AuthenticatedUserUtil authenticatedUserUtil;
     ProductRepository productRepository;
@@ -78,88 +81,70 @@ public class OrderService {
     ProductElasticsearchRepository productElasticsearchRepository;
     VariantRepository variantRepository;
 
-    static String[] SORT_BY_SELLER = {"createdAt"};
-    static String[] SORT_BY_ADMIN = {"createdAt"};
-    static String[] SORT_BY_USER = {"createdAt"};
-    static String[] ORDER_BY = {"asc", "desc"};
+    private static final String ORDER_CODE = "id";
+    private static final String CREATED_AT = "createdAt";
+    private static final String PHONE = "phone";
+    private static final String ADDRESS = "province";
+    private static final String GRAND_TOTAL = "grandTotal";
+    private static final String ASC = "asc";
+    private static final String DESC = "desc";
+    private static final String[] SORT_BY_SELLER = {ORDER_CODE, CREATED_AT};
+    private static final String[] SORT_BY_ADMIN = {ORDER_CODE, CREATED_AT, PHONE, ADDRESS, GRAND_TOTAL};
+    private static final String[] SORT_BY_USER = {CREATED_AT};
+    private static final String[] ORDER_BY_SELLER = {ASC, DESC};
+    private static final String[] ORDER_BY_ADMIN = {ASC, DESC};
+    private static final String[] ORDER_BY_USER = {ASC, DESC};
 
     @PreAuthorize("hasRole('SELLER')")
-    public PaginationResponse<OrderResponseSeller> getAllOrderBySeller(
-            String pageStr, String sizeStr, String sortBy, String orderBy, String search, String filter) {
+    public PaginationResponse<OrderGetAllSellerResponse> getAllOrderBySeller(
+            String page, String size, String sortBy, String orderBy, String search, String filter) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
-        if (user.getStore() == null) {
+        if (Objects.isNull(user.getStore())) {
             throw new AppException(ErrorCode.STORE_NOT_FOUND);
         }
         String storeId = user.getStore().getId();
 
-        if (!Arrays.asList(SORT_BY_SELLER).contains(sortBy)) sortBy = null;
-        if (!Arrays.asList(ORDER_BY).contains(orderBy)) orderBy = null;
-        Sort sortable = (sortBy == null || orderBy == null)
-                ? Sort.unsorted()
-                : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
+        Sort sortable = orderUtil.validateSortAndOrder(sortBy, orderBy, SORT_BY_SELLER, ORDER_BY_SELLER);
 
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
+        Pageable pageable = PageUtils.createPageable(page, size, sortable);
         var pageData = orderRepository.findAllOrderBySeller(storeId, search, filter, pageable);
 
-        int page = Integer.parseInt(pageStr);
+        int pageInt = Integer.parseInt(page);
 
-        PageUtils.validatePageBounds(page, pageData);
-        List<OrderResponseSeller> orderResponseSellers = new ArrayList<>();
+        PageUtils.validatePageBounds(pageInt, pageData);
+
+        List<OrderGetAllSellerResponse> listOrderGetAllSellerResponse = new ArrayList<>();
         pageData.getContent().forEach((order -> {
-            OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
-                    .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
-                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
+            OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
 
-            OrderResponseSeller orderResponseSeller = orderMapper.toOrderResponseSeller(order);
+            OrderGetAllSellerResponse orderGetAllSellerResponse = orderMapper.toOrderGetAllSellerResponse(order);
 
-            orderResponseSeller.setCurrentStatus(
+            orderGetAllSellerResponse.setCurrentStatus(
                     lastStatusHistory.getOrderStatus().getName());
-            orderResponseSeller.setUserPhone(maskPhone(orderResponseSeller.getUserPhone()));
-            orderResponseSeller.setUserEmail(maskEmail(orderResponseSeller.getUserEmail()));
 
-            List<OrderItemResponseSeller> orderItemResponseSellers =
-                    orderItemMapper.toOrderItemResponseSellerList(order.getOrderItems());
-            orderResponseSeller.setOrderItems(orderItemResponseSellers);
-            orderResponseSellers.add(orderResponseSeller);
+            listOrderGetAllSellerResponse.add(orderGetAllSellerResponse);
         }));
 
-        return PaginationResponse.<OrderResponseSeller>builder()
-                .currentPage(page)
+        return PaginationResponse.<OrderGetAllSellerResponse>builder()
+                .currentPage(pageInt)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? page + 1 : null)
-                .previousPage(pageData.hasPrevious() ? page - 1 : null)
-                .data(orderResponseSellers)
+                .nextPage(pageData.hasNext() ? pageInt + 1 : null)
+                .previousPage(pageData.hasPrevious() ? pageInt - 1 : null)
+                .data(listOrderGetAllSellerResponse)
                 .build();
     }
 
-    private String maskPhone(String phone) {
-        if (phone != null && phone.length() > 3) {
-            return phone.substring(0, phone.length() - 3) + "***";
-        }
-        return phone;
-    }
-
-    private String maskEmail(String email) {
-        if (email != null && email.contains("@")) {
-            int atIndex = email.indexOf("@");
-            if (atIndex > 3) {
-                return email.substring(0, atIndex - 3) + "***" + email.substring(atIndex);
-            }
-        }
-        return email;
-    }
-
     @PreAuthorize("hasRole('SELLER')")
-    public OrderResponseSeller getOneOrderBySeller(String orderId) {
+    public OrderDetailSellerResponse getOneOrderBySeller(String orderId) {
         Order order =
                 orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         var user = authenticatedUserUtil.getAuthenticatedUser();
-        if (user.getStore() == null) {
+        if (Objects.isNull(user.getStore())) {
             throw new AppException(ErrorCode.STORE_NOT_FOUND);
         }
 
@@ -167,16 +152,21 @@ public class OrderService {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
         }
 
-        OrderResponseSeller orderResponseSeller = orderMapper.toOrderResponseSeller(order);
-        orderResponseSeller.setCurrentStatus(
-                order.getOrderStatusHistories().getLast().getOrderStatus().getName());
-        orderResponseSeller.setUserPhone(maskPhone(orderResponseSeller.getUserPhone()));
-        orderResponseSeller.setUserEmail(maskEmail(orderResponseSeller.getUserEmail()));
-        List<OrderItemResponseSeller> orderItemResponseSellers =
-                orderItemMapper.toOrderItemResponseSellerList(order.getOrderItems());
-        orderResponseSeller.setOrderItems(orderItemResponseSellers);
+        OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
 
-        return orderResponseSeller;
+        List<OrderItemGetOneSellerResponse> listOrderItemGetOneSellerResponse = order.getOrderItems().stream()
+                .map(orderItemMapper::toOrderItemGetOneSellerResponse)
+                .toList();
+
+        OrderDetailSellerResponse orderDetailSellerResponse = orderMapper.toOrderDetailSellerResponse(order);
+
+        orderDetailSellerResponse.setCurrentStatus(
+                lastStatusHistory.getOrderStatus().getName());
+        orderDetailSellerResponse.setUserPhone(orderUtil.maskPhone(orderDetailSellerResponse.getUserPhone()));
+        orderDetailSellerResponse.setUserEmail(orderUtil.maskEmail(orderDetailSellerResponse.getUserEmail()));
+        orderDetailSellerResponse.setOrderItems(listOrderItemGetOneSellerResponse);
+
+        return orderDetailSellerResponse;
     }
 
     @PreAuthorize("hasRole('SELLER')")
@@ -190,7 +180,7 @@ public class OrderService {
         OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
         OrderStatusName currentStatus =
                 OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
-        OrderStatusName nextStatusName = getNextStatusSeller(currentStatus);
+        OrderStatusName nextStatusName = orderUtil.getNextStatusSeller(currentStatus);
         OrderStatus nextStatus = orderStatusRepository
                 .findByName(nextStatusName.name())
                 .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
@@ -204,7 +194,7 @@ public class OrderService {
         try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while updating order status: {}", e.getMessage());
+            log.info("Error while updating order status by seller: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -267,120 +257,69 @@ public class OrderService {
         }
     }
 
-    private OrderStatusName getNextStatusSeller(OrderStatusName currentStatus) {
-        return switch (currentStatus) {
-            case PENDING -> OrderStatusName.CONFIRMED;
-            case CONFIRMED -> OrderStatusName.PREPARING;
-            case PREPARING -> OrderStatusName.WAITING_FOR_SHIPPING;
-            default -> throw new AppException(ErrorCode.NOT_PERMISSION_ORDER);
-        };
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
-    public PaginationResponse<OrderResponseAdmin> getAllOrderByAdmin(
-            String pageStr, String sizeStr, String sortBy, String orderBy, String search, String filter) {
+    public PaginationResponse<OrderGetAllAdminResponse> getAllOrderByAdmin(
+            String page, String size, String sortBy, String orderBy, String search, String filter) {
 
-        if (!Arrays.asList(SORT_BY_ADMIN).contains(sortBy)) sortBy = null;
-        if (!Arrays.asList(ORDER_BY).contains(orderBy)) orderBy = null;
-        Sort sortable = (sortBy == null || orderBy == null)
-                ? Sort.unsorted()
-                : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
+        Sort sortable = orderUtil.validateSortAndOrder(sortBy, orderBy, SORT_BY_ADMIN, ORDER_BY_ADMIN);
 
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
-        var pageData = orderRepository.findAllOrderByAdmin(search, search, search, filter, pageable);
+        Pageable pageable = PageUtils.createPageable(page, size, sortable);
+        var pageData = orderRepository.findAllOrderByAdmin(search, search, search, search, filter, pageable);
 
-        int page = Integer.parseInt(pageStr);
+        int pageInt = Integer.parseInt(page);
 
-        PageUtils.validatePageBounds(page, pageData);
-        List<OrderResponseAdmin> orderResponseAdmins = new ArrayList<>();
+        PageUtils.validatePageBounds(pageInt, pageData);
+
+        List<OrderGetAllAdminResponse> listOrderGetAllAdminResponse = new ArrayList<>();
         pageData.getContent().forEach((order -> {
-            OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
-                    .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
-                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
+            OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
+            TransactionStatusHistory lastTransactionStatusHistory = orderUtil.getLastTransactionStatusHistory(order);
 
-            TransactionStatusHistory lastTransactionStatusHistory =
-                    order.getTransaction().getTransactionStatusHistories().stream()
-                            .max(Comparator.comparing(TransactionStatusHistory::getCreatedAt))
-                            .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_STATUS_HISTORY_NOT_FOUND));
-            OrderResponseAdmin orderResponseAdmin = orderMapper.toOrderResponseAdmin(order);
+            OrderGetAllAdminResponse orderGetAllAdminResponse = orderMapper.toOrderGetAllAdminResponse(order);
 
-            String defaultAddressStr = String.format(
-                    "%s%s, %s, %s, %s",
-                    order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
-                    order.getDetailAddress(),
-                    order.getSubDistrict(),
-                    order.getDistrict(),
-                    order.getProvince());
-            orderResponseAdmin.setDefaultAddressStr(defaultAddressStr);
-            orderResponseAdmin.setCurrentStatus(
+            orderGetAllAdminResponse.setCurrentStatus(
                     lastStatusHistory.getOrderStatus().getName());
-            orderResponseAdmin.setCurrentStatusTransaction(
+            orderGetAllAdminResponse.setCurrentStatusTransaction(
                     lastTransactionStatusHistory.getTransactionStatus().getName());
 
-            addStoreAddress(order, orderResponseAdmin);
-
-            List<OrderItemResponseAdmin> orderItemResponseAdmins =
-                    orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
-            orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
-            orderResponseAdmins.add(orderResponseAdmin);
+            listOrderGetAllAdminResponse.add(orderGetAllAdminResponse);
         }));
 
-        return PaginationResponse.<OrderResponseAdmin>builder()
-                .currentPage(page)
+        return PaginationResponse.<OrderGetAllAdminResponse>builder()
+                .currentPage(pageInt)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? page + 1 : null)
-                .previousPage(pageData.hasPrevious() ? page - 1 : null)
-                .data(orderResponseAdmins)
+                .nextPage(pageData.hasNext() ? pageInt + 1 : null)
+                .previousPage(pageData.hasPrevious() ? pageInt - 1 : null)
+                .data(listOrderGetAllAdminResponse)
                 .build();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public OrderResponseAdmin getOneOrderByAdmin(String orderId) {
+    public OrderDetailAdminResponse getOneOrderByAdmin(String orderId) {
         Order order =
                 orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        String defaultAddressStr = String.format(
-                "%s%s, %s, %s, %s",
-                order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
-                order.getDetailAddress(),
-                order.getDistrict(),
-                order.getSubDistrict(),
-                order.getProvince());
+        OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
+        TransactionStatusHistory lastTransactionStatusHistory = orderUtil.getLastTransactionStatusHistory(order);
 
-        OrderResponseAdmin orderResponseAdmin = orderMapper.toOrderResponseAdmin(order);
-        orderResponseAdmin.setDefaultAddressStr(defaultAddressStr);
-        orderResponseAdmin.setCurrentStatus(
-                order.getOrderStatusHistories().getLast().getOrderStatus().getName());
-        orderResponseAdmin.setCurrentStatusTransaction(order.getTransaction()
-                .getTransactionStatusHistories()
-                .getLast()
-                .getTransactionStatus()
-                .getName());
-        List<OrderItemResponseAdmin> orderItemResponseAdmins =
-                orderItemMapper.toOrderItemResponseAdmins(order.getOrderItems());
-        orderResponseAdmin.setOrderItems(orderItemResponseAdmins);
+        List<OrderItemGetOneAdminResponse> listOrderItemGetOneAdminResponse = order.getOrderItems().stream()
+                .map(orderItemMapper::toOrderItemGetOneAdminResponse)
+                .toList();
 
-        addStoreAddress(order, orderResponseAdmin);
+        OrderDetailAdminResponse orderDetailAdminResponse = orderMapper.toOrderDetailAdminResponse(order);
 
-        return orderResponseAdmin;
-    }
+        orderDetailAdminResponse.setCurrentStatus(
+                lastStatusHistory.getOrderStatus().getName());
+        orderDetailAdminResponse.setCurrentStatusTransaction(
+                lastTransactionStatusHistory.getTransactionStatus().getName());
+        orderDetailAdminResponse.setOrderItems(listOrderItemGetOneAdminResponse);
+        orderUtil.addStoreAddress(order, orderDetailAdminResponse);
 
-    private void addStoreAddress(Order order, OrderResponseAdmin orderResponseAdmin) {
-        if (Objects.nonNull(order.getStore().getDefaultAddressId())) {
-            Address address = addressRepository
-                    .findById(order.getStore().getDefaultAddressId())
-                    .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_MESSAGE));
-
-            orderResponseAdmin.setStoreProvince(address.getProvince());
-            orderResponseAdmin.setStoreDistrict(address.getDistrict());
-            orderResponseAdmin.setStoreSubDistrict(address.getSubDistrict());
-            orderResponseAdmin.setStoreDetailAddress(address.getDetailAddress());
-            orderResponseAdmin.setStoreDetailLocate(address.getDetailLocate());
-        }
+        return orderDetailAdminResponse;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -391,7 +330,7 @@ public class OrderService {
         OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
         OrderStatusName currentStatus =
                 OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
-        OrderStatusName nextStatusName = getNextStatusAdmin(currentStatus);
+        OrderStatusName nextStatusName = orderUtil.getNextStatusAdmin(currentStatus);
         OrderStatus nextStatus = orderStatusRepository
                 .findByName(nextStatusName.name())
                 .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
@@ -420,7 +359,7 @@ public class OrderService {
             }
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while updating order status: {}", e.getMessage());
+            log.info("Error while updating order status by admin: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -479,79 +418,56 @@ public class OrderService {
         }
     }
 
-    private OrderStatusName getNextStatusAdmin(OrderStatusName currentStatus) {
-        return switch (currentStatus) {
-            case WAITING_FOR_SHIPPING -> OrderStatusName.PICKED_UP;
-            case PICKED_UP -> OrderStatusName.OUT_FOR_DELIVERY;
-            case OUT_FOR_DELIVERY -> OrderStatusName.DELIVERED;
-            default -> throw new AppException(ErrorCode.SELLER_PREPARING_COMPLETED_ORDER);
-        };
-    }
-
     @PreAuthorize("hasRole('USER')")
-    public PaginationResponse<OrderResponseUser> getAllOrderByUser(
-            String pageStr, String sizeStr, String sortBy, String orderBy, String search, String filter) {
+    public PaginationResponse<OrderGetAllUserResponse> getAllOrderByUser(
+            String page, String size, String sortBy, String orderBy, String search, String filter) {
         var user = authenticatedUserUtil.getAuthenticatedUser();
         String userId = user.getId();
 
-        if (!Arrays.asList(SORT_BY_USER).contains(sortBy)) sortBy = null;
-        if (!Arrays.asList(ORDER_BY).contains(orderBy)) orderBy = null;
-        Sort sortable = (sortBy == null || orderBy == null)
-                ? Sort.unsorted()
-                : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
+        Sort sortable = orderUtil.validateSortAndOrder(sortBy, orderBy, SORT_BY_USER, ORDER_BY_USER);
 
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
+        Pageable pageable = PageUtils.createPageable(page, size, sortable);
         var pageData = orderRepository.findAllOrderByUser(userId, search, search, search, filter, pageable);
 
-        int page = Integer.parseInt(pageStr);
+        int pageInt = Integer.parseInt(page);
 
-        PageUtils.validatePageBounds(page, pageData);
-        List<OrderResponseUser> orderResponseUsers = new ArrayList<>();
+        PageUtils.validatePageBounds(pageInt, pageData);
+
+        List<OrderGetAllUserResponse> listOrderGetAllUserResponse = new ArrayList<>();
         pageData.getContent().forEach((order -> {
-            OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().stream()
-                    .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
-                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_HISTORY_NOT_FOUND));
-            TransactionStatusHistory lastTransactionStatusHistory =
-                    order.getTransaction().getTransactionStatusHistories().stream()
-                            .max(Comparator.comparing(TransactionStatusHistory::getCreatedAt))
-                            .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_STATUS_HISTORY_NOT_FOUND));
+            OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
+            TransactionStatusHistory lastTransactionStatusHistory = orderUtil.getLastTransactionStatusHistory(order);
 
-            OrderResponseUser orderResponseUser = orderMapper.toOrderResponseUser(order);
+            List<OrderItemGetAllUserResponse> listOrderItemGetAllUserResponse = order.getOrderItems().stream()
+                    .map(orderItemMapper::toOrderItemGetAllUserResponse)
+                    .toList();
 
-            String defaultAddressStr = String.format(
-                    "%s%s, %s, %s, %s",
-                    order.getDetailLocate() != null ? order.getDetailLocate() + ", " : "",
-                    order.getDetailAddress(),
-                    order.getSubDistrict(),
-                    order.getDistrict(),
-                    order.getProvince());
-            orderResponseUser.setDefaultAddressStr(defaultAddressStr);
-            orderResponseUser.setCurrentStatus(
+            OrderGetAllUserResponse orderGetAllUserResponse = orderMapper.toOrderGetAllUserResponse(order);
+
+            orderGetAllUserResponse.setCurrentStatus(
                     lastStatusHistory.getOrderStatus().getName());
-            orderResponseUser.setCurrentStatusTransaction(
+            orderGetAllUserResponse.setCurrentStatusTransaction(
                     lastTransactionStatusHistory.getTransactionStatus().getName());
+            orderGetAllUserResponse.setOrderItems(listOrderItemGetAllUserResponse);
 
-            List<OrderItemResponseUser> orderItemResponseUsers =
-                    orderItemMapper.toOrderItemResponseList(order.getOrderItems());
-            orderResponseUser.setOrderItems(orderItemResponseUsers);
-            orderResponseUsers.add(orderResponseUser);
+            listOrderGetAllUserResponse.add(orderGetAllUserResponse);
         }));
 
-        return PaginationResponse.<OrderResponseUser>builder()
-                .currentPage(page)
+        return PaginationResponse.<OrderGetAllUserResponse>builder()
+                .currentPage(pageInt)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? page + 1 : null)
-                .previousPage(pageData.hasPrevious() ? page - 1 : null)
-                .data(orderResponseUsers)
+                .nextPage(pageData.hasNext() ? pageInt + 1 : null)
+                .previousPage(pageData.hasPrevious() ? pageInt - 1 : null)
+                .data(listOrderGetAllUserResponse)
                 .build();
     }
 
     @PreAuthorize("hasRole('USER')")
-    public OrderResponseUser getOneOrderByUser(String orderId) {
+    public OrderGetOneUserResponse getOneOrderByUser(String orderId) {
         Order order =
                 orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
@@ -568,24 +484,27 @@ public class OrderService {
                 order.getSubDistrict(),
                 order.getProvince());
 
-        OrderResponseUser orderResponseUser = orderMapper.toOrderResponseUser(order);
-        orderResponseUser.setDefaultAddressStr(defaultAddressStr);
-        orderResponseUser.setCurrentStatus(
-                order.getOrderStatusHistories().getLast().getOrderStatus().getName());
-        orderResponseUser.setCurrentStatusTransaction(order.getTransaction()
-                .getTransactionStatusHistories()
-                .getLast()
-                .getTransactionStatus()
-                .getName());
+        OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
 
-        List<OrderItemResponseUser> orderItemResponseUsers =
-                orderItemMapper.toOrderItemResponseList(order.getOrderItems());
-        orderResponseUser.setOrderItems(orderItemResponseUsers);
-        List<OrderStatusHistoryResponseUser> orderStatusHistoryResponseUsers =
-                orderMapper.toOrderStatusHistoryResponseUserList(order.getOrderStatusHistories());
-        orderResponseUser.setOrderStatusHistories(orderStatusHistoryResponseUsers);
+        List<OrderItemGetOneUserResponse> listOrderItemGetOneUserResponse = order.getOrderItems().stream()
+                .map(orderItemMapper::toOrderItemGetOneUserResponse)
+                .toList();
 
-        return orderResponseUser;
+        List<OrderStatusHistory> sortedOrderStatusHistories = order.getOrderStatusHistories().stream()
+                .sorted(Comparator.comparing(OrderStatusHistory::getCreatedAt))
+                .toList();
+        List<OrderStatusHistoryGetOneUserResponse> listOrderStatusHistoryGetOneUserResponse =
+                orderStatusHistoryMapper.toListOrderStatusHistoryGetOneUserResponse(sortedOrderStatusHistories);
+
+        OrderGetOneUserResponse orderGetOneUserResponse = orderMapper.toOrderGetOneUserResponse(order);
+
+        orderGetOneUserResponse.setDefaultAddressStr(defaultAddressStr);
+        orderGetOneUserResponse.setCurrentStatus(
+                lastStatusHistory.getOrderStatus().getName());
+        orderGetOneUserResponse.setOrderItems(listOrderItemGetOneUserResponse);
+        orderGetOneUserResponse.setOrderStatusHistories(listOrderStatusHistoryGetOneUserResponse);
+
+        return orderGetOneUserResponse;
     }
 
     @Transactional

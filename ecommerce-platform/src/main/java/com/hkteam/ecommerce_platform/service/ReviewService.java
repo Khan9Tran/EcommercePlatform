@@ -39,7 +39,6 @@ public class ReviewService {
     AuthenticatedUserUtil authenticatedUserUtil;
     OrderRepository orderRepository;
     ProductRepository productRepository;
-    StoreRepository storeRepository;
     ProductElasticsearchRepository productElasticsearchRepository;
 
     static String[] SORT_BY = {"createdAt"};
@@ -50,7 +49,7 @@ public class ReviewService {
         var user = authenticatedUserUtil.getAuthenticatedUser();
 
         var order = orderRepository
-                .findById(request.getOrderId())
+                .findOrderById(request.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getUser().getId().equals(user.getId())) {

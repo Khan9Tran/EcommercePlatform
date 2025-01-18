@@ -1,7 +1,7 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.Instant;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,14 +14,13 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class OrderItemResponseAdmin {
-    Long id;
-    List<String> values;
-    int quantity;
-    BigDecimal price;
-    BigDecimal discount;
-    String productName;
-    String productMainImageUrl;
-    String productNameBrand;
-    String productSlug;
+public class OrderGetAllAdminResponse {
+    String id;
+    Instant createdAt;
+    String phone;
+    String province;
+    String currentStatusTransaction;
+    String paymentMethod;
+    String currentStatus;
+    BigDecimal grandTotal;
 }

@@ -15,15 +15,18 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class OrderItemResponseUser {
-    Long id;
-    List<String> values;
-    int quantity;
-    BigDecimal price;
-    BigDecimal discount;
-    Instant createdAt;
+public class OrderGetAllUserResponse {
+    String id;
+    String storeId;
+    String avatarStore;
+    String storeName;
+    Float ratingStore;
+    String currentStatus;
     Instant lastUpdatedAt;
-    String productName;
-    String productMainImageUrl;
-    String productSlug;
+    String paymentMethod;
+    String currentStatusTransaction;
+    BigDecimal grandTotal;
+    String note;
+
+    List<OrderItemGetAllUserResponse> orderItems;
 }

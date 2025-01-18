@@ -46,7 +46,6 @@ public class ImageService {
     ProductRepository productRepository;
     ProductImageRepository productImageRepository;
     ReviewRepository reviewRepository;
-    OrderRepository orderRepository;
     ReviewImageRepository reviewImageRepository;
 
     RabbitTemplate rabbitTemplate;

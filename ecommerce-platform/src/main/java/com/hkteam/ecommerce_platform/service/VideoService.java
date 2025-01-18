@@ -19,7 +19,6 @@ import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.enums.TypeImage;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
-import com.hkteam.ecommerce_platform.repository.OrderRepository;
 import com.hkteam.ecommerce_platform.repository.ProductElasticsearchRepository;
 import com.hkteam.ecommerce_platform.repository.ProductRepository;
 import com.hkteam.ecommerce_platform.repository.ReviewRepository;
@@ -42,7 +41,6 @@ public class VideoService {
     ExecutorService executorService = Executors.newFixedThreadPool(5);
     ProductElasticsearchRepository productElasticsearchRepository;
     ReviewRepository reviewRepository;
-    OrderRepository orderRepository;
 
     @PreAuthorize("hasRole('SELLER')")
     public VideoResponse uploadVideoProduct(String productId, MultipartFile videoFile) {
