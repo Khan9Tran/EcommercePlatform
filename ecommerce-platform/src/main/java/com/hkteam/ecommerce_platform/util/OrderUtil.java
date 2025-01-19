@@ -9,13 +9,18 @@ import org.springframework.stereotype.Component;
 
 import com.hkteam.ecommerce_platform.dto.response.OrderDetailAdminResponse;
 import com.hkteam.ecommerce_platform.entity.order.Order;
+import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
+import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.product.Value;
+import com.hkteam.ecommerce_platform.entity.product.Variant;
+import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
-import com.hkteam.ecommerce_platform.repository.AddressRepository;
+import com.hkteam.ecommerce_platform.repository.*;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -98,5 +103,67 @@ public class OrderUtil {
         return order.getTransaction().getTransactionStatusHistories().stream()
                 .max(Comparator.comparing(TransactionStatusHistory::getCreatedAt))
                 .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_STATUS_HISTORY_NOT_FOUND));
+    }
+
+    public void validateNotCancelled(OrderStatusHistory lastStatusHistory) {
+        if (OrderStatusName.CANCELLED
+                .name()
+                .equals(lastStatusHistory.getOrderStatus().getName())) {
+            throw new AppException(ErrorCode.ORDER_CANCELLED);
+        }
+    }
+
+    public void restoreProductQuantities(
+            Order order,
+            ProductRepository productRepository,
+            ProductElasticsearchRepository productElasticsearchRepository,
+            VariantRepository variantRepository) {
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Product product = orderItem.getProduct();
+            var esPro = productElasticsearchRepository
+                    .findById(orderItem.getProduct().getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            if (Objects.nonNull(product.getVariants()) && !product.getVariants().isEmpty()) {
+                Variant variant = product.getVariants().stream()
+                        .filter(v -> v.getValues().stream()
+                                .map(Value::getValue)
+                                .toList()
+                                .equals(orderItem.getValues()))
+                        .findFirst()
+                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+
+                variantRepository.updateQuantityById(variant.getQuantity() + orderItem.getQuantity(), variant.getId());
+            }
+            product.setQuantity(product.getQuantity() + orderItem.getQuantity());
+            productRepository.save(product);
+            esPro.setQuantity(esPro.getQuantity() + orderItem.getQuantity());
+            productElasticsearchRepository.save(esPro);
+        }
+    }
+
+    public void processOrderCancellation(
+            Order order,
+            OrderStatusRepository orderStatusRepository,
+            ProductRepository productRepository,
+            ProductElasticsearchRepository productElasticsearchRepository,
+            VariantRepository variantRepository,
+            OrderStatusName cancellationStatus) {
+
+        OrderStatusHistory lastStatusHistory = getLastOrderStatusHistory(order);
+
+        validateNotCancelled(lastStatusHistory);
+
+        OrderStatus cancelledStatus = orderStatusRepository
+                .findByName(cancellationStatus.name())
+                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
+
+        order.getOrderStatusHistories()
+                .add(OrderStatusHistory.builder()
+                        .order(order)
+                        .orderStatus(cancelledStatus)
+                        .remarks(lastStatusHistory.getRemarks())
+                        .build());
+
+        restoreProductQuantities(order, productRepository, productElasticsearchRepository, variantRepository);
     }
 }

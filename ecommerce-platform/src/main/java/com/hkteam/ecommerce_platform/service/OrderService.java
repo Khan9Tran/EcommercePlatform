@@ -31,7 +31,6 @@ import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.payment.Payment;
 import com.hkteam.ecommerce_platform.entity.payment.Transaction;
 import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
-import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.product.Value;
 import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
@@ -171,13 +170,15 @@ public class OrderService {
 
     @PreAuthorize("hasRole('SELLER')")
     public void updateOrderStatusBySeller(String orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
         }
 
-        OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
+        OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
+
         OrderStatusName currentStatus =
                 OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
         OrderStatusName nextStatusName = orderUtil.getNextStatusSeller(currentStatus);
@@ -189,7 +190,7 @@ public class OrderService {
                 .add(OrderStatusHistory.builder()
                         .order(order)
                         .orderStatus(nextStatus)
-                        .remarks(order.getOrderStatusHistories().getLast().getRemarks())
+                        .remarks(lastStatusHistory.getRemarks())
                         .build());
         try {
             orderRepository.save(order);
@@ -202,54 +203,21 @@ public class OrderService {
     @Transactional
     @PreAuthorize("hasRole('SELLER')")
     public void cancelOrderBySeller(String orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
         }
 
-        OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
-        if (OrderStatusName.CANCELLED
-                .name()
-                .equals(lastStatusHistory.getOrderStatus().getName())) {
-            throw new AppException(ErrorCode.ORDER_CANCELLED);
-        }
-
-        OrderStatus cancelledStatus = orderStatusRepository
-                .findByName(OrderStatusName.CANCELLED.name())
-                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
-
-        OrderStatusHistory cancelledStatusHistory = OrderStatusHistory.builder()
-                .order(order)
-                .orderStatus(cancelledStatus)
-                .remarks(order.getOrderStatusHistories().getLast().getRemarks())
-                .build();
-
-        order.getOrderStatusHistories().add(cancelledStatusHistory);
-
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Product product = orderItem.getProduct();
-            var esPro = productElasticsearchRepository
-                    .findById(orderItem.getProduct().getId())
-                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-            if (Objects.nonNull(product.getVariants()) && !product.getVariants().isEmpty()) {
-                Variant variant = product.getVariants().stream()
-                        .filter(v -> v.getValues().stream()
-                                .map(Value::getValue)
-                                .toList()
-                                .equals(orderItem.getValues()))
-                        .findFirst()
-                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
-
-                variantRepository.updateQuantityById(variant.getQuantity() + orderItem.getQuantity(), variant.getId());
-            }
-            product.setQuantity(product.getQuantity() + orderItem.getQuantity());
-            productRepository.save(product);
-            esPro.setQuantity(esPro.getQuantity() + orderItem.getQuantity());
-            productElasticsearchRepository.save(esPro);
-        }
-
         try {
+            orderUtil.processOrderCancellation(
+                    order,
+                    orderStatusRepository,
+                    productRepository,
+                    productElasticsearchRepository,
+                    variantRepository,
+                    OrderStatusName.CANCELLED);
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             log.error("Error while cancelling order by seller: {}", e.getMessage());
@@ -260,7 +228,6 @@ public class OrderService {
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<OrderGetAllAdminResponse> getAllOrderByAdmin(
             String page, String size, String sortBy, String orderBy, String search, String filter) {
-
         Sort sortable = orderUtil.validateSortAndOrder(sortBy, orderBy, SORT_BY_ADMIN, ORDER_BY_ADMIN);
 
         Pageable pageable = PageUtils.createPageable(page, size, sortable);
@@ -325,9 +292,11 @@ public class OrderService {
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void updateOrderStatusByAdmin(String orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
+        OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
+
         OrderStatusName currentStatus =
                 OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
         OrderStatusName nextStatusName = orderUtil.getNextStatusAdmin(currentStatus);
@@ -339,8 +308,9 @@ public class OrderService {
                 .add(OrderStatusHistory.builder()
                         .order(order)
                         .orderStatus(nextStatus)
-                        .remarks(order.getOrderStatusHistories().getLast().getRemarks())
+                        .remarks(lastStatusHistory.getRemarks())
                         .build());
+
         try {
             if (order.getTransaction().getPayment().getPaymentMethod().name().equals(PaymentMethod.COD.name())
                     && nextStatus.equals(orderStatusRepository
@@ -367,50 +337,17 @@ public class OrderService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public void cancelOrderByAdmin(String orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-
-        OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
-        if (OrderStatusName.CANCELLED
-                .name()
-                .equals(lastStatusHistory.getOrderStatus().getName())) {
-            throw new AppException(ErrorCode.ORDER_CANCELLED);
-        }
-
-        OrderStatus cancelledStatus = orderStatusRepository
-                .findByName(OrderStatusName.CANCELLED.name())
-                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
-
-        OrderStatusHistory cancelledStatusHistory = OrderStatusHistory.builder()
-                .order(order)
-                .orderStatus(cancelledStatus)
-                .remarks(order.getOrderStatusHistories().getLast().getRemarks())
-                .build();
-
-        order.getOrderStatusHistories().add(cancelledStatusHistory);
-
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Product product = orderItem.getProduct();
-            var esPro = productElasticsearchRepository
-                    .findById(orderItem.getProduct().getId())
-                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-            if (Objects.nonNull(product.getVariants()) && !product.getVariants().isEmpty()) {
-                Variant variant = product.getVariants().stream()
-                        .filter(v -> v.getValues().stream()
-                                .map(Value::getValue)
-                                .toList()
-                                .equals(orderItem.getValues()))
-                        .findFirst()
-                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
-
-                variantRepository.updateQuantityById(variant.getQuantity() + orderItem.getQuantity(), variant.getId());
-            }
-            product.setQuantity(product.getQuantity() + orderItem.getQuantity());
-            productRepository.save(product);
-            esPro.setQuantity(esPro.getQuantity() + orderItem.getQuantity());
-            productElasticsearchRepository.save(esPro);
-        }
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         try {
+            orderUtil.processOrderCancellation(
+                    order,
+                    orderStatusRepository,
+                    productRepository,
+                    productElasticsearchRepository,
+                    variantRepository,
+                    OrderStatusName.CANCELLED);
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             log.error("Error while cancelling order by admin: {}", e.getMessage());
@@ -510,56 +447,22 @@ public class OrderService {
     @Transactional
     @PreAuthorize("hasRole('USER')")
     public void cancelOrderByUser(String orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         var user = authenticatedUserUtil.getAuthenticatedUser();
         if (!order.getUser().getId().equals(user.getId())) {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_USER);
         }
 
-        OrderStatusHistory lastStatusHistory = order.getOrderStatusHistories().getLast();
-        if (OrderStatusName.CANCELLED
-                .name()
-                .equals(lastStatusHistory.getOrderStatus().getName())) {
-            throw new AppException(ErrorCode.ORDER_CANCELLED);
-        }
-
-        OrderStatus cancelledStatus = orderStatusRepository
-                .findByName(OrderStatusName.CANCELLED.name())
-                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
-
-        OrderStatusHistory cancelledStatusHistory = OrderStatusHistory.builder()
-                .order(order)
-                .orderStatus(cancelledStatus)
-                .remarks(order.getOrderStatusHistories().getLast().getRemarks())
-                .build();
-
-        order.getOrderStatusHistories().add(cancelledStatusHistory);
-
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Product product = orderItem.getProduct();
-
-            var esPro = productElasticsearchRepository
-                    .findById(orderItem.getProduct().getId())
-                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-            if (Objects.nonNull(product.getVariants()) && !product.getVariants().isEmpty()) {
-                Variant variant = product.getVariants().stream()
-                        .filter(v -> v.getValues().stream()
-                                .map(Value::getValue)
-                                .toList()
-                                .equals(orderItem.getValues()))
-                        .findFirst()
-                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
-
-                variantRepository.updateQuantityById(variant.getQuantity() + orderItem.getQuantity(), variant.getId());
-            }
-            product.setQuantity(product.getQuantity() + orderItem.getQuantity());
-            productRepository.save(product);
-            esPro.setQuantity(esPro.getQuantity() + orderItem.getQuantity());
-            productElasticsearchRepository.save(esPro);
-        }
-
         try {
+            orderUtil.processOrderCancellation(
+                    order,
+                    orderStatusRepository,
+                    productRepository,
+                    productElasticsearchRepository,
+                    variantRepository,
+                    OrderStatusName.CANCELLED);
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             log.error("Error while cancelling order by user: {}", e.getMessage());
