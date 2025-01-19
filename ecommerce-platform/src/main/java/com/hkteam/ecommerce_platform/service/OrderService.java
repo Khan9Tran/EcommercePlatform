@@ -554,6 +554,13 @@ public class OrderService {
                 }
 
                 product.setQuantity(product.getQuantity() - orderItemRequest.getQuantity());
+                productElasticsearchRepository.findById(product.getId())
+                        .ifPresentOrElse(
+                                productElasticsearch -> {
+                                    productElasticsearch.setQuantity(product.getQuantity());
+                                    productElasticsearchRepository.save(productElasticsearch);
+                                },
+                                () -> log.error("Product not found in elasticsearch."));
 
                 if (Boolean.TRUE.equals(hasVariant)) {
                     variant.setQuantity(variant.getQuantity() - orderItemRequest.getQuantity());
