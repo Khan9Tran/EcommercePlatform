@@ -1,10 +1,11 @@
 package com.hkteam.ecommerce_platform.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.hkteam.ecommerce_platform.dto.request.ListOrder;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.service.OrderService;
 
@@ -47,20 +48,39 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/update-status/seller")
-    @Operation(summary = "Update order status by seller", description = "Api update status order by seller")
-    public ApiResponse<Void> updateOrderStatusBySeller(@PathVariable String orderId) {
-        orderService.updateOrderStatusBySeller(orderId);
+    @Operation(summary = "Update one order status by seller", description = "Api update one order status by seller")
+    public ApiResponse<Void> updateOneOrderStatusBySeller(@PathVariable String orderId) {
+        orderService.updateOneOrderStatusBySeller(orderId);
         return ApiResponse.<Void>builder()
-                .message("Updated status order successfully")
+                .message("Updated status order by seller successfully")
+                .build();
+    }
+
+    @PutMapping("/list/update-status/seller")
+    @Operation(summary = "Update list order status by seller", description = "Api update list order status by seller")
+    public ApiResponse<Void> updateListOrderStatusBySeller(
+            @RequestBody @Valid OrderListStatusUpdateSellerRequest request) {
+        orderService.updateListOrderStatusBySeller(request.getListOrderId());
+        return ApiResponse.<Void>builder()
+                .message("Updated status list order by seller successfully")
                 .build();
     }
 
     @PutMapping("/{orderId}/cancel/seller")
-    @Operation(summary = "Cancel order by seller", description = "Api cancel order by seller")
-    public ApiResponse<Void> cancelOrderBySeller(@PathVariable String orderId) {
-        orderService.cancelOrderBySeller(orderId);
+    @Operation(summary = "Cancel one order by seller", description = "Api cancel one order by seller")
+    public ApiResponse<Void> cancelOneOrderBySeller(@PathVariable String orderId) {
+        orderService.cancelOneOrderBySeller(orderId);
         return ApiResponse.<Void>builder()
                 .message("Cancelled order by seller successfully")
+                .build();
+    }
+
+    @PutMapping("/list/cancel/seller")
+    @Operation(summary = "Cancel list order by seller", description = "Api cancel list order by seller")
+    public ApiResponse<Void> cancelListOrderBySeller(@RequestBody @Valid OrderListCancelSellerRequest request) {
+        orderService.cancelListOrderBySeller(request.getListOrderId());
+        return ApiResponse.<Void>builder()
+                .message("Cancelled list order by seller successfully")
                 .build();
     }
 
@@ -87,20 +107,39 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/update-status/admin")
-    @Operation(summary = "Update order status by admin", description = "Api update status order by admin")
-    public ApiResponse<Void> updateOrderStatusByAdmin(@PathVariable String orderId) {
-        orderService.updateOrderStatusByAdmin(orderId);
+    @Operation(summary = "Update one order status by admin", description = "Api update one order status by admin")
+    public ApiResponse<Void> updateOneOrderStatusByAdmin(@PathVariable String orderId) {
+        orderService.updateOneOrderStatusByAdmin(orderId);
         return ApiResponse.<Void>builder()
-                .message("Updated status order successfully")
+                .message("Updated status order by admin successfully")
+                .build();
+    }
+
+    @PutMapping("/list/update-status/admin")
+    @Operation(summary = "Update list order status by admin", description = "Api update list order status by admin")
+    public ApiResponse<Void> updateListOrderStatusByAdmin(
+            @RequestBody @Valid OrderListStatusUpdateAdminRequest request) {
+        orderService.updateListOrderStatusByAdmin(request.getListOrderId());
+        return ApiResponse.<Void>builder()
+                .message("Updated status list order by admin successfully")
                 .build();
     }
 
     @PutMapping("/{orderId}/cancel/admin")
-    @Operation(summary = "Cancel order by admin", description = "Api cancel order by admin")
-    public ApiResponse<Void> cancelOrderByAdmin(@PathVariable String orderId) {
-        orderService.cancelOrderByAdmin(orderId);
+    @Operation(summary = "Cancel one order by admin", description = "Api cancel one order by admin")
+    public ApiResponse<Void> cancelOneOrderByAdmin(@PathVariable String orderId) {
+        orderService.cancelOneOrderByAdmin(orderId);
         return ApiResponse.<Void>builder()
                 .message("Cancelled order by admin successfully")
+                .build();
+    }
+
+    @PutMapping("/list/cancel/admin")
+    @Operation(summary = "Cancel list order by admin", description = "Api cancel list order by admin")
+    public ApiResponse<Void> cancelListOrderByAdmin(@RequestBody @Valid OrderListCancelAdminRequest request) {
+        orderService.cancelListOrderByAdmin(request.getListOrderId());
+        return ApiResponse.<Void>builder()
+                .message("Cancelled list order by admin successfully")
                 .build();
     }
 
@@ -127,9 +166,9 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/cancel/user")
-    @Operation(summary = "Cancel order by user", description = "Api cancel order by user")
-    public ApiResponse<Void> cancelOrderByUser(@PathVariable String orderId) {
-        orderService.cancelOrderByUser(orderId);
+    @Operation(summary = "Cancel one order by user", description = "Api cancel one order by user")
+    public ApiResponse<Void> cancelOneOrderByUser(@PathVariable String orderId) {
+        orderService.cancelOneOrderByUser(orderId);
         return ApiResponse.<Void>builder()
                 .message("Cancelled order by user successfully")
                 .build();

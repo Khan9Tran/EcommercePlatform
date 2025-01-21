@@ -146,6 +146,11 @@ public enum ErrorCode {
     INVALID_YEAR(1724, "Year must be a positive integer greater than 2020", HttpStatus.BAD_REQUEST),
     MAX_INVALID(1725, "{field} must not exceed {max} characters", HttpStatus.BAD_REQUEST),
     MIN_MAX_INVALID(1725, "{field} must be between {min} and {max} characters", HttpStatus.BAD_REQUEST),
+    ONE_ORDER_UPDATE_STATUS_NOT_FOUND(1726, "Order to update status not found", HttpStatus.NOT_FOUND),
+    LIST_ORDER_UPDATE_STATUS_NOT_FOUND(1727, "List order to update status not found", HttpStatus.NOT_FOUND),
+    ONE_ORDER_CANCEL_NOT_FOUND(1728, "Order to cancel not found", HttpStatus.NOT_FOUND),
+    LIST_ORDER_CANCEL_NOT_FOUND(1729, "List order to cancel not found", HttpStatus.NOT_FOUND),
+    LIST_ORDER_NOT_BELONG_TO_STORE(1730, "List order doesn't belong to store", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

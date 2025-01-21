@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
@@ -98,4 +100,36 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Nullable String productName,
             @Nullable String statusName,
             Pageable pageable);
+
+    @Query(
+            """
+		select distinct o from Order o
+		join o.orderStatusHistories osh
+		join osh.orderStatus os
+		where o.id = :orderId
+		and os.name in :listStatus
+		and osh.createdAt = (
+					select max (osh2.createdAt)
+					from OrderStatusHistory osh2
+					where osh2.order = o
+				)
+	""")
+    Optional<Order> findOneOrderUpdateOrCancel(
+            @Param("orderId") String orderId, @Param("listStatus") List<String> listStatus);
+
+    @Query(
+            """
+		select distinct o from Order o
+		join o.orderStatusHistories osh
+		join osh.orderStatus os
+		where o.id IN :listOrderId
+		and os.name IN :listStatus
+		and osh.createdAt = (
+					select max (osh2.createdAt)
+					from OrderStatusHistory osh2
+					where osh2.order = o
+				)
+	""")
+    List<Order> findListOrderUpdateOrCancel(
+            @Param("listOrderId") List<String> listOrderId, @Param("listStatus") List<String> listStatus);
 }

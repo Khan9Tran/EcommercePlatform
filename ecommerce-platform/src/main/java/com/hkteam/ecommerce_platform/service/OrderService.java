@@ -17,10 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hkteam.ecommerce_platform.dto.request.ListOrder;
-import com.hkteam.ecommerce_platform.dto.request.OrderItemRequest;
-import com.hkteam.ecommerce_platform.dto.request.OrderRequest;
-import com.hkteam.ecommerce_platform.dto.request.SendMailAfterOrderRequest;
+import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.dto.response.OrderCreationResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
@@ -169,58 +166,113 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    public void updateOrderStatusBySeller(String orderId) {
-        Order order =
-                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+    @Transactional
+    public void updateOneOrderStatusBySeller(String orderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.PENDING.name(), OrderStatusName.CONFIRMED.name(), OrderStatusName.PREPARING.name());
 
-        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
-            throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
-        }
+        Order order = orderRepository
+                .findOneOrderUpdateOrCancel(orderId, listStatus)
+                .orElseThrow(() -> new AppException(ErrorCode.ONE_ORDER_UPDATE_STATUS_NOT_FOUND));
 
-        OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
+        orderUtil.updateOneOrderStatusBySeller(authenticatedUserUtil, order, orderStatusRepository);
 
-        OrderStatusName currentStatus =
-                OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
-        OrderStatusName nextStatusName = orderUtil.getNextStatusSeller(currentStatus);
-        OrderStatus nextStatus = orderStatusRepository
-                .findByName(nextStatusName.name())
-                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
-
-        order.getOrderStatusHistories()
-                .add(OrderStatusHistory.builder()
-                        .order(order)
-                        .orderStatus(nextStatus)
-                        .remarks(lastStatusHistory.getRemarks())
-                        .build());
         try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while updating order status by seller: {}", e.getMessage());
+            log.error("Error while updating order status by seller: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
-    @Transactional
     @PreAuthorize("hasRole('SELLER')")
-    public void cancelOrderBySeller(String orderId) {
-        Order order =
-                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+    @Transactional
+    public void updateListOrderStatusBySeller(List<String> listOrderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.PENDING.name(), OrderStatusName.CONFIRMED.name(), OrderStatusName.PREPARING.name());
+
+        List<Order> listOrder = orderRepository.findListOrderUpdateOrCancel(listOrderId, listStatus);
+        if (listOrder.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_ORDER_UPDATE_STATUS_NOT_FOUND);
+        }
+
+        listOrder.forEach(
+                order -> orderUtil.updateOneOrderStatusBySeller(authenticatedUserUtil, order, orderStatusRepository));
+
+        try {
+            orderRepository.saveAll(listOrder);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Error while updating list order status by seller: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @Transactional
+    public void cancelOneOrderBySeller(String orderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.ON_HOLD.name(),
+                OrderStatusName.PENDING.name(),
+                OrderStatusName.CONFIRMED.name(),
+                OrderStatusName.PREPARING.name());
+
+        Order order = orderRepository
+                .findOneOrderUpdateOrCancel(orderId, listStatus)
+                .orElseThrow(() -> new AppException(ErrorCode.ONE_ORDER_CANCEL_NOT_FOUND));
 
         if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
         }
 
+        orderUtil.cancelOneOrder(
+                order,
+                orderStatusRepository,
+                productRepository,
+                productElasticsearchRepository,
+                variantRepository,
+                OrderStatusName.CANCELLED);
+
         try {
-            orderUtil.processOrderCancellation(
-                    order,
-                    orderStatusRepository,
-                    productRepository,
-                    productElasticsearchRepository,
-                    variantRepository,
-                    OrderStatusName.CANCELLED);
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             log.error("Error while cancelling order by seller: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @Transactional
+    public void cancelListOrderBySeller(List<String> listOrderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.ON_HOLD.name(),
+                OrderStatusName.PENDING.name(),
+                OrderStatusName.CONFIRMED.name(),
+                OrderStatusName.PREPARING.name());
+
+        List<Order> listOrder = orderRepository.findListOrderUpdateOrCancel(listOrderId, listStatus);
+        if (listOrder.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_ORDER_CANCEL_NOT_FOUND);
+        }
+
+        List<Order> filteredListOrder =
+                listOrder.stream().filter(authenticatedUserUtil::isOwner).toList();
+
+        if (filteredListOrder.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_ORDER_NOT_BELONG_TO_STORE);
+        }
+
+        filteredListOrder.forEach(order -> orderUtil.cancelOneOrder(
+                order,
+                orderStatusRepository,
+                productRepository,
+                productElasticsearchRepository,
+                variantRepository,
+                OrderStatusName.CANCELLED));
+
+        try {
+            orderRepository.saveAll(filteredListOrder);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Error while cancelling list order by seller: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -284,73 +336,118 @@ public class OrderService {
         orderDetailAdminResponse.setCurrentStatusTransaction(
                 lastTransactionStatusHistory.getTransactionStatus().getName());
         orderDetailAdminResponse.setOrderItems(listOrderItemGetOneAdminResponse);
-        orderUtil.addStoreAddress(order, orderDetailAdminResponse);
+        orderUtil.addStoreAddress(order, addressRepository, orderDetailAdminResponse);
 
         return orderDetailAdminResponse;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public void updateOrderStatusByAdmin(String orderId) {
-        Order order =
-                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+    public void updateOneOrderStatusByAdmin(String orderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.WAITING_FOR_SHIPPING.name(),
+                OrderStatusName.PICKED_UP.name(),
+                OrderStatusName.OUT_FOR_DELIVERY.name());
 
-        OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
+        Order order = orderRepository
+                .findOneOrderUpdateOrCancel(orderId, listStatus)
+                .orElseThrow(() -> new AppException(ErrorCode.ONE_ORDER_UPDATE_STATUS_NOT_FOUND));
 
-        OrderStatusName currentStatus =
-                OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
-        OrderStatusName nextStatusName = orderUtil.getNextStatusAdmin(currentStatus);
-        OrderStatus nextStatus = orderStatusRepository
-                .findByName(nextStatusName.name())
-                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
-
-        order.getOrderStatusHistories()
-                .add(OrderStatusHistory.builder()
-                        .order(order)
-                        .orderStatus(nextStatus)
-                        .remarks(lastStatusHistory.getRemarks())
-                        .build());
+        orderUtil.updateOneOrderStatusByAdmin(order, orderStatusRepository, transactionStatusRepository);
 
         try {
-            if (order.getTransaction().getPayment().getPaymentMethod().name().equals(PaymentMethod.COD.name())
-                    && nextStatus.equals(orderStatusRepository
-                            .findByName(OrderStatusName.DELIVERED.name())
-                            .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))) {
-
-                order.getTransaction()
-                        .getTransactionStatusHistories()
-                        .add(TransactionStatusHistory.builder()
-                                .transactionStatus(transactionStatusRepository
-                                        .findById(TransactionStatusName.SUCCESS.name())
-                                        .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))
-                                .remarks("Payment COD completed.")
-                                .transaction(order.getTransaction())
-                                .build());
-            }
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while updating order status by admin: {}", e.getMessage());
+            log.error("Error while updating order status by admin: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
-    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public void cancelOrderByAdmin(String orderId) {
-        Order order =
-                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+    @Transactional
+    public void updateListOrderStatusByAdmin(List<String> listOrderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.WAITING_FOR_SHIPPING.name(),
+                OrderStatusName.PICKED_UP.name(),
+                OrderStatusName.OUT_FOR_DELIVERY.name());
+
+        List<Order> listOrder = orderRepository.findListOrderUpdateOrCancel(listOrderId, listStatus);
+        if (listOrder.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_ORDER_UPDATE_STATUS_NOT_FOUND);
+        }
+
+        listOrder.forEach(order ->
+                orderUtil.updateOneOrderStatusByAdmin(order, orderStatusRepository, transactionStatusRepository));
 
         try {
-            orderUtil.processOrderCancellation(
-                    order,
-                    orderStatusRepository,
-                    productRepository,
-                    productElasticsearchRepository,
-                    variantRepository,
-                    OrderStatusName.CANCELLED);
+            orderRepository.saveAll(listOrder);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Error while updating list order status by admin: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void cancelOneOrderByAdmin(String orderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.ON_HOLD.name(),
+                OrderStatusName.PENDING.name(),
+                OrderStatusName.CONFIRMED.name(),
+                OrderStatusName.PREPARING.name(),
+                OrderStatusName.WAITING_FOR_SHIPPING.name(),
+                OrderStatusName.PICKED_UP.name(),
+                OrderStatusName.OUT_FOR_DELIVERY.name());
+
+        Order order = orderRepository
+                .findOneOrderUpdateOrCancel(orderId, listStatus)
+                .orElseThrow(() -> new AppException(ErrorCode.ONE_ORDER_CANCEL_NOT_FOUND));
+
+        orderUtil.cancelOneOrder(
+                order,
+                orderStatusRepository,
+                productRepository,
+                productElasticsearchRepository,
+                variantRepository,
+                OrderStatusName.CANCELLED);
+
+        try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             log.error("Error while cancelling order by admin: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void cancelListOrderByAdmin(List<String> orderId) {
+        List<String> listStatus = List.of(
+                OrderStatusName.ON_HOLD.name(),
+                OrderStatusName.PENDING.name(),
+                OrderStatusName.CONFIRMED.name(),
+                OrderStatusName.PREPARING.name(),
+                OrderStatusName.WAITING_FOR_SHIPPING.name(),
+                OrderStatusName.PICKED_UP.name(),
+                OrderStatusName.OUT_FOR_DELIVERY.name());
+
+        List<Order> listOrder = orderRepository.findListOrderUpdateOrCancel(orderId, listStatus);
+        if (listOrder.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_ORDER_CANCEL_NOT_FOUND);
+        }
+
+        listOrder.forEach(order -> orderUtil.cancelOneOrder(
+                order,
+                orderStatusRepository,
+                productRepository,
+                productElasticsearchRepository,
+                variantRepository,
+                OrderStatusName.CANCELLED));
+
+        try {
+            orderRepository.saveAll(listOrder);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Error while cancelling list order by admin: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -446,23 +543,27 @@ public class OrderService {
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public void cancelOrderByUser(String orderId) {
-        Order order =
-                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+    public void cancelOneOrderByUser(String orderId) {
+        List<String> listStatus = List.of(OrderStatusName.ON_HOLD.name());
+
+        Order order = orderRepository
+                .findOneOrderUpdateOrCancel(orderId, listStatus)
+                .orElseThrow(() -> new AppException(ErrorCode.ONE_ORDER_CANCEL_NOT_FOUND));
 
         var user = authenticatedUserUtil.getAuthenticatedUser();
         if (!order.getUser().getId().equals(user.getId())) {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_USER);
         }
 
+        orderUtil.cancelOneOrder(
+                order,
+                orderStatusRepository,
+                productRepository,
+                productElasticsearchRepository,
+                variantRepository,
+                OrderStatusName.CANCELLED);
+
         try {
-            orderUtil.processOrderCancellation(
-                    order,
-                    orderStatusRepository,
-                    productRepository,
-                    productElasticsearchRepository,
-                    variantRepository,
-                    OrderStatusName.CANCELLED);
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             log.error("Error while cancelling order by user: {}", e.getMessage());
@@ -554,7 +655,8 @@ public class OrderService {
                 }
 
                 product.setQuantity(product.getQuantity() - orderItemRequest.getQuantity());
-                productElasticsearchRepository.findById(product.getId())
+                productElasticsearchRepository
+                        .findById(product.getId())
                         .ifPresentOrElse(
                                 productElasticsearch -> {
                                     productElasticsearch.setQuantity(product.getQuantity());

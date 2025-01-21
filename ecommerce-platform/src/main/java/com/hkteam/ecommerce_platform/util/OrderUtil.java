@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
@@ -18,20 +19,17 @@ import com.hkteam.ecommerce_platform.entity.product.Variant;
 import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.enums.OrderStatusName;
+import com.hkteam.ecommerce_platform.enums.PaymentMethod;
+import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.repository.*;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class OrderUtil {
-    AddressRepository addressRepository;
-
     public String validateSortOrOrder(String value, String[] validValues) {
         return Arrays.asList(validValues).contains(value) ? value : null;
     }
@@ -66,11 +64,12 @@ public class OrderUtil {
             case PENDING -> OrderStatusName.CONFIRMED;
             case CONFIRMED -> OrderStatusName.PREPARING;
             case PREPARING -> OrderStatusName.WAITING_FOR_SHIPPING;
-            default -> throw new AppException(ErrorCode.NOT_PERMISSION_ORDER);
+            default -> null;
         };
     }
 
-    public void addStoreAddress(Order order, OrderDetailAdminResponse orderDetailAdminResponse) {
+    public void addStoreAddress(
+            Order order, AddressRepository addressRepository, OrderDetailAdminResponse orderDetailAdminResponse) {
         if (Objects.nonNull(order.getStore().getDefaultAddressId())) {
             Address address = addressRepository
                     .findById(order.getStore().getDefaultAddressId())
@@ -89,7 +88,7 @@ public class OrderUtil {
             case WAITING_FOR_SHIPPING -> OrderStatusName.PICKED_UP;
             case PICKED_UP -> OrderStatusName.OUT_FOR_DELIVERY;
             case OUT_FOR_DELIVERY -> OrderStatusName.DELIVERED;
-            default -> throw new AppException(ErrorCode.SELLER_PREPARING_COMPLETED_ORDER);
+            default -> null;
         };
     }
 
@@ -113,7 +112,7 @@ public class OrderUtil {
         }
     }
 
-    public void restoreProductQuantities(
+    public void restoreProductQuantity(
             Order order,
             ProductRepository productRepository,
             ProductElasticsearchRepository productElasticsearchRepository,
@@ -141,29 +140,98 @@ public class OrderUtil {
         }
     }
 
-    public void processOrderCancellation(
+    public void cancelOneOrder(
             Order order,
             OrderStatusRepository orderStatusRepository,
             ProductRepository productRepository,
             ProductElasticsearchRepository productElasticsearchRepository,
             VariantRepository variantRepository,
             OrderStatusName cancellationStatus) {
+        try {
+            OrderStatusHistory lastStatusHistory = getLastOrderStatusHistory(order);
 
+            validateNotCancelled(lastStatusHistory);
+
+            OrderStatus cancelledStatus = orderStatusRepository
+                    .findByName(cancellationStatus.name())
+                    .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
+
+            order.getOrderStatusHistories()
+                    .add(OrderStatusHistory.builder()
+                            .order(order)
+                            .orderStatus(cancelledStatus)
+                            .remarks(lastStatusHistory.getRemarks())
+                            .build());
+
+            restoreProductQuantity(order, productRepository, productElasticsearchRepository, variantRepository);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Error in function cancelOneOrder at OrderUtil: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    public void updateOneOrderStatusByAdmin(
+            Order order,
+            OrderStatusRepository orderStatusRepository,
+            TransactionStatusRepository transactionStatusRepository) {
         OrderStatusHistory lastStatusHistory = getLastOrderStatusHistory(order);
 
-        validateNotCancelled(lastStatusHistory);
-
-        OrderStatus cancelledStatus = orderStatusRepository
-                .findByName(cancellationStatus.name())
+        OrderStatusName currentStatus =
+                OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
+        OrderStatusName nextStatusName = getNextStatusAdmin(currentStatus);
+        OrderStatus nextStatus = orderStatusRepository
+                .findByName(nextStatusName.name())
                 .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
 
         order.getOrderStatusHistories()
                 .add(OrderStatusHistory.builder()
                         .order(order)
-                        .orderStatus(cancelledStatus)
+                        .orderStatus(nextStatus)
                         .remarks(lastStatusHistory.getRemarks())
                         .build());
 
-        restoreProductQuantities(order, productRepository, productElasticsearchRepository, variantRepository);
+        try {
+            if (order.getTransaction().getPayment().getPaymentMethod().name().equals(PaymentMethod.COD.name())
+                    && nextStatus.equals(orderStatusRepository
+                            .findByName(OrderStatusName.DELIVERED.name())
+                            .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))) {
+
+                order.getTransaction()
+                        .getTransactionStatusHistories()
+                        .add(TransactionStatusHistory.builder()
+                                .transactionStatus(transactionStatusRepository
+                                        .findById(TransactionStatusName.SUCCESS.name())
+                                        .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND)))
+                                .remarks("Payment COD completed.")
+                                .transaction(order.getTransaction())
+                                .build());
+            }
+        } catch (DataIntegrityViolationException e) {
+            log.error("Error in function updateOneOrderStatusByAdmin at OrderUtil: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
+
+    public void updateOneOrderStatusBySeller(
+            AuthenticatedUserUtil authenticatedUserUtil, Order order, OrderStatusRepository orderStatusRepository) {
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(order))) {
+            throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_STORE);
+        }
+
+        OrderStatusHistory lastStatusHistory = getLastOrderStatusHistory(order);
+
+        OrderStatusName currentStatus =
+                OrderStatusName.valueOf(lastStatusHistory.getOrderStatus().getName());
+        OrderStatusName nextStatusName = getNextStatusSeller(currentStatus);
+        OrderStatus nextStatus = orderStatusRepository
+                .findByName(nextStatusName.name())
+                .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
+
+        order.getOrderStatusHistories()
+                .add(OrderStatusHistory.builder()
+                        .order(order)
+                        .orderStatus(nextStatus)
+                        .remarks(lastStatusHistory.getRemarks())
+                        .build());
     }
 }
