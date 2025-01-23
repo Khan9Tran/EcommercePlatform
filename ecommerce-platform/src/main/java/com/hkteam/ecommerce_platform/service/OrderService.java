@@ -353,7 +353,13 @@ public class OrderService {
                 .findOneOrderUpdateOrCancel(orderId, listStatus)
                 .orElseThrow(() -> new AppException(ErrorCode.ONE_ORDER_UPDATE_STATUS_NOT_FOUND));
 
-        orderUtil.updateOneOrderStatusByAdmin(order, orderStatusRepository, transactionStatusRepository);
+        orderUtil.updateOneOrderStatusByAdmin(
+                order,
+                orderStatusRepository,
+                transactionStatusRepository,
+                productRepository,
+                productElasticsearchRepository,
+                variantRepository);
 
         try {
             orderRepository.save(order);
@@ -376,8 +382,13 @@ public class OrderService {
             throw new AppException(ErrorCode.LIST_ORDER_UPDATE_STATUS_NOT_FOUND);
         }
 
-        listOrder.forEach(order ->
-                orderUtil.updateOneOrderStatusByAdmin(order, orderStatusRepository, transactionStatusRepository));
+        listOrder.forEach(order -> orderUtil.updateOneOrderStatusByAdmin(
+                order,
+                orderStatusRepository,
+                transactionStatusRepository,
+                productRepository,
+                productElasticsearchRepository,
+                variantRepository));
 
         try {
             orderRepository.saveAll(listOrder);

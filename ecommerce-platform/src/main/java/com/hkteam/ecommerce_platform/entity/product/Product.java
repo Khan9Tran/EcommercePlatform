@@ -62,6 +62,9 @@ public class Product {
     @Min(0)
     int quantity;
 
+    @Min(0)
+    int sold;
+
     Float rating;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)

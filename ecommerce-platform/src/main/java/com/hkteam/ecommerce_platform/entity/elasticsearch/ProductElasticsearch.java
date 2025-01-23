@@ -51,6 +51,7 @@ public class ProductElasticsearch {
     boolean isAvailable;
 
     int quantity;
+    int sold;
 
     @Field(type = FieldType.Float)
     Float rating;

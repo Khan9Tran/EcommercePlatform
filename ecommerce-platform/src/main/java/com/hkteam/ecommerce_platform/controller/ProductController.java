@@ -96,4 +96,14 @@ public class ProductController {
                 .result(productService.getProductNewest(storeId))
                 .build();
     }
+
+    @GetMapping("/best_selling")
+    ApiResponse<PaginationResponse<ProductBestSellingResponse>> getProductBestSelling(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "limit", required = false, defaultValue = "10") String limit) {
+        return ApiResponse.<PaginationResponse<ProductBestSellingResponse>>builder()
+                .result(productService.getProductBestSelling(page, size, limit))
+                .build();
+    }
 }

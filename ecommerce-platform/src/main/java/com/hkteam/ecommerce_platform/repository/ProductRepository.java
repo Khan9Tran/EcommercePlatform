@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,6 @@ import com.hkteam.ecommerce_platform.entity.user.User;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String> {
-    boolean existsByNameIgnoreCase(String name);
-
     Optional<Product> findBySlug(String slug);
 
     @NotNull
@@ -56,4 +55,13 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     List<Product> findByFollowersAndIsAvailableTrueAndIsBlockedFalse(User followers);
 
     boolean existsById(@NotNull String productId);
+
+    @Query(
+            """
+				SELECT p FROM Product p
+				WHERE p.isAvailable = true AND p.isBlocked = false
+				ORDER BY p.sold DESC, p.rating DESC, p.salePrice, p.createdAt ASC
+				LIMIT :productLimit
+			""")
+    List<Product> findProductBestSelling(@Param("productLimit") int productLimit);
 }

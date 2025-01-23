@@ -42,4 +42,6 @@ public interface ProductMapper {
     ProductResponse toProductResponse(ProductElasticsearch productElasticsearch);
 
     ProductResponse toProductResponse(Product product);
+
+    ProductBestSellingResponse toProductBestSellingResponse(Product product);
 }

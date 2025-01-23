@@ -40,6 +40,9 @@ public class Variant {
     @Min(0)
     int quantity;
 
+    @Min(0)
+    int sold;
+
     @OneToMany(mappedBy = "variant")
     Set<CartItem> cartItems;
 

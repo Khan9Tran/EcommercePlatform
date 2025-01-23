@@ -173,7 +173,10 @@ public class OrderUtil {
     public void updateOneOrderStatusByAdmin(
             Order order,
             OrderStatusRepository orderStatusRepository,
-            TransactionStatusRepository transactionStatusRepository) {
+            TransactionStatusRepository transactionStatusRepository,
+            ProductRepository productRepository,
+            ProductElasticsearchRepository productElasticsearchRepository,
+            VariantRepository variantRepository) {
         OrderStatusHistory lastStatusHistory = getLastOrderStatusHistory(order);
 
         OrderStatusName currentStatus =
@@ -205,6 +208,30 @@ public class OrderUtil {
                                 .remarks("Payment COD completed.")
                                 .transaction(order.getTransaction())
                                 .build());
+
+                for (OrderItem orderItem : order.getOrderItems()) {
+                    Product product = orderItem.getProduct();
+                    var esPro = productElasticsearchRepository
+                            .findById(orderItem.getProduct().getId())
+                            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+                    if (Objects.nonNull(product.getVariants())
+                            && !product.getVariants().isEmpty()) {
+                        Variant variant = product.getVariants().stream()
+                                .filter(v -> v.getValues().stream()
+                                        .map(Value::getValue)
+                                        .toList()
+                                        .equals(orderItem.getValues()))
+                                .findFirst()
+                                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+
+                        variantRepository.updateSoldById(variant.getSold() + orderItem.getQuantity(), variant.getId());
+                    }
+                    product.setSold(product.getSold() + orderItem.getQuantity());
+                    productRepository.save(product);
+                    esPro.setSold(esPro.getSold() + orderItem.getQuantity());
+                    productElasticsearchRepository.save(esPro);
+                }
             }
         } catch (DataIntegrityViolationException e) {
             log.error("Error in function updateOneOrderStatusByAdmin at OrderUtil: {}", e.getMessage());

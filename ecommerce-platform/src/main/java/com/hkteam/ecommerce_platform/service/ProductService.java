@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,8 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class ProductService {
-    private final StoreRepository storeRepository;
-    private final CategoryMapper categoryMapper;
+    StoreRepository storeRepository;
+    CategoryMapper categoryMapper;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
     BrandRepository brandRepository;
@@ -433,7 +434,7 @@ public class ProductService {
         var store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(0, 3);
-        return productRepository.findByLastUpdatedAtAndStoreId(storeId, pageable).stream()
+        return productRepository.findByLastUpdatedAtAndStoreId(store.getId(), pageable).stream()
                 .map(product -> MiniProductResponse.builder()
                         .id(product.getId())
                         .name(product.getName())
@@ -445,5 +446,80 @@ public class ProductService {
                         .brandName(product.getBrand().getName())
                         .build())
                 .toList();
+    }
+
+    public PaginationResponse<ProductBestSellingResponse> getProductBestSelling(
+            String page, String size, String limit) {
+        int pageNumber;
+        int pageSize;
+        int productLimit;
+
+        try {
+            pageNumber = Integer.parseInt(page);
+            pageSize = Integer.parseInt(size);
+            productLimit = Integer.parseInt(limit);
+
+            if (pageNumber < 1 || pageSize < 1 || pageNumber > 10 || productLimit < 1 || productLimit > 480) {
+                throw new AppException(ErrorCode.PAGE_NOT_FOUND);
+            }
+
+            if (pageSize > 48) {
+                throw new AppException(ErrorCode.PAGE_SIZE_PRODUCT_TOO_LARGE);
+            }
+
+            if (pageSize > productLimit) {
+                throw new AppException(ErrorCode.INVALID_PAGE_SIZE);
+            }
+        } catch (NumberFormatException e) {
+            throw new AppException(ErrorCode.PAGE_NOT_FOUND);
+        }
+
+        List<Product> listProductLimit = productRepository.findProductBestSelling(productLimit);
+
+        List<Product> listProductSorted = listProductLimit.stream()
+                .sorted(Comparator.comparing(Product::getRating, Comparator.reverseOrder())
+                        .thenComparing(Product::getSalePrice, Comparator.naturalOrder())
+                        .thenComparing(Product::getCreatedAt, Comparator.naturalOrder()))
+                .toList();
+
+        int totalPages = (int) Math.ceil((double) listProductSorted.size() / pageSize);
+        if (pageNumber > totalPages) {
+            throw new AppException(ErrorCode.PAGE_NOT_FOUND);
+        }
+
+        int pageStart = Math.min((pageNumber - 1) * pageSize, listProductSorted.size());
+        int pageEnd = Math.min(pageNumber * pageSize, listProductSorted.size());
+        List<Product> listProductPaginated = listProductSorted.subList(pageStart, pageEnd);
+
+        List<ProductBestSellingResponse> listProductBestSellingResponse = listProductPaginated.stream()
+                .map(product -> {
+                    int percentDiscount = (product.getOriginalPrice() != null
+                                    && product.getOriginalPrice().compareTo(BigDecimal.ZERO) > 0)
+                            ? product.getOriginalPrice()
+                                    .subtract(product.getSalePrice())
+                                    .divide(product.getOriginalPrice(), 2, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(100))
+                                    .intValue()
+                            : 0;
+
+                    ProductBestSellingResponse productBestSellingResponse =
+                            productMapper.toProductBestSellingResponse(product);
+                    productBestSellingResponse.setPercentDiscount(percentDiscount);
+
+                    return productBestSellingResponse;
+                })
+                .toList();
+
+        return PaginationResponse.<ProductBestSellingResponse>builder()
+                .data(listProductBestSellingResponse)
+                .currentPage(pageNumber)
+                .pageSize(pageSize)
+                .totalPages(totalPages)
+                .totalElements(listProductSorted.size())
+                .hasNext(pageEnd < listProductSorted.size())
+                .hasPrevious(pageStart > 0)
+                .nextPage(pageEnd < listProductSorted.size() ? pageNumber + 1 : null)
+                .previousPage(pageStart > 0 ? pageNumber - 1 : null)
+                .build();
     }
 }

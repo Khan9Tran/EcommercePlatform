@@ -14,4 +14,9 @@ public interface VariantRepository extends JpaRepository<Variant, String> {
     @Modifying
     @Query("update Variant v set v.quantity = ?1 where v.id = ?2")
     void updateQuantityById(int quantity, String variantId);
+
+    @Transactional
+    @Modifying
+    @Query("update Variant v set v.sold = :sold where v.id = :variantId")
+    void updateSoldById(int sold, String variantId);
 }
