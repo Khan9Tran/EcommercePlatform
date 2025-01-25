@@ -477,7 +477,7 @@ public class ProductService {
         List<Product> listProductLimit = productRepository.findProductBestSelling(productLimit);
 
         List<Product> listProductSorted = listProductLimit.stream()
-                .sorted(Comparator.comparing(Product::getRating, Comparator.reverseOrder())
+                .sorted(Comparator.comparing(Product::getRating, Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(Product::getSalePrice, Comparator.naturalOrder())
                         .thenComparing(Product::getCreatedAt, Comparator.naturalOrder()))
                 .toList();
