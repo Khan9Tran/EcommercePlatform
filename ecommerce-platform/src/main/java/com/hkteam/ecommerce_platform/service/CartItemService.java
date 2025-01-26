@@ -227,4 +227,22 @@ public class CartItemService {
                         .build())
                 .toList();
     }
+
+    public Integer getQuantityCartItem(Long cartItemId) {
+        CartItem cartItem = cartItemRepository
+                .findById(cartItemId)
+                .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        int quantity = 0;
+
+        if (Objects.nonNull(cartItem.getVariant()) && cartItem.getVariant().getQuantity() > 0) {
+            quantity = cartItem.getVariant().getQuantity();
+        }
+
+        if (Objects.isNull(cartItem.getVariant()) && cartItem.getProduct().getQuantity() > 0) {
+            quantity = cartItem.getProduct().getQuantity();
+        }
+
+        return quantity;
+    }
 }

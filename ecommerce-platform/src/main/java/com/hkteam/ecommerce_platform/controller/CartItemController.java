@@ -66,4 +66,11 @@ public class CartItemController {
                 .result(cartItemService.getCartItemNewest())
                 .build();
     }
+
+    @GetMapping("/get_quantity/{cartItemId}")
+    public ApiResponse<Integer> getQuantityCartItem(@PathVariable Long cartItemId) {
+        return ApiResponse.<Integer>builder()
+                .result(cartItemService.getQuantityCartItem(cartItemId))
+                .build();
+    }
 }
