@@ -1,6 +1,5 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-import java.time.Instant;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -14,13 +13,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class ReviewListOneProductResponse {
+public class ReviewCreationResponse {
     Long id;
     float rating;
     String comment;
     String videoUrl;
-    Instant lastUpdatedAt;
-    List<ReviewListValueProductResponse> productValues;
-    List<ReviewListImageResponse> images;
-    ReviewProductUserResponse user;
+    List<ReviewImageResponse> images;
 }

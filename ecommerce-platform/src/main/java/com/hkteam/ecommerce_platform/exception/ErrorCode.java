@@ -139,7 +139,7 @@ public enum ErrorCode {
     PRODUCT_MIN_PRICE(1718, "You need set price > 0", HttpStatus.BAD_REQUEST),
     PRODUCT_MAX_PRICE(1719, "You need set price < 999,999,999d", HttpStatus.BAD_REQUEST),
     ADDRESS_LIMIT_EXCEEDED(1720, "The number of addresses created has reached the limit.", HttpStatus.BAD_REQUEST),
-    ALREADY_REVIEWED(1721, "You reviewed this product", HttpStatus.BAD_REQUEST),
+    REVIEWED_PRODUCT(1721, "You reviewed this product", HttpStatus.BAD_REQUEST),
     SIZE_TOO_LARGE(1722, "Size too large", HttpStatus.BAD_REQUEST),
     ADDRESS_MESSAGE(1051, "Please add pickup address", HttpStatus.NOT_FOUND),
     INVALID_MONTH(1723, "Month must be a positive integer between 1 and 12", HttpStatus.BAD_REQUEST),

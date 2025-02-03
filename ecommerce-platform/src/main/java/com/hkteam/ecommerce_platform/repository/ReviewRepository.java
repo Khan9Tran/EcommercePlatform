@@ -18,16 +18,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     boolean existsById(@NotNull Long id);
 
-    @Query(
-            "select count(r) > 0 from Review r join r.products p join p.orderItems oi where r.user.id = :userId and oi.order.id = :orderId")
-    boolean hasUserAlreadyReviewedOrder(String userId, String orderId);
-
     @Query("SELECT COUNT(r) > 0 FROM Review r JOIN r.products p WHERE r.user.id = :userId AND p.id = :productId")
     boolean hasUserAlreadyReviewedProduct(String userId, String productId);
 
     @Query("select r from Review r join r.products p "
             + "where (p.id = :productId and p.isBlocked = false and p.isAvailable = true) ")
-    List<Review> findAllReviewProductIdCommentAndMediaTotal(String productId);
+    List<Review> findAllReviewByProductId(String productId);
 
     @Query("select r from Review r join r.products p "
             + "where (p.id = :productId and p.isBlocked = false and p.isAvailable = true) "

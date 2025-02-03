@@ -11,18 +11,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hkteam.ecommerce_platform.dto.request.ReviewCreationRequest;
-import com.hkteam.ecommerce_platform.dto.request.ReviewUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
+import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
+import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.exception.AppException;
 import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.mapper.ReviewMapper;
 import com.hkteam.ecommerce_platform.repository.*;
 import com.hkteam.ecommerce_platform.util.AuthenticatedUserUtil;
 import com.hkteam.ecommerce_platform.util.PageUtils;
+import com.hkteam.ecommerce_platform.util.ReviewUtil;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -40,15 +44,17 @@ public class ReviewService {
     OrderRepository orderRepository;
     ProductRepository productRepository;
     ProductElasticsearchRepository productElasticsearchRepository;
+    ReviewUtil reviewUtil;
 
-    static String[] SORT_BY = {"createdAt"};
-    static String[] ORDER_BY = {"asc", "desc"};
+    private static final String[] SORT_BY = {"createdAt"};
+    private static final String[] ORDER_BY = {"asc", "desc"};
 
+    @PreAuthorize("hasRole('USER')")
     @Transactional
-    public ReviewResponse createReview(ReviewCreationRequest request) {
-        var user = authenticatedUserUtil.getAuthenticatedUser();
+    public ReviewCreationResponse createReview(ReviewCreationRequest request) {
+        User user = authenticatedUserUtil.getAuthenticatedUser();
 
-        var order = orderRepository
+        Order order = orderRepository
                 .findOrderById(request.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
@@ -56,20 +62,21 @@ public class ReviewService {
             throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_USER);
         }
 
-        var latestOrderStatus = order.getOrderStatusHistories().stream()
+        OrderStatusHistory latestOrderStatus = order.getOrderStatusHistories().stream()
                 .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
                 .orElseThrow(() -> new AppException(ErrorCode.STATUS_NOT_FOUND));
 
-        if (!"DELIVERED".equals(latestOrderStatus.getOrderStatus().getName())) {
+        if (!(OrderStatusName.DELIVERED.toString())
+                .equals(latestOrderStatus.getOrderStatus().getName())) {
             throw new AppException(ErrorCode.NOT_PURCHASED);
         }
 
-        var products = order.getOrderItems().stream()
+        Set<Product> products = order.getOrderItems().stream()
                 .map(OrderItem::getProduct)
                 .filter(product -> !reviewRepository.hasUserAlreadyReviewedProduct(user.getId(), product.getId()))
                 .collect(Collectors.toSet());
         if (products.isEmpty()) {
-            throw new AppException(ErrorCode.ALREADY_REVIEWED);
+            throw new AppException(ErrorCode.REVIEWED_PRODUCT);
         }
 
         Review review = reviewMapper.toReview(request);
@@ -83,7 +90,7 @@ public class ReviewService {
 
             reviewRepository.save(review);
 
-            var store = products.stream().toList().getFirst().getStore();
+            Store store = products.stream().toList().getFirst().getStore();
             double newRating = store.getProducts().stream()
                     .map((Product::getRating))
                     .filter((Objects::nonNull))
@@ -93,11 +100,11 @@ public class ReviewService {
 
             store.setRating(((float) newRating));
         } catch (DataIntegrityViolationException e) {
-            log.error("Error while creating review: " + e.getMessage());
+            log.error("Error while creating review: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
-        return reviewMapper.toReviewResponse(review);
+        return reviewMapper.toReviewCreationResponse(review);
     }
 
     private void updateProductRating(Product product, float ratingNew) {
@@ -105,7 +112,7 @@ public class ReviewService {
                 .findById(product.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        float rating = 0;
+        float rating;
         if (Objects.isNull(product.getRating())) {
             rating = ratingNew;
         } else {
@@ -125,33 +132,52 @@ public class ReviewService {
             String starNumber,
             String commentString,
             String mediaString,
-            String pageStr,
-            String sizeStr,
+            String page,
+            String size,
             String sortBy,
             String orderBy) {
         var product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!Arrays.asList(SORT_BY).contains(sortBy)) sortBy = null;
-        if (!Arrays.asList(ORDER_BY).contains(orderBy)) orderBy = null;
-        Sort sortable = (sortBy == null || orderBy == null)
-                ? Sort.unsorted()
-                : Sort.by(Sort.Direction.fromString(orderBy), sortBy);
+        Sort sortable = reviewUtil.validateSortAndOrder(sortBy, orderBy, SORT_BY, ORDER_BY);
 
-        Pageable pageable = PageUtils.createPageable(pageStr, sizeStr, sortable);
+        Pageable pageable = PageUtils.createPageable(page, size, sortable);
         var pageData = reviewRepository.findAllReviewProductId(
                 productId,
                 starNumber,
                 commentString.isEmpty() ? "" : "commentString",
                 mediaString.isEmpty() ? "" : "mediaString",
                 pageable);
-        int page = Integer.parseInt(pageStr);
-        PageUtils.validatePageBounds(page, pageData);
 
-        List<ReviewListOneProductResponse> reviewResponses = pageData.stream()
+        int pageInt = Integer.parseInt(page);
+
+        PageUtils.validatePageBounds(pageInt, pageData);
+
+        List<ReviewListOneProductResponse> listReviewResponse = pageData.stream()
                 .map(review -> {
+                    List<Product> listProduct = review.getProducts();
+                    List<ReviewListValueProductResponse> productValues = new ArrayList<>();
+
+                    listProduct.stream()
+                            .filter(pro -> pro.getId().equals(productId))
+                            .forEach(pro -> {
+                                List<OrderItem> listOrderItem = pro.getOrderItems().stream()
+                                        .filter(orderItem ->
+                                                orderItem.getOrder().getUser().equals(review.getUser()))
+                                        .toList();
+
+                                listOrderItem.forEach(orderItem -> {
+                                    List<String> values = orderItem.getValues();
+                                    ReviewListValueProductResponse reviewListValueProductResponse =
+                                            new ReviewListValueProductResponse(values);
+                                    productValues.add(reviewListValueProductResponse);
+                                });
+                            });
+
                     ReviewListOneProductResponse response = reviewMapper.toReviewListOneProductResponse(review);
+                    response.setProductValues(productValues);
                     response.setUser(reviewMapper.toReviewProductUserResponse(review.getUser()));
+
                     return response;
                 })
                 .toList();
@@ -174,34 +200,34 @@ public class ReviewService {
 
         ReviewOneProductResponse reviewOneProductResponse = ReviewOneProductResponse.builder()
                 .productRating(product.getRating() != null ? product.getRating() : 0)
-                .reviews(reviewResponses)
+                .reviews(listReviewResponse)
                 .ratingCounts(ratingCountResponse)
                 .build();
-        List<ReviewOneProductResponse> reviewOneProductResponseList = new ArrayList<>();
-        reviewOneProductResponseList.add(reviewOneProductResponse);
+        List<ReviewOneProductResponse> listReviewOneProductResponse = new ArrayList<>();
+        listReviewOneProductResponse.add(reviewOneProductResponse);
 
         return PaginationResponse.<ReviewOneProductResponse>builder()
-                .data(reviewOneProductResponseList)
-                .currentPage(Integer.parseInt(pageStr))
+                .data(listReviewOneProductResponse)
+                .currentPage(Integer.parseInt(page))
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .hasNext(pageData.hasNext())
                 .hasPrevious(pageData.hasPrevious())
-                .nextPage(pageData.hasNext() ? page + 1 : null)
-                .previousPage(pageData.hasPrevious() ? page - 1 : null)
+                .nextPage(pageData.hasNext() ? pageInt + 1 : null)
+                .previousPage(pageData.hasPrevious() ? pageInt - 1 : null)
                 .build();
     }
 
     public ReviewCountResponse getCommentAndMediaTotalReview(String productId) {
-        List<Review> allReviews = reviewRepository.findAllReviewProductIdCommentAndMediaTotal(productId);
+        List<Review> listReview = reviewRepository.findAllReviewByProductId(productId);
 
-        long totalComments = allReviews.stream()
+        long totalComments = listReview.stream()
                 .filter(review ->
                         review.getComment() != null && !review.getComment().isEmpty())
                 .count();
 
-        long totalWithMedia = allReviews.stream()
+        long totalWithMedia = listReview.stream()
                 .filter(review -> (review.getVideoUrl() != null
                                 && !review.getVideoUrl().isEmpty())
                         || (review.getImages() != null && !review.getImages().isEmpty()))
@@ -211,38 +237,5 @@ public class ReviewService {
                 .totalComments(totalComments)
                 .totalWithMedia(totalWithMedia)
                 .build();
-    }
-
-    public ReviewResponse updateReview(Long reviewId, ReviewUpdateRequest request) {
-        Review review =
-                reviewRepository.findById(reviewId).orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
-
-        var user = authenticatedUserUtil.getAuthenticatedUser();
-        if (!review.getUser().getId().equals(user.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-        }
-
-        reviewMapper.updateReview(review, request);
-
-        try {
-            reviewRepository.save(review);
-        } catch (Exception e) {
-            log.error("Error when update review: " + e.getMessage());
-            throw new AppException(ErrorCode.UNKNOWN_ERROR);
-        }
-
-        return reviewMapper.toReviewResponse(review);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public void deleteReview(Long reviewId) {
-        Review review =
-                reviewRepository.findById(reviewId).orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
-        try {
-            reviewRepository.delete(review);
-        } catch (Exception e) {
-            log.error("Error when delete review: " + e.getMessage());
-            throw new AppException(ErrorCode.UNKNOWN_ERROR);
-        }
     }
 }

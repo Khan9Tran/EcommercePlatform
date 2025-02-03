@@ -14,7 +14,7 @@ import com.hkteam.ecommerce_platform.constant.ImageAttribute;
 import com.hkteam.ecommerce_platform.dto.request.*;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
-import com.hkteam.ecommerce_platform.dto.response.ReviewImageOfUploadDeleteResponse;
+import com.hkteam.ecommerce_platform.dto.response.ReviewListImageUploadResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.entity.image.ProductImage;
 import com.hkteam.ecommerce_platform.entity.image.ReviewImage;
@@ -59,7 +59,6 @@ public class ImageService {
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
         try {
-            @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
                     image, TypeImage.MAIN_IMAGE_OF_CATEGORY.name().toLowerCase()));
 
@@ -82,7 +81,7 @@ public class ImageService {
 
             return getResult(img);
         } catch (Exception e) {
-            log.info("Error while uploading at upload category image: {}", e.getMessage());
+            log.error("Error while uploading at upload category image: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
     }
@@ -96,7 +95,6 @@ public class ImageService {
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
         try {
-            @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
                     image, TypeImage.CATEGORY_ICON.name().toLowerCase()));
 
@@ -119,7 +117,7 @@ public class ImageService {
 
             return getResult(img);
         } catch (Exception e) {
-            log.info("Error while uploading at upload category icon: {}", e.getMessage());
+            log.error("Error while uploading at upload category icon: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
     }
@@ -140,7 +138,7 @@ public class ImageService {
         try {
             categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
-            log.info("Error while saving at upload category image");
+            log.error("Error while saving at upload category image");
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -162,7 +160,7 @@ public class ImageService {
             categoryRepository.save(category);
 
         } catch (Exception e) {
-            log.info("Error while deleting at delete category image: {}", e.getMessage());
+            log.error("Error while deleting at delete category image: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
@@ -182,7 +180,7 @@ public class ImageService {
             category.setIconUrl(null);
             categoryRepository.save(category);
         } catch (Exception e) {
-            log.info("Error while deleting at delete category icon: {}", e.getMessage());
+            log.error("Error while deleting at delete category icon: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
@@ -191,7 +189,6 @@ public class ImageService {
         ImageUtils.validateImage(image);
 
         try {
-            @SuppressWarnings("unchecked")
             Map<String, Object> img = (cloudinaryService.uploadImage(
                     image, TypeImage.MAIN_IMAGE_OF_USER.name().toLowerCase()));
 
@@ -230,17 +227,10 @@ public class ImageService {
 
         try {
             cloudinaryService.deleteImage(user.getImageUrl());
-
             user.setImageUrl(null);
-
-            try {
-                userRepository.save(user);
-            } catch (DataIntegrityViolationException e) {
-                log.info("Error while saving at delete user image: {}", e.getMessage());
-                throw new AppException(ErrorCode.UNKNOWN_ERROR);
-            }
+            userRepository.save(user);
         } catch (Exception e) {
-            log.info("Error while deleting at delete user image: {}", e.getMessage());
+            log.error("Error while deleting at delete user image: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
@@ -274,7 +264,7 @@ public class ImageService {
 
             return getResult(img);
         } catch (Exception e) {
-            log.info("Error while uploading brand logo: {}", e.getMessage());
+            log.error("Error while uploading brand logo: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
     }
@@ -294,7 +284,7 @@ public class ImageService {
             brandRepository.save(brand);
 
         } catch (Exception e) {
-            log.info("Error while deleting at delete brand logo: {}", e.getMessage());
+            log.error("Error while deleting at delete brand logo: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
@@ -306,13 +296,13 @@ public class ImageService {
         var product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!authenticatedUserUtil.isOwner(product)) {
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         try {
             addImageToQueue(productId, TypeImage.MAIN_IMAGE_OF_PRODUCT, convertImageToByteArray(image));
         } catch (Exception e) {
-            log.error("Error when upload image: " + e.getMessage());
+            log.error("Error when upload image: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
         return ImageResponse.builder()
@@ -325,7 +315,7 @@ public class ImageService {
         Product product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!authenticatedUserUtil.isOwner(product)) {
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -347,7 +337,7 @@ public class ImageService {
             productRepository.save(product);
 
         } catch (Exception e) {
-            log.info("Error while deleting at delete product main image url: {}", e.getMessage());
+            log.error("Error while deleting at delete product main image url: {}", e.getMessage());
             throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
@@ -359,12 +349,13 @@ public class ImageService {
         Product product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!authenticatedUserUtil.isOwner(product)) throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product)))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
 
         try {
             addImageToQueue(productId, TypeImage.LIST_IMAGE_PRODUCT, convertImagesToByteArray(request.getImages()));
         } catch (Exception e) {
-            log.error("Error when upload list image: " + e.getMessage());
+            log.error("Error when upload list image: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
 
@@ -386,7 +377,7 @@ public class ImageService {
         var product =
                 productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!authenticatedUserUtil.isOwner(product)) {
+        if (Boolean.FALSE.equals(authenticatedUserUtil.isOwner(product))) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -422,7 +413,7 @@ public class ImageService {
         try {
             productImageRepository.deleteAll(productImages);
         } catch (Exception e) {
-            log.error("Error when delete list image: " + e.getMessage());
+            log.error("Error when delete list image: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
     }
@@ -436,7 +427,7 @@ public class ImageService {
                         .image(List.of(image))
                         .build());
 
-        log.info("Image sent to the queue for processing: {}", id);
+        log.error("Image sent to the queue for processing: {}", id);
     }
 
     private void addImageToQueue(String id, TypeImage type, List<byte[]> images) {
@@ -444,7 +435,7 @@ public class ImageService {
                 RabbitMQConfig.IMAGE_QUEUE,
                 ImageMessageRequest.builder().id(id).type(type).image(images).build());
 
-        log.info("Image sent to the queue for processing: {}", id);
+        log.error("List image sent to the queue for processing: {}", id);
     }
 
     private byte[] convertImageToByteArray(MultipartFile file) throws IOException {
@@ -460,15 +451,16 @@ public class ImageService {
         return byteArrayList;
     }
 
+    @PreAuthorize("hasRole('USER')")
     @Transactional
-    public ReviewImageOfUploadDeleteResponse uploadReviewImageList(ReviewImageUploadRequest request, String reviewId) {
+    public ReviewListImageUploadResponse uploadReviewImageList(ReviewListImageUploadRequest request, String reviewId) {
         request.getImages().forEach(ImageUtils::validateImage);
 
         Long longReviewId = Long.parseLong(reviewId);
         var review =
                 reviewRepository.findById(longReviewId).orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
 
-        List<ImageResponse> imageResponses = request.getImages().stream()
+        List<ImageResponse> listImageResponse = request.getImages().stream()
                 .map(image -> {
                     try {
                         Map<String, Object> uploadResult = cloudinaryService.uploadImage(
@@ -493,7 +485,6 @@ public class ImageService {
                                 .width((Integer) uploadResult.get("width"))
                                 .height((Integer) uploadResult.get("height"))
                                 .build();
-
                     } catch (Exception e) {
                         log.error("Error while uploading review image: {}", e.getMessage());
                         throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
@@ -501,8 +492,6 @@ public class ImageService {
                 })
                 .toList();
 
-        return ReviewImageOfUploadDeleteResponse.builder()
-                .images(imageResponses)
-                .build();
+        return ReviewListImageUploadResponse.builder().images(listImageResponse).build();
     }
 }

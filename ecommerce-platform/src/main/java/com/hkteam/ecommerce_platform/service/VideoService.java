@@ -146,6 +146,7 @@ public class VideoService {
         }
     }
 
+    @PreAuthorize("hasRole('USER')")
     @Transactional
     public VideoReviewResponse uploadVideoReview(ReviewVideoUploadRequest request, String reviewId) {
         VideoUtils.validateVideo(request.getVideo());
@@ -178,7 +179,7 @@ public class VideoService {
                     .build();
 
         } catch (Exception e) {
-            log.error("Error while uploading review image: " + e.getMessage());
+            log.error("Error while uploading review video: {}", e.getMessage());
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
     }

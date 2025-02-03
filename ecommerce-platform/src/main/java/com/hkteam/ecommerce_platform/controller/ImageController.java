@@ -7,11 +7,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hkteam.ecommerce_platform.dto.request.DeleteProductImageRequest;
 import com.hkteam.ecommerce_platform.dto.request.ProductImageUploadRequest;
-import com.hkteam.ecommerce_platform.dto.request.ReviewImageUploadRequest;
+import com.hkteam.ecommerce_platform.dto.request.ReviewListImageUploadRequest;
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.ImageResponse;
 import com.hkteam.ecommerce_platform.dto.response.ProductImageResponse;
-import com.hkteam.ecommerce_platform.dto.response.ReviewImageOfUploadDeleteResponse;
+import com.hkteam.ecommerce_platform.dto.response.ReviewListImageUploadResponse;
 import com.hkteam.ecommerce_platform.service.ImageService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -140,9 +140,9 @@ public class ImageController {
 
     @Operation(summary = "Upload Review Image List", description = "Api upload review image list")
     @PostMapping(value = "/reviews/{reviewId}/list", consumes = "multipart/form-data")
-    public ApiResponse<ReviewImageOfUploadDeleteResponse> uploadReviewImageList(
-            @ModelAttribute ReviewImageUploadRequest request, @PathVariable("reviewId") String reviewId) {
-        return ApiResponse.<ReviewImageOfUploadDeleteResponse>builder()
+    public ApiResponse<ReviewListImageUploadResponse> uploadReviewImageList(
+            @ModelAttribute ReviewListImageUploadRequest request, @PathVariable("reviewId") String reviewId) {
+        return ApiResponse.<ReviewListImageUploadResponse>builder()
                 .result(imageService.uploadReviewImageList(request, reviewId))
                 .build();
     }
