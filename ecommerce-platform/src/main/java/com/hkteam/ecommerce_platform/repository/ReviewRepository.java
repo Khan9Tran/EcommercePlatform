@@ -40,4 +40,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("select r.rating, count (r) from Review r join r.products p where p.id = :productId group by r.rating")
     List<Object[]> countReviewsByRating(String productId);
+
+    List<Review> findAllByUserId(String userId);
 }

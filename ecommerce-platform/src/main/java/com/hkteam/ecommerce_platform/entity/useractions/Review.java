@@ -50,10 +50,10 @@ public class Review {
     Set<ReviewImage> images;
 
     @CreationTimestamp(source = SourceType.DB)
-    private Instant createdAt;
+    Instant createdAt;
 
     @UpdateTimestamp(source = SourceType.DB)
-    private Instant lastUpdatedAt;
+    Instant lastUpdatedAt;
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;

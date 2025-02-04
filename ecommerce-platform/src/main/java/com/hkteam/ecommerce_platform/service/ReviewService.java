@@ -12,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hkteam.ecommerce_platform.dto.request.ReviewCreationRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
+import com.hkteam.ecommerce_platform.entity.image.ReviewImage;
 import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.product.Product;
+import com.hkteam.ecommerce_platform.entity.status.OrderStatus;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
@@ -45,6 +47,8 @@ public class ReviewService {
     ProductRepository productRepository;
     ProductElasticsearchRepository productElasticsearchRepository;
     ReviewUtil reviewUtil;
+    StoreRepository storeRepository;
+    ReviewImageRepository reviewImageRepository;
 
     private static final String[] SORT_BY = {"createdAt"};
     private static final String[] ORDER_BY = {"asc", "desc"};
@@ -237,5 +241,131 @@ public class ReviewService {
                 .totalComments(totalComments)
                 .totalWithMedia(totalWithMedia)
                 .build();
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    public List<ReviewStoreResponse> getAllReviewByStoreId(String storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+        User user = authenticatedUserUtil.getAuthenticatedUser();
+
+        List<Review> listReview = reviewRepository.findAllByUserId(user.getId());
+        if (Objects.isNull(listReview) || listReview.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_REVIEW_NOT_FOUND);
+        }
+
+        List<ReviewStoreResponse> listReviewStoreResponse = new ArrayList<>();
+
+        listReview.forEach(review -> review.getProducts().stream()
+                .filter(product -> product.getStore().getId().equals(store.getId()))
+                .forEach(product -> {
+                    Set<ReviewListValueStoreResponse> listReviewListValueStoreResponse = new HashSet<>();
+
+                    product.getOrderItems().stream()
+                            .filter(orderItem -> {
+                                Order order = orderItem.getOrder();
+                                return order.getUser().getId().equals(user.getId())
+                                        && order.getOrderStatusHistories().stream()
+                                                .max(Comparator.comparing(OrderStatusHistory::getCreatedAt))
+                                                .map(OrderStatusHistory::getOrderStatus)
+                                                .map(OrderStatus::getName)
+                                                .filter(name -> name.equals(OrderStatusName.DELIVERED.toString()))
+                                                .isPresent();
+                            })
+                            .forEach(orderItem -> {
+                                ReviewListValueStoreResponse reviewListValueStoreResponse =
+                                        new ReviewListValueStoreResponse();
+
+                                reviewListValueStoreResponse.setValues(orderItem.getValues());
+
+                                listReviewListValueStoreResponse.add(reviewListValueStoreResponse);
+                            });
+
+                    List<ReviewListImageResponse> listReviewListImageResponse = new ArrayList<>();
+
+                    List<ReviewImage> listReviewImage = reviewImageRepository.findAllByReviewId(review.getId());
+                    listReviewImage.forEach(reviewImage -> {
+                        ReviewListImageResponse reviewListImageResponse = new ReviewListImageResponse();
+
+                        reviewListImageResponse.setUrl(reviewImage.getUrl());
+
+                        listReviewListImageResponse.add(reviewListImageResponse);
+                    });
+
+                    ReviewStoreResponse reviewStoreResponse = new ReviewStoreResponse();
+
+                    reviewStoreResponse.setProductMainImageUrl(product.getMainImageUrl());
+                    reviewStoreResponse.setProductName(product.getName());
+                    reviewStoreResponse.setProductValues(new ArrayList<>(listReviewListValueStoreResponse));
+                    reviewStoreResponse.setProductSlug(product.getSlug());
+                    reviewStoreResponse.setUserName(review.getUser().getName());
+                    reviewStoreResponse.setUserAccount(review.getUser().getUsername());
+                    reviewStoreResponse.setUserAvatar(review.getUser().getImageUrl());
+                    reviewStoreResponse.setReviewRating(review.getRating());
+                    reviewStoreResponse.setReviewComment(review.getComment());
+                    reviewStoreResponse.setReviewVideo(review.getVideoUrl());
+                    reviewStoreResponse.setReviewImages(listReviewListImageResponse);
+                    reviewStoreResponse.setLastUpdatedAt(review.getLastUpdatedAt());
+
+                    listReviewStoreResponse.add(reviewStoreResponse);
+                }));
+
+        return listReviewStoreResponse;
+    }
+
+    public boolean isAllOrderReviewed(String orderId) {
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        User user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_USER);
+        }
+
+        List<Product> listProduct =
+                order.getOrderItems().stream().map(OrderItem::getProduct).toList();
+
+        return listProduct.stream()
+                .allMatch(product -> reviewRepository.hasUserAlreadyReviewedProduct(user.getId(), product.getId()));
+    }
+
+    public boolean isAnyOrderReviewed(String orderId) {
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        User user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_USER);
+        }
+
+        List<Product> listProduct =
+                order.getOrderItems().stream().map(OrderItem::getProduct).toList();
+
+        return listProduct.stream()
+                .anyMatch(product -> reviewRepository.hasUserAlreadyReviewedProduct(user.getId(), product.getId()));
+    }
+
+    public List<ReviewOrderItemResponse> getAllProductReview(String orderId) {
+        Order order =
+                orderRepository.findOrderById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        User user = authenticatedUserUtil.getAuthenticatedUser();
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.ORDER_NOT_BELONG_TO_USER);
+        }
+
+        List<OrderItem> listOrderItem = order.getOrderItems().stream()
+                .filter(orderItem -> !reviewRepository.hasUserAlreadyReviewedProduct(
+                        user.getId(), orderItem.getProduct().getId()))
+                .toList();
+
+        List<ReviewOrderItemResponse> listReviewOrderItemResponse = new ArrayList<>();
+
+        listOrderItem.forEach(orderItem -> {
+            ReviewOrderItemResponse reviewOrderItemResponse = reviewMapper.toReviewOrderItemResponse(orderItem);
+
+            listReviewOrderItemResponse.add(reviewOrderItemResponse);
+        });
+
+        return listReviewOrderItemResponse;
     }
 }

@@ -55,10 +55,10 @@ public class Store {
     Set<Cart> carts;
 
     @CreationTimestamp(source = SourceType.DB)
-    private Instant createdAt;
+    Instant createdAt;
 
     @UpdateTimestamp(source = SourceType.DB)
-    private Instant lastUpdatedAt;
+    Instant lastUpdatedAt;
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;

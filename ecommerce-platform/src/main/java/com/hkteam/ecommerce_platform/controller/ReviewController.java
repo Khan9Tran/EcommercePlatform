@@ -1,5 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +56,38 @@ public class ReviewController {
     public ApiResponse<ReviewCountResponse> getCommentAndMediaTotalReview(@PathVariable String productId) {
         return ApiResponse.<ReviewCountResponse>builder()
                 .result(reviewService.getCommentAndMediaTotalReview(productId))
+                .build();
+    }
+
+    @Operation(summary = "Get all review by id store", description = "Api get all review by id store")
+    @GetMapping("/store/{storeId}")
+    public ApiResponse<List<ReviewStoreResponse>> getAllReviewByStoreId(@PathVariable String storeId) {
+        return ApiResponse.<List<ReviewStoreResponse>>builder()
+                .result(reviewService.getAllReviewByStoreId(storeId))
+                .build();
+    }
+
+    @Operation(summary = "Check all product reviewed", description = "Api check all product reviewed")
+    @GetMapping("/order/{orderId}/is_all_order_reviewed")
+    public ApiResponse<Boolean> isAllOrderReviewed(@PathVariable String orderId) {
+        return ApiResponse.<Boolean>builder()
+                .result(reviewService.isAllOrderReviewed(orderId))
+                .build();
+    }
+
+    @Operation(summary = "Check any product reviewed", description = "Api check any product reviewed")
+    @GetMapping("/order/{orderId}/is_any_order_reviewed")
+    public ApiResponse<Boolean> isAnyOrderReviewed(@PathVariable String orderId) {
+        return ApiResponse.<Boolean>builder()
+                .result(reviewService.isAnyOrderReviewed(orderId))
+                .build();
+    }
+
+    @Operation(summary = "Get all product review by id order", description = "Api get all review by id order")
+    @GetMapping("/order/{orderId}/product")
+    public ApiResponse<List<ReviewOrderItemResponse>> getAllProductReview(@PathVariable String orderId) {
+        return ApiResponse.<List<ReviewOrderItemResponse>>builder()
+                .result(reviewService.getAllProductReview(orderId))
                 .build();
     }
 }
