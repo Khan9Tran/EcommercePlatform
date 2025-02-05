@@ -26,10 +26,12 @@ public interface OrderItemMapper {
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.mainImageUrl", target = "productMainImageUrl")
     @Mapping(source = "product.slug", target = "productSlug")
+    @Mapping(source = "product.id", target = "productId")
     OrderItemGetOneUserResponse toOrderItemGetOneUserResponse(OrderItem orderItem);
 
     @Mapping(source = "product.slug", target = "productSlug")
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.mainImageUrl", target = "productMainImageUrl")
+    @Mapping(source = "product.id", target = "productId")
     OrderItemGetAllUserResponse toOrderItemGetAllUserResponse(OrderItem orderItem);
 }

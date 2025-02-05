@@ -23,4 +23,7 @@ public class OrderItemGetAllUserResponse {
     int quantity;
     BigDecimal price;
     BigDecimal discount;
+
+    String productId;
+    String variantId;
 }

@@ -483,9 +483,15 @@ public class OrderService {
             OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
             TransactionStatusHistory lastTransactionStatusHistory = orderUtil.getLastTransactionStatusHistory(order);
 
-            List<OrderItemGetAllUserResponse> listOrderItemGetAllUserResponse = order.getOrderItems().stream()
-                    .map(orderItemMapper::toOrderItemGetAllUserResponse)
-                    .toList();
+            List<OrderItemGetAllUserResponse> listOrderItemGetAllUserResponse = new ArrayList<>();
+            order.getOrderItems().forEach(orderItem -> {
+                OrderItemGetAllUserResponse orderItemGetAllUserResponse =
+                        orderItemMapper.toOrderItemGetAllUserResponse(orderItem);
+
+                orderUtil.setMappingVariantId(orderItem, orderItemGetAllUserResponse);
+
+                listOrderItemGetAllUserResponse.add(orderItemGetAllUserResponse);
+            });
 
             OrderGetAllUserResponse orderGetAllUserResponse = orderMapper.toOrderGetAllUserResponse(order);
 
@@ -531,9 +537,15 @@ public class OrderService {
 
         OrderStatusHistory lastStatusHistory = orderUtil.getLastOrderStatusHistory(order);
 
-        List<OrderItemGetOneUserResponse> listOrderItemGetOneUserResponse = order.getOrderItems().stream()
-                .map(orderItemMapper::toOrderItemGetOneUserResponse)
-                .toList();
+        List<OrderItemGetOneUserResponse> listOrderItemGetOneUserResponse = new ArrayList<>();
+        order.getOrderItems().forEach(orderItem -> {
+            OrderItemGetOneUserResponse orderItemGetOneUserResponse =
+                    orderItemMapper.toOrderItemGetOneUserResponse(orderItem);
+
+            orderUtil.setMappingVariantId(orderItem, orderItemGetOneUserResponse);
+
+            listOrderItemGetOneUserResponse.add(orderItemGetOneUserResponse);
+        });
 
         List<OrderStatusHistory> sortedOrderStatusHistories = order.getOrderStatusHistories().stream()
                 .sorted(Comparator.comparing(OrderStatusHistory::getCreatedAt))

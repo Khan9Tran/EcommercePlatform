@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.util;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -260,5 +261,25 @@ public class OrderUtil {
                         .orderStatus(nextStatus)
                         .remarks(lastStatusHistory.getRemarks())
                         .build());
+    }
+
+    public void setMappingVariantId(OrderItem orderItem, Object orderItemResponse) {
+        Product product = orderItem.getProduct();
+        if (Objects.nonNull(product)) {
+            product.getVariants().forEach(variant -> {
+                List<String> listVariantValue =
+                        variant.getValues().stream().map(Value::getValue).toList();
+
+                if (listVariantValue.equals(orderItem.getValues())) {
+                    try {
+                        var setVariantIdMethod = orderItemResponse.getClass().getMethod("setVariantId", String.class);
+                        setVariantIdMethod.invoke(orderItemResponse, variant.getId());
+                    } catch (Exception e) {
+                        log.error("Error in function setMatchingVariantId at OrderUtil: {}", e.getMessage());
+                        throw new AppException(ErrorCode.UNKNOWN_ERROR);
+                    }
+                }
+            });
+        }
     }
 }
