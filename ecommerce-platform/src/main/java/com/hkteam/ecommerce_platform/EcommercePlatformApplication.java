@@ -25,6 +25,7 @@ public class EcommercePlatformApplication {
         final String POSTGRES_USER = "POSTGRES_USER";
         final String POSTGRES_PASSWORD = "POSTGRES_PASSWORD";
         final String HOST = "HOST";
+        final String DB_PORT = "DB_PORT";
         final String PORT = "PORT";
         final String JWT_SIGNER_KEY = "JWT_SIGNER_KEY";
 
@@ -65,6 +66,7 @@ public class EcommercePlatformApplication {
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
         System.setProperty(HOST, Objects.requireNonNull(dotenv.get(HOST)));
+        System.setProperty(DB_PORT, Objects.requireNonNull(dotenv.get(DB_PORT)));
         System.setProperty(PORT, Objects.requireNonNull(dotenv.get(PORT)));
         System.setProperty(JWT_SIGNER_KEY, Objects.requireNonNull(dotenv.get(JWT_SIGNER_KEY)));
         System.setProperty(CLOUD_NAME, Objects.requireNonNull(dotenv.get(CLOUD_NAME)));

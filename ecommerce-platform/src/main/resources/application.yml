@@ -4,7 +4,7 @@ server:
     context-path: /api/v1
 spring:
   datasource:
-    url: "jdbc:postgresql://localhost:${HOST}/${POSTGRES_DB}"
+    url: "jdbc:postgresql://${HOST}:${DB_PORT}/${POSTGRES_DB}"
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   jpa:

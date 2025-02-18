@@ -76,10 +76,10 @@ public class AuthenticationService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         if (user.isBlocked()) throw new AppException(ErrorCode.USER_HAS_BEEN_BLOCKED);
-
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPasswordDigest());
-        if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (!authenticated) throw new AppException(ErrorCode.PASSWORDS_DO_NOT_MATCH);
         var token = generateToken(user);
         return AuthenticationResponse.builder().authenticated(true).token(token).build();
     }
