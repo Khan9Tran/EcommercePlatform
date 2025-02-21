@@ -20,6 +20,7 @@ import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.user.Store;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
+import com.hkteam.ecommerce_platform.entity.useractions.ViewProduct;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -96,6 +97,9 @@ public class Product {
 
     @ManyToMany(mappedBy = "followingProducts")
     Set<User> followers;
+
+    @OneToMany(mappedBy = "product")
+    Set<ViewProduct> viewProducts;
 
     @CreationTimestamp(source = SourceType.DB)
     Instant createdAt;

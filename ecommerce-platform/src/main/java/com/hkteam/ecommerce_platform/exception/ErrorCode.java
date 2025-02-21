@@ -154,6 +154,8 @@ public enum ErrorCode {
     PAGE_SIZE_PRODUCT_TOO_LARGE(1731, "Page size must not exceed 48", HttpStatus.BAD_REQUEST),
     INVALID_PAGE_SIZE(1732, "Page size must be less than product limit", HttpStatus.BAD_REQUEST),
     LIST_REVIEW_NOT_FOUND(1733, "You haven't reviewed any products yet", HttpStatus.NOT_FOUND),
+    VIEW_PRODUCT_NOT_FOUND(1734, "View Product not found", HttpStatus.NOT_FOUND),
+    VIEW_PRODUCT_ALREADY_EXIST(1735, "View Product already exist", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

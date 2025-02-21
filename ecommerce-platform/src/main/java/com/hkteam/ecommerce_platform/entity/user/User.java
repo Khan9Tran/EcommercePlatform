@@ -15,6 +15,7 @@ import com.hkteam.ecommerce_platform.entity.cart.Cart;
 import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
+import com.hkteam.ecommerce_platform.entity.useractions.ViewProduct;
 import com.hkteam.ecommerce_platform.enums.Gender;
 
 import lombok.*;
@@ -95,6 +96,9 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id"))
     Set<Product> followingProducts;
+
+    @OneToMany(mappedBy = "user")
+    Set<ViewProduct> viewProducts;
 
     @CreationTimestamp(source = SourceType.DB)
     Instant createdAt;
