@@ -90,6 +90,7 @@ public class OrderService {
     private static final String[] ORDER_BY_SELLER = {ASC, DESC};
     private static final String[] ORDER_BY_ADMIN = {ASC, DESC};
     private static final String[] ORDER_BY_USER = {ASC, DESC};
+    private final StoreService storeService;
 
     @PreAuthorize("hasRole('SELLER')")
     public PaginationResponse<OrderGetAllSellerResponse> getAllOrderBySeller(
@@ -363,10 +364,22 @@ public class OrderService {
 
         try {
             orderRepository.save(order);
+            if (isConfirmed(order)) {
+                storeService.updateBalance(order);
+            }
+
         } catch (DataIntegrityViolationException e) {
             log.error("Error while updating order status by admin: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);
         }
+    }
+
+    public boolean isConfirmed(Order order) {
+        if (order.getOrderStatusHistories().stream().anyMatch(orderStatusHistory -> orderStatusHistory.getOrderStatus().getName().equals(OrderStatusName.CONFIRMED.name()))) {
+            return true;
+        }
+
+        return false;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -392,6 +405,11 @@ public class OrderService {
 
         try {
             orderRepository.saveAll(listOrder);
+            listOrder.forEach(order -> {
+                if (isConfirmed(order)) {
+                    storeService.updateBalance(order);
+                }
+            });
         } catch (DataIntegrityViolationException e) {
             log.error("Error while updating list order status by admin: {}", e.getMessage());
             throw new AppException(ErrorCode.UNKNOWN_ERROR);

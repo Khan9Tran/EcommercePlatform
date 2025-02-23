@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.entity.user;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
@@ -65,4 +66,8 @@ public class Store {
 
     @Column(nullable = false)
     boolean isBanned = Boolean.FALSE;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    BigDecimal currentBalance;
 }

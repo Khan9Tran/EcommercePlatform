@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.hkteam.ecommerce_platform.entity.order.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -406,5 +407,12 @@ public class StoreService {
                 .numberOfOrdersDelivered(numberOfOrdersDelivered)
                 .numberOfOrdersPending(numberOfOrdersPending)
                 .build();
+    }
+
+    @Transactional
+    public void updateBalance(Order order) {
+        Store store = order.getStore();
+        store.setCurrentBalance(store.getCurrentBalance().add(order.getTotal().subtract(order.getDiscount())));
+        storeRepository.save(store);
     }
 }
