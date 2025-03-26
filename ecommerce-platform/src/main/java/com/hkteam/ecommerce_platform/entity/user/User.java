@@ -2,8 +2,13 @@ package com.hkteam.ecommerce_platform.entity.user;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.hkteam.ecommerce_platform.entity.chat.Message;
+import com.hkteam.ecommerce_platform.entity.chat.Room;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
@@ -108,4 +113,10 @@ public class User {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Room> rooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Message> messages = new ArrayList<>();
 }

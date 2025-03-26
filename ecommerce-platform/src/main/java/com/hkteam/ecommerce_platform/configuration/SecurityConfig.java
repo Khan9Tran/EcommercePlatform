@@ -69,6 +69,7 @@ public class SecurityConfig {
                 .permitAll()
                 .requestMatchers(SWAGGER_WHITELIST_ENDPOINTS)
                 .permitAll()
+                .requestMatchers("/ws/**").permitAll()
                 .anyRequest()
                 .authenticated());
 
@@ -98,7 +99,10 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
 
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("*");
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:3000",
+                "http://localhost:8080"
+        ));
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
 

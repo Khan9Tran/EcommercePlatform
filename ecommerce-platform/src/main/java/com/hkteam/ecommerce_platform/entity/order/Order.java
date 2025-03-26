@@ -2,8 +2,10 @@ package com.hkteam.ecommerce_platform.entity.order;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.entity.chat.Message;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
@@ -75,4 +77,7 @@ public class Order {
 
     @Column(nullable = false)
     boolean isDeleted = Boolean.FALSE;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Message> messages = new ArrayList<>();
 }

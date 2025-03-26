@@ -2,9 +2,11 @@ package com.hkteam.ecommerce_platform.entity.product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.hkteam.ecommerce_platform.entity.chat.Message;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.validation.constraints.Min;
@@ -115,4 +117,7 @@ public class Product {
 
     @Version
     int version;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Message> messages = new ArrayList<>();
 }
