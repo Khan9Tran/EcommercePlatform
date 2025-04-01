@@ -15,4 +15,5 @@ public class ChatMessageRequest {
     String content;
     String productId;
     String orderId;
+    Boolean isStore;
 }

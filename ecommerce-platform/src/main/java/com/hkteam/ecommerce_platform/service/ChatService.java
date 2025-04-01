@@ -23,8 +23,10 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -76,7 +78,7 @@ public class ChatService {
                                 .createdAt(Timestamp.from(room.getCreatedAt()))
                                 .updatedAt(Timestamp.from(room.getLastUpdatedAt()))
                                 .lastMessage(room.getLastMessage())
-                                .lastTimeMessage(room.getLastMessage())
+                                .lastTimeMessage(room.getLastTimeMessage() != null ? room.getLastTimeMessage().toString() : null)
                                 .build()
                 ).toList())
                 .build();
@@ -181,7 +183,8 @@ public class ChatService {
         return getChatMessages(roomId, page, size, true);
     }
 
-    public void saveMessage(String roomId, ChatMessageRequest message) {
+    public ChatMessageResponse saveMessage(String roomId, ChatMessageRequest message, User user) {
+        log.info("Saving message: {}", message);
         if (message.getContent().isEmpty()) {
             throw new AppException(ErrorCode.MESSAGE_EMPTY);
         }
@@ -189,12 +192,12 @@ public class ChatService {
         Order order = null;
         Product product = null;
 
-        if (Objects.nonNull(message.getOrderId())) {
+        if (Objects.nonNull(message.getOrderId()) && message.getOrderId() != "") {
             order = orderRepository.findById(message.getOrderId()).orElseThrow(
                     () -> new AppException(ErrorCode.ORDER_NOT_FOUND));
         }
 
-        if (Objects.nonNull(message.getProductId())) {
+        if (Objects.nonNull(message.getProductId()) && message.getProductId() != "") {
             product = productRepository.findById(message.getProductId()).orElseThrow(
                     () -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         }
@@ -206,16 +209,26 @@ public class ChatService {
                 Message.builder()
                         .room(room)
                         .content(message.getContent())
-                        .sender(authenticatedUserUtil.getAuthenticatedUser())
+                        .sender(user)
                         .order(order)
                         .product(product)
                         .build()
         );
 
-        messageRepository.save(msg);
+        var rs = messageRepository.save(msg);
         room.setLastMessage(message.getContent());
-        room.setLastUpdatedAt(msg.getLastUpdatedAt());
+        room.setLastTimeMessage(Timestamp.from(Instant.now()));
         roomRepository.save(room);
+
+
+        return ChatMessageResponse.builder()
+                .id(rs.getId())
+                .content(rs.getContent())
+                .createdAt(rs.getCreatedAt().toString())
+                .senderId(rs.getSender().getId())
+                .orderId(rs.getOrder() != null ? rs.getOrder().getId() : null)
+                .productId(rs.getProduct() != null ? rs.getProduct().getId() : null)
+                .build();
     }
 
 }

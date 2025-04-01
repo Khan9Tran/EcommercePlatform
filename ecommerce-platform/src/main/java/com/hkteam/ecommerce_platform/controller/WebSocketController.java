@@ -1,6 +1,7 @@
 package com.hkteam.ecommerce_platform.controller;
 
 import com.hkteam.ecommerce_platform.dto.request.ChatMessageRequest;
+import com.hkteam.ecommerce_platform.dto.response.ChatMessageResponse;
 import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.service.ChatService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,16 +26,13 @@ public class WebSocketController {
 
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/room/{roomId}")
-    public ChatMessageRequest sendMessage(@DestinationVariable String roomId, @Payload ChatMessageRequest message, SimpMessageHeaderAccessor headerAccessor) {
+    public ChatMessageResponse sendMessage(@DestinationVariable String roomId, @Payload ChatMessageRequest message, SimpMessageHeaderAccessor headerAccessor) {
         User user = (User) headerAccessor.getSessionAttributes().get("user");
         if (user == null) {
             log.error("User not found");
             return null;
         }
-        //chatService.saveMessage(roomId, message);
-        log.info("Message: " + message);
-        log.info("Room: " + roomId);
-        log.info("User: " + user.getId());
-        return message;
+        var rs = chatService.saveMessage(roomId, message, user);
+        return rs;
     }
 }

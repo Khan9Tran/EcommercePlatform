@@ -69,7 +69,7 @@ public class ChatHistoryController {
             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") String size
     ) {
-        var rs =  messageService.getChatHistory(roomId, page, size);
+        var rs =  messageService.getChatInStore(roomId, page, size);
         return ApiResponse.<PaginationResponse<ChatMessageResponse>>builder()
                 .result(rs)
                 .build();
