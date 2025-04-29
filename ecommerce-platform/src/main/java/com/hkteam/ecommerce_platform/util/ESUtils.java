@@ -87,6 +87,7 @@ public class ESUtils {
                 .filter(queries)
                 .build();
 
+
         return boolQuery;
     }
 

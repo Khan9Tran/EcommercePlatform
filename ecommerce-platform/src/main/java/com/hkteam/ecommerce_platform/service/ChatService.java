@@ -21,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -204,6 +205,23 @@ public class ChatService {
 
         var room = roomRepository.findById(roomId).orElseThrow(
                 () -> new AppException(ErrorCode.ROOM_NOT_FOUND));
+
+        var msgLast = messageRepository.findTopByRoomIdWithValidProductOrOrder(roomId, PageRequest.of(0, 1)).stream().findFirst();
+
+        if (msgLast.isPresent()){
+            Message lastMessage = msgLast.get();
+            if (Objects.nonNull(lastMessage.getOrder()) && Objects.nonNull(order)) {
+                if (lastMessage.getOrder().getId().equals(order.getId())) {
+                    order = null;
+                }
+            }
+
+            if (Objects.nonNull(lastMessage.getProduct()) && Objects.nonNull(product)) {
+                if (lastMessage.getProduct().getId().equals(product.getId())) {
+                    product = null;
+                }
+            }
+        }
 
         var msg = messageRepository.save(
                 Message.builder()
