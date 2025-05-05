@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.hkteam.ecommerce_platform.entity.order.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,10 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hkteam.ecommerce_platform.dto.request.StoreRegistrationRequest;
 import com.hkteam.ecommerce_platform.dto.request.StoreUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
+import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.user.Address;
 import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.entity.user.User;
 import com.hkteam.ecommerce_platform.enums.RoleName;
 import com.hkteam.ecommerce_platform.enums.TypeSlug;
 import com.hkteam.ecommerce_platform.exception.AppException;
@@ -50,6 +51,7 @@ public class StoreService {
     AuthenticatedUserUtil authenticatedUserUtil;
     RoleRepository roleRepository;
     ProductElasticsearchRepository elasticsearchRepository;
+    UserRepository userRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<StoreResponse> getAllStores(
@@ -414,5 +416,14 @@ public class StoreService {
         Store store = order.getStore();
         store.setCurrentBalance(store.getCurrentBalance().add(order.getTotal().subtract(order.getDiscount())));
         storeRepository.save(store);
+    }
+
+    public StoreCheckOnlineStatus checkStoreOnlineStatus(String storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+
+        User user = store.getUser();
+        StoreCheckOnlineStatus checkOnlineStatus = new StoreCheckOnlineStatus();
+        checkOnlineStatus.setOnline(user.isOnline());
+        return checkOnlineStatus;
     }
 }

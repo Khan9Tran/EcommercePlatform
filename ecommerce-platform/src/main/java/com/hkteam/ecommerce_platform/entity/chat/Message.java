@@ -1,13 +1,16 @@
 package com.hkteam.ecommerce_platform.entity.chat;
 
+import java.time.Instant;
+
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.*;
+
 import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.user.User;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.*;
 
-import java.time.Instant;
+import lombok.*;
 
 @Getter
 @Setter
@@ -32,7 +35,6 @@ public class Message {
     @JoinColumn(name = "user_id", nullable = false)
     User sender;
 
-
     @CreationTimestamp(source = SourceType.DB)
     Instant createdAt;
 
@@ -49,6 +51,4 @@ public class Message {
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = true)
     Order order;
-
-
 }

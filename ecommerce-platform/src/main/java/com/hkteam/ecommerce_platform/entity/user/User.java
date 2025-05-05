@@ -3,12 +3,9 @@ package com.hkteam.ecommerce_platform.entity.user;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.hkteam.ecommerce_platform.entity.chat.Message;
-import com.hkteam.ecommerce_platform.entity.chat.Room;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
@@ -17,6 +14,8 @@ import org.hibernate.annotations.*;
 
 import com.hkteam.ecommerce_platform.entity.authorization.Role;
 import com.hkteam.ecommerce_platform.entity.cart.Cart;
+import com.hkteam.ecommerce_platform.entity.chat.Message;
+import com.hkteam.ecommerce_platform.entity.chat.Room;
 import com.hkteam.ecommerce_platform.entity.order.Order;
 import com.hkteam.ecommerce_platform.entity.product.Product;
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
@@ -70,6 +69,9 @@ public class User {
 
     @Column(nullable = false)
     boolean isBlocked = Boolean.FALSE;
+
+    @Column(nullable = false)
+    boolean isOnline = Boolean.FALSE;
 
     @ManyToMany
     Set<Role> roles;

@@ -375,7 +375,9 @@ public class OrderService {
     }
 
     public boolean isConfirmed(Order order) {
-        if (order.getOrderStatusHistories().stream().anyMatch(orderStatusHistory -> orderStatusHistory.getOrderStatus().getName().equals(OrderStatusName.CONFIRMED.name()))) {
+        if (order.getOrderStatusHistories().stream()
+                .anyMatch(orderStatusHistory ->
+                        orderStatusHistory.getOrderStatus().getName().equals(OrderStatusName.CONFIRMED.name()))) {
             return true;
         }
 

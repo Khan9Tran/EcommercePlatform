@@ -109,4 +109,12 @@ public class StoreController {
                 .result(storeService.getStoreStatistic())
                 .build();
     }
+
+    @Operation(summary = "Check store online status", description = "Api check store online status")
+    @GetMapping("/check_online_status/{storeId}")
+    public ApiResponse<StoreCheckOnlineStatus> checkStoreOnlineStatus(@PathVariable String storeId) {
+        return ApiResponse.<StoreCheckOnlineStatus>builder()
+                .result(storeService.checkStoreOnlineStatus(storeId))
+                .build();
+    }
 }

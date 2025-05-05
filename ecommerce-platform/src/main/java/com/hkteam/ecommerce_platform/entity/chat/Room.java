@@ -1,20 +1,20 @@
 package com.hkteam.ecommerce_platform.entity.chat;
 
-import com.hkteam.ecommerce_platform.entity.cart.Cart;
-import com.hkteam.ecommerce_platform.entity.user.Store;
-import com.hkteam.ecommerce_platform.entity.user.User;
-import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.*;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+
+import org.hibernate.annotations.*;
+
+import com.hkteam.ecommerce_platform.entity.user.Store;
+import com.hkteam.ecommerce_platform.entity.user.User;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -53,5 +53,4 @@ public class Room {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Message> messages = new ArrayList<>();
-
 }

@@ -156,9 +156,9 @@ public enum ErrorCode {
     LIST_REVIEW_NOT_FOUND(1733, "You haven't reviewed any products yet", HttpStatus.NOT_FOUND),
     VIEW_PRODUCT_NOT_FOUND(1734, "View Product not found", HttpStatus.NOT_FOUND),
     VIEW_PRODUCT_ALREADY_EXIST(1735, "View Product already exist", HttpStatus.BAD_REQUEST),
-    ROOM_ALREADY_EXISTED(1736,"room already existed" , HttpStatus.BAD_REQUEST),
-    ROOM_NOT_FOUND(1737,"room not found" , HttpStatus.NOT_FOUND),
-    MESSAGE_EMPTY(1738, "mesage empty", HttpStatus.BAD_REQUEST );
+    ROOM_ALREADY_EXISTED(1736, "room already existed", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_FOUND(1737, "room not found", HttpStatus.NOT_FOUND),
+    MESSAGE_EMPTY(1738, "mesage empty", HttpStatus.BAD_REQUEST);
 
     int code;
     String message;

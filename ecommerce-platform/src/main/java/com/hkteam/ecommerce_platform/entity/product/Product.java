@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.hkteam.ecommerce_platform.entity.chat.Message;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.validation.constraints.Min;
@@ -17,6 +16,7 @@ import org.hibernate.annotations.*;
 import com.hkteam.ecommerce_platform.entity.cart.CartItem;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
+import com.hkteam.ecommerce_platform.entity.chat.Message;
 import com.hkteam.ecommerce_platform.entity.image.ProductImage;
 import com.hkteam.ecommerce_platform.entity.order.OrderItem;
 import com.hkteam.ecommerce_platform.entity.user.Store;
