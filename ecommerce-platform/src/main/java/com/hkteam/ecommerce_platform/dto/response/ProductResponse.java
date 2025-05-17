@@ -31,4 +31,5 @@ public class ProductResponse implements Serializable {
     Instant lastUpdatedAt;
     Float rating;
     String brandName;
+    int sold;
 }

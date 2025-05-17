@@ -83,8 +83,8 @@ public class ApplicationInitConfig {
             if (userRepository.findByUsername(RoleName.ADMIN.name()).isEmpty()) {
                 log.info("Creating admin user");
                 User adminUser = User.builder()
-                        .username(RoleName.ADMIN.name())
-                        .passwordDigest(passwordEncoder.encode(RoleName.ADMIN.name()))
+                        .username("ADMIN@123")
+                        .passwordDigest(passwordEncoder.encode("ADMIN@123"))
                         .bio("Default admin user, please config")
                         .gender(Gender.OTHER)
                         .phone("00000000000")

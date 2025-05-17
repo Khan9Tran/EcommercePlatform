@@ -41,6 +41,7 @@ public interface ProductMapper {
 
     ProductResponse toProductResponse(ProductElasticsearch productElasticsearch);
 
+    @Mapping(source = "sold", target = "sold")
     ProductResponse toProductResponse(Product product);
 
     ProductBestSellingResponse toProductBestSellingResponse(Product product);
