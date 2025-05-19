@@ -45,4 +45,6 @@ public interface ProductMapper {
     ProductResponse toProductResponse(Product product);
 
     ProductBestSellingResponse toProductBestSellingResponse(Product product);
+
+    ProductBestInteractionResponse toProductBestInteractionResponse(Product product);
 }

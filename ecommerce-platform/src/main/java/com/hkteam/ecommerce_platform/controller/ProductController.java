@@ -106,4 +106,14 @@ public class ProductController {
                 .result(productService.getProductBestSelling(page, size, limit))
                 .build();
     }
+
+    @GetMapping("/best_interaction")
+    ApiResponse<PaginationResponse<ProductBestInteractionResponse>> getProductBestInteraction(
+            @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") String size,
+            @RequestParam(value = "limit", required = false, defaultValue = "10") String limit) {
+        return ApiResponse.<PaginationResponse<ProductBestInteractionResponse>>builder()
+                .result(productService.getProductBestInteraction(page, size, limit))
+                .build();
+    }
 }

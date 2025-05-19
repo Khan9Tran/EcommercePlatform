@@ -64,4 +64,18 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 				LIMIT :productLimit
 			""")
     List<Product> findProductBestSelling(@Param("productLimit") int productLimit);
+
+    @Query(
+            """
+				SELECT p FROM Product p
+				WHERE p.isAvailable = true AND p.isBlocked = false
+				ORDER BY
+					(COALESCE(SIZE(p.orderItems), 0) * 4 +
+					COALESCE(SIZE(p.followers), 0) * 3 +
+					COALESCE(SIZE(p.cartItems), 0) * 2 +
+					COALESCE(SIZE(p.reviews), 0) * 1 +
+					COALESCE(SIZE(p.viewProducts), 0) * 1) DESC
+				LIMIT :productLimit
+			""")
+    List<Product> findProductBestInteraction(@Param("productLimit") int productLimit);
 }
