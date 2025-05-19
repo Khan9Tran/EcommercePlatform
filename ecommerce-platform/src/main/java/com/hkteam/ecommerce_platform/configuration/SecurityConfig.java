@@ -45,6 +45,9 @@ public class SecurityConfig {
         "/stores/{storeId}",
         "/products/top3/store/{storeId}",
         "/products/best_selling",
+        "/products/best_interaction",
+        "/brands",
+        "/categories",
         "/reviews/product/{productId}",
         "/reviews/product/{productId}/comment-media-total"
     };
