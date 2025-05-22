@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.util.*;
 
+import com.hkteam.ecommerce_platform.dto.response.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cache.CacheManager;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,10 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.hkteam.ecommerce_platform.dto.request.*;
-import com.hkteam.ecommerce_platform.dto.response.CategoryFilterResponse;
-import com.hkteam.ecommerce_platform.dto.response.CategoryResponse;
-import com.hkteam.ecommerce_platform.dto.response.CategoryTreeViewResponse;
-import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
 import com.hkteam.ecommerce_platform.entity.category.Category;
 import com.hkteam.ecommerce_platform.entity.category.Component;
 import com.hkteam.ecommerce_platform.enums.TypeSlug;
@@ -333,5 +330,40 @@ public class CategoryService {
                 categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
         return categoryMapper.toCategoryFilterResponse(category);
+    }
+
+    public List<CateHasComponentResponse> getAllCateHasComponent(List<Long> categoryIds) {
+        var rs = categoryRepository.findAllById(categoryIds);
+        log.info(rs.toString());
+        List<CateHasComponentResponse> cateHasComponentResponses = new ArrayList<>();
+        for (Category category : rs) {
+            List<ComponentDetailResponse> componentDetailResponses = new ArrayList<>();
+            for (Component component : category.getComponents()) {
+                var componentDetailResponse = ComponentDetailResponse.builder()
+                        .id(component.getId())
+                        .name(component.getName())
+                        .categoryId(category.getId())
+                        .build();
+                for (var values: component.getProductComponentValues()) {
+                    if (componentDetailResponse.getValues() == null) {
+                        componentDetailResponse.setValues(new ArrayList<>());
+                    }
+                    var productComponentValueResponse = ProductComponentValueResponse.builder()
+                            .id(values.getId())
+                            .value(values.getValue())
+                            .build();
+                    componentDetailResponse.getValues().add(productComponentValueResponse);
+                }
+                componentDetailResponses.add(componentDetailResponse);
+            }
+            var cateHasComponentResponse = CateHasComponentResponse.builder()
+                    .id(category.getId())
+                    .name(category.getName())
+                    .components(componentDetailResponses)
+                    .build();
+            cateHasComponentResponses.add(cateHasComponentResponse);
+        }
+
+        return cateHasComponentResponses;
     }
 }

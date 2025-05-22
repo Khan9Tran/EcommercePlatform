@@ -141,4 +141,12 @@ public class CategoryController {
                 .result(categoryService.getTreeView())
                 .build();
     }
+
+
+    @GetMapping("/detail-component")
+    public ApiResponse<List<CateHasComponentResponse>> getAllCateHasComponent(@RequestParam List<Long> categoryIds) {
+        return ApiResponse.<List<CateHasComponentResponse>>builder()
+                .result(categoryService.getAllCateHasComponent(categoryIds))
+                .build();
+    }
 }
