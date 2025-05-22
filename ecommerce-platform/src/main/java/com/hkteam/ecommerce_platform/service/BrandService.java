@@ -109,7 +109,6 @@ public class BrandService {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     public PaginationResponse<BrandGetAllResponse> getAllBrand(
             String page, String size, String sortBy, String orderBy, String search) {
 
