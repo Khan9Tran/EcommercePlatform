@@ -1,9 +1,16 @@
 package com.hkteam.ecommerce_platform.service;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.hkteam.ecommerce_platform.dto.request.StatisticRequest;
+import com.hkteam.ecommerce_platform.util.DateRangeUtil;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -368,4 +375,79 @@ public class ReviewService {
 
         return listReviewOrderItemResponse;
     }
+
+    public StatisticResponse getStatistics(StatisticRequest request) {
+        log.info("Get statistics: {}", request);
+        LocalDate[] resolvedRange = DateRangeUtil.resolveFromTo(
+                request.getRangeType(),
+                request.getFrom(),
+                request.getTo()
+        );
+
+        Instant[] range = DateRangeUtil.convertLocalDateRangeToInstant(resolvedRange);
+
+        Instant from = range[0];
+        Instant to = range[1];
+
+
+
+        if (!request.getType().equals("REVENUE") && !request.getType().equals("PRODUCT_SOLD") && !request.getType().equals("ORDER_COUNT")) {
+            throw new AppException(ErrorCode.TAB_INVALID);
+        }
+
+        String storeId = request.getStoreId();
+        String productId = request.getProductId();
+        String groupBy = request.getGroupBy().getPostgresFormat();
+        String type = request.getType();
+
+
+        if (type.equals("REVENUE")) {
+
+            List<Object[]> results = orderRepository.getRevenueStatisticsNative(
+                    from,
+                    to,
+                    groupBy,
+                    storeId,
+                    productId,
+                    request.getOffset(),
+                    request.getLimit()
+
+            );
+
+            List<Object[]> rs = orderRepository.getRevenueStatisticsNativeNoPage(
+                    from,
+                    to,
+                    groupBy,
+                    storeId,
+                    productId
+            );
+
+            Integer count = rs.size();
+
+            BigDecimal sum = results.stream()
+                    .map(row -> row[6] != null ? new BigDecimal(row[6].toString()) : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            List<StatisticItem> items = results.stream().map(row -> new StatisticItem(
+                    row[0], // groupKey (String)
+                    "",     // entityId
+                    "revenue",     // entityName
+                    "",     // slug
+                    "",     // imageUrl
+                    0,      // quantity
+                    "VNĐ",
+                    row[6] != null ? new BigDecimal(row[6].toString()) : BigDecimal.ZERO
+            )).toList();
+
+            return StatisticResponse.builder()
+                    .data(items)
+                    .totalCount(0)
+                    .totalItems(count)
+                    .totalAmount(sum)
+                    .build();
+        }
+
+        return null;
+    }
+
 }

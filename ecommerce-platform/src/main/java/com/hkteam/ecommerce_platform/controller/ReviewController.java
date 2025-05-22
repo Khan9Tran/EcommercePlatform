@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.controller;
 
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.dto.request.StatisticRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -90,4 +91,13 @@ public class ReviewController {
                 .result(reviewService.getAllProductReview(orderId))
                 .build();
     }
+
+
+    @GetMapping("/statistics")
+    public ApiResponse<StatisticResponse> getStatistics(@ModelAttribute StatisticRequest request) {
+        return ApiResponse.<StatisticResponse>builder()
+                .result(reviewService.getStatistics(request))
+                .build();
+    }
+
 }

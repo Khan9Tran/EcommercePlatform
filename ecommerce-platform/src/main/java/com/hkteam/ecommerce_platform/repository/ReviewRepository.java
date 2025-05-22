@@ -1,16 +1,23 @@
 package com.hkteam.ecommerce_platform.repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.hkteam.ecommerce_platform.dto.response.StatisticItem;
+import com.hkteam.ecommerce_platform.dto.response.StatisticResponse;
+import com.hkteam.ecommerce_platform.entity.order.Order;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import com.hkteam.ecommerce_platform.entity.useractions.Review;
+import org.springframework.data.repository.query.Param;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     @NotNull

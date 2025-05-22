@@ -1,8 +1,13 @@
 package com.hkteam.ecommerce_platform.repository;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.hkteam.ecommerce_platform.dto.response.StatisticItem;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -132,4 +137,88 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 	""")
     List<Order> findListOrderUpdateOrCancel(
             @Param("listOrderId") List<String> listOrderId, @Param("listStatus") List<String> listStatus);
+
+
+	@Query(value = """
+    SELECT
+        grouped.group_key,
+        '' AS entity_id,
+        'revenue' AS entity_name,
+        '' AS slug,
+        '' AS image_url,
+        0 AS quantity,
+        SUM(grouped.grand_total) AS amount
+    FROM (
+        SELECT
+            o.created_at,
+            to_char(o.created_at, :groupFormat) AS group_key,
+            o.grand_total
+        FROM orders o
+        JOIN order_item oi ON o.id = oi.order_id AND oi.is_deleted = false
+        WHERE o.is_deleted = false
+          AND o.created_at BETWEEN :from AND :to
+          AND (:storeId IS NULL OR o.store_id = :storeId)
+          AND (:productId IS NULL OR oi.product_id = :productId)
+			AND EXISTS (
+						  SELECT 1 FROM order_status_history osh
+						  WHERE osh.order_id = o.id
+							AND osh.order_status_name = 'DELIVERED'
+                      )
+    ) grouped
+    GROUP BY grouped.group_key
+    ORDER BY grouped.group_key
+    OFFSET :offset
+    LIMIT :limit
+    """,
+			nativeQuery = true
+	)
+	List<Object[]> getRevenueStatisticsNative(
+			@Param("from") Instant from,
+			@Param("to") Instant to,
+			@Param("groupFormat") String groupFormat,
+			@Param("storeId") String storeId,
+			@Param("productId") String productId,
+			@Param("offset") int offset,
+			@Param("limit") int limit
+	);
+
+	@Query(value = """
+    SELECT
+        grouped.group_key,
+        '' AS entity_id,
+        'revenue' AS entity_name,
+        '' AS slug,
+        '' AS image_url,
+        0 AS quantity,
+        SUM(grouped.grand_total) AS amount
+    FROM (
+        SELECT
+            o.created_at,
+            to_char(o.created_at, :groupFormat) AS group_key,
+            o.grand_total
+        FROM orders o
+        JOIN order_item oi ON o.id = oi.order_id AND oi.is_deleted = false
+        WHERE o.is_deleted = false
+          AND o.created_at BETWEEN :from AND :to
+          AND (:storeId IS NULL OR o.store_id = :storeId)
+          AND (:productId IS NULL OR oi.product_id = :productId)
+			AND EXISTS (
+						  SELECT 1 FROM order_status_history osh
+						  WHERE osh.order_id = o.id
+							AND osh.order_status_name = 'DELIVERED'
+                      )
+    ) grouped
+    GROUP BY grouped.group_key
+    ORDER BY grouped.group_key
+    """,
+			nativeQuery = true
+	)
+	List<Object[]> getRevenueStatisticsNativeNoPage(
+			@Param("from") Instant from,
+			@Param("to") Instant to,
+			@Param("groupFormat") String groupFormat,
+			@Param("storeId") String storeId,
+			@Param("productId") String productId
+	);
+
 }
