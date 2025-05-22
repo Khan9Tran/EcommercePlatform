@@ -333,6 +333,9 @@ public class CategoryService {
     }
 
     public List<CateHasComponentResponse> getAllCateHasComponent(List<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
+        }
         var rs = categoryRepository.findAllById(categoryIds);
         log.info(rs.toString());
         List<CateHasComponentResponse> cateHasComponentResponses = new ArrayList<>();
