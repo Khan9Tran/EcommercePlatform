@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.entity.elasticsearch.EsProComponentValue;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -9,6 +10,9 @@ import com.hkteam.ecommerce_platform.dto.request.ProductUpdateRequest;
 import com.hkteam.ecommerce_platform.dto.response.*;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.ProductElasticsearch;
 import com.hkteam.ecommerce_platform.entity.product.Product;
+
+import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
@@ -40,6 +44,10 @@ public interface ProductMapper {
     ProductOfVariantResponse toProductOfVariantResponse(Product product);
 
     ProductResponse toProductResponse(ProductElasticsearch productElasticsearch);
+    @Mapping(source = "value", target = "value")
+    @Mapping(source = "id", target = "valueId")
+    ProductComponentValueOfProductResponse toProductComponentValueOfProductResponse(EsProComponentValue productComponentValue);
+    Set<ProductComponentValueOfProductResponse> toProductComponentValueOfProductResponseList(List<EsProComponentValue> productComponentValue);
 
     @Mapping(source = "sold", target = "sold")
     ProductResponse toProductResponse(Product product);

@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.dto.response;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,4 +33,6 @@ public class ProductResponse implements Serializable {
     Float rating;
     String brandName;
     int sold;
+
+    Set<ProductComponentValueOfProductResponse> productComponentValues;
 }
