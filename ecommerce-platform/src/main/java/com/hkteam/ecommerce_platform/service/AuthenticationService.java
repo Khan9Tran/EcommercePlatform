@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import lombok.AccessLevel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.Authentication;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
 
     InvalidatedTokenRepository invalidatedTokenRepository;
@@ -57,6 +59,7 @@ public class AuthenticationService {
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
 
+    @NonFinal
     @Value("${cors.backend-url}")
     String backendUrl;
 

@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.mapper;
 
+import com.hkteam.ecommerce_platform.entity.category.ProductComponentValue;
 import com.hkteam.ecommerce_platform.entity.elasticsearch.EsProComponentValue;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -51,6 +52,11 @@ public interface ProductMapper {
 
     @Mapping(source = "sold", target = "sold")
     ProductResponse toProductResponse(Product product);
+    @Mapping(source = "value", target = "value")
+    @Mapping(source = "id", target = "valueId")
+    ProductComponentValueOfProductResponse toProductComponentValueOfProductResponse(ProductComponentValue productComponentValue);
+    Set<ProductComponentValueOfProductResponse> toProductComponentValueOfProductResponseSet(Set<ProductComponentValue> productComponentValue);
+
 
     ProductBestSellingResponse toProductBestSellingResponse(Product product);
 
