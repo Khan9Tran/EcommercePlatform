@@ -23,6 +23,10 @@ spring:
     port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_DEFAULT_USER}
     password: ${RABBITMQ_DEFAULT_PASS}
+    virtual-host: ${RABBITMQ_VHOST}
+    ssl:
+      enabled: true
+
 
   data:
     elasticsearch:

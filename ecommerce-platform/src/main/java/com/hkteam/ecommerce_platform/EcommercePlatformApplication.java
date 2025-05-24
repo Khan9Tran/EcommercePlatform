@@ -44,10 +44,6 @@ public class EcommercePlatformApplication {
         final String GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET";
         final String GOOGLE_REDIRECT_URI = "GOOGLE_REDIRECT_URI";
 
-        // RabbitMQ
-        final String RABBITMQ_DEFAULT_USER = "RABBITMQ_DEFAULT_USER";
-        final String RABBITMQ_DEFAULT_PASS = "RABBITMQ_DEFAULT_PASS";
-
         // facebook
         final String FACEBOOK_CLIENT_ID = "FACEBOOK_CLIENT_ID";
         final String FACEBOOK_CLIENT_SECRET = "FACEBOOK_CLIENT_SECRET";
@@ -73,6 +69,9 @@ public class EcommercePlatformApplication {
         //RABBITMQ
         final String RABBITMQ_HOST = "RABBITMQ_HOST";
         final String RABBITMQ_PORT = "RABBITMQ_PORT";
+        final String RABBITMQ_VHOST = "RABBITMQ_VHOST";
+        final String RABBITMQ_DEFAULT_USER = "RABBITMQ_DEFAULT_USER";
+        final String RABBITMQ_DEFAULT_PASS = "RABBITMQ_DEFAULT_PASS";
 
         //CORS
         final String ALLOWED_ORIGINS = "ALLOWED_ORIGINS";
@@ -118,6 +117,7 @@ public class EcommercePlatformApplication {
         System.setProperty(FRONTEND_URL, Objects.requireNonNull(dotenv.get(FRONTEND_URL)));
         System.setProperty(OPEN_API_URL, Objects.requireNonNull(dotenv.get(OPEN_API_URL)));
         System.setProperty(BACKEND_URL, Objects.requireNonNull(dotenv.get(BACKEND_URL)));
+        System.setProperty(RABBITMQ_VHOST, Objects.requireNonNull(dotenv.get(RABBITMQ_VHOST)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }
