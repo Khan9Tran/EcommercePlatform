@@ -20,16 +20,16 @@ services:
     ports:
       - "5432:5432"
 
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"  # AMQP port
-      - "15672:15672"  # Management UI port
-    env_file:
-      - .env
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+#  rabbitmq:
+#    image: rabbitmq:management
+#    container_name: rabbitmq
+#    ports:
+#      - "5672:5672"  # AMQP port
+#      - "15672:15672"  # Management UI port
+#    env_file:
+#      - .env
+#    volumes:
+#      - rabbitmq_data:/var/lib/rabbitmq
 
   elasticsearch:
     image: elasticsearch:8.15.3
