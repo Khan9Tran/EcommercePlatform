@@ -3,6 +3,7 @@ package com.hkteam.ecommerce_platform.configuration;
 import java.util.List;
 
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +17,8 @@ import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenApiConfig {
+    @Value("${cors.open-api-url}")
+    String openApiUrl;
 
     @Bean
     public OpenAPI openAPI() {
@@ -28,7 +31,7 @@ public class OpenApiConfig {
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080/api/v1/").description("Ecommerce Platform API")))
+                        new Server().url(openApiUrl).description("Ecommerce Platform API")))
                 .components(new Components()
                         .addSecuritySchemes(
                                 "bearerAuth",

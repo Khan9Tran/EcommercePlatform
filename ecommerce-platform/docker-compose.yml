@@ -1,4 +1,16 @@
 services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - rabbitmq
+      - elasticsearch
+      - redis
+
   db:
     image: postgres:16.3
     env_file:

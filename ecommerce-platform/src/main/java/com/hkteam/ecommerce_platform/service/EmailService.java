@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class EmailService {
+    @Value("${cors.frontend-url}")
+    String frontendUrl;
+
+    @Value("${cors.backend-url}")
+    String backendUrl;
     RabbitTemplate rabbitTemplate;
 
     UserRepository userRepository;
@@ -124,7 +129,7 @@ public class EmailService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        String tokenUrl = "http://localhost:3000/verify?token=" + token;
+        String tokenUrl = frontendUrl + "/verify?token=" + token;
         try {
             sendMailValidation(user.getEmail(), "Xác thực email", tokenUrl, "email-validation");
         } catch (Exception e) {
@@ -181,7 +186,7 @@ public class EmailService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        String tokenUrl = "http://localhost:8080/emails/reset-password?token=" + token;
+        String tokenUrl = backendUrl +"/emails/reset-password?token=" + token;
         try {
             sendMailValidation(user.getEmail(), "Reset password", tokenUrl, "reset-password");
         } catch (Exception e) {

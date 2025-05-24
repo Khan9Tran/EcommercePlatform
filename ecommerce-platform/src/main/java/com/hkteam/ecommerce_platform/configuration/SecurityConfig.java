@@ -1,5 +1,6 @@
 package com.hkteam.ecommerce_platform.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,6 +33,9 @@ public class SecurityConfig {
         "/emails/reset-request",
         "/emails/reset-password",
     };
+
+    @Value("${cors.allowed-origins}")
+    private String[] allowedOrigins;
 
     private static final String[] VN_PAY_ENDPOINTS = {"payments/vn-pay-callback"};
 
@@ -105,7 +109,7 @@ public class SecurityConfig {
 
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:3000", "http://localhost:8080"));
+        corsConfiguration.setAllowedOrigins(java.util.List.of(allowedOrigins));
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
 

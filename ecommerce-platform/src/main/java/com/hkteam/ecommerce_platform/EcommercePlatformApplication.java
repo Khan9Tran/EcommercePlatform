@@ -62,6 +62,24 @@ public class EcommercePlatformApplication {
         final String VN_PAY_COMMAND = "VN_PAY_COMMAND";
         final String VN_PAY_ORDER_TYPE = "VN_PAY_ORDER_TYPE";
 
+        //REDIS
+        final String REDIS_HOST = "REDIS_HOST";
+        final String REDIS_PORT = "REDIS_PORT";
+
+        //ES
+        final String ES_HOST = "ES_HOST";
+        final String ES_PORT = "ES_PORT";
+
+        //RABBITMQ
+        final String RABBITMQ_HOST = "RABBITMQ_HOST";
+        final String RABBITMQ_PORT = "RABBITMQ_PORT";
+
+        //CORS
+        final String ALLOWED_ORIGINS = "ALLOWED_ORIGINS";
+        final String FRONTEND_URL = "FRONTEND_URL";
+        final String OPEN_API_URL = "OPEN_API_URL";
+        final String BACKEND_URL = "BACKEND_URL";
+
         System.setProperty(POSTGRES_DB, Objects.requireNonNull(dotenv.get(POSTGRES_DB)));
         System.setProperty(POSTGRES_USER, Objects.requireNonNull(dotenv.get(POSTGRES_USER)));
         System.setProperty(POSTGRES_PASSWORD, Objects.requireNonNull(dotenv.get(POSTGRES_PASSWORD)));
@@ -90,6 +108,16 @@ public class EcommercePlatformApplication {
         System.setProperty(VN_PAY_VERSION, Objects.requireNonNull(dotenv.get(VN_PAY_VERSION)));
         System.setProperty(VN_PAY_COMMAND, Objects.requireNonNull(dotenv.get(VN_PAY_COMMAND)));
         System.setProperty(VN_PAY_ORDER_TYPE, Objects.requireNonNull(dotenv.get(VN_PAY_ORDER_TYPE)));
+        System.setProperty(REDIS_HOST, Objects.requireNonNull(dotenv.get(REDIS_HOST)));
+        System.setProperty(REDIS_PORT, Objects.requireNonNull(dotenv.get(REDIS_PORT)));
+        System.setProperty(ES_HOST, Objects.requireNonNull(dotenv.get(ES_HOST)));
+        System.setProperty(ES_PORT, Objects.requireNonNull(dotenv.get(ES_PORT)));
+        System.setProperty(RABBITMQ_HOST, Objects.requireNonNull(dotenv.get(RABBITMQ_HOST)));
+        System.setProperty(RABBITMQ_PORT, Objects.requireNonNull(dotenv.get(RABBITMQ_PORT)));
+        System.setProperty(ALLOWED_ORIGINS, Objects.requireNonNull(dotenv.get(ALLOWED_ORIGINS)));
+        System.setProperty(FRONTEND_URL, Objects.requireNonNull(dotenv.get(FRONTEND_URL)));
+        System.setProperty(OPEN_API_URL, Objects.requireNonNull(dotenv.get(OPEN_API_URL)));
+        System.setProperty(BACKEND_URL, Objects.requireNonNull(dotenv.get(BACKEND_URL)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }

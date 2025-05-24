@@ -9,6 +9,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -33,13 +34,15 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class EmailSender {
 
     JavaMailSender emailSender;
     TemplateEngine templateEngine;
     private final PaymentRepository paymentRepository;
+
+    @Value("${cors.frontend-url}")
+    String frontendUrl;
 
     @RabbitListener(queues = RabbitMQConfig.EMAIL_QUEUE)
     public void sendEmail(EmailMessageRequest request) throws MessagingException {
@@ -126,7 +129,7 @@ public class EmailSender {
                 .shippingFee(order.getShippingFee())
                 .total(order.getGrandTotal())
                 .paymentMethod(paymentMethod.name())
-                .paymentStatusUrl("http://localhost:3000/status/" + paymentId)
+                .paymentStatusUrl(frontendUrl + "/status/" + paymentId)
                 .build();
 
         Map<String, Object> variables = new HashMap<>();

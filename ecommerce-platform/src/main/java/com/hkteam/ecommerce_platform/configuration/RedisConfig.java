@@ -2,6 +2,7 @@ package com.hkteam.ecommerce_platform.configuration;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @EnableCaching
 public class RedisConfig {
 
+    @Value("${spring.spring.redis.host:localhost}") // default localhost if env variable not set
+    String host;
+
+    @Value("${spring.spring.redis.port:6379}") // default 6379 if env variable not set
+    int port;
+
     @Bean
     public RedisCacheConfiguration defaultCacheConfiguration() {
         // Config for the default cache behavior
@@ -37,8 +44,8 @@ public class RedisConfig {
     public RedisConnectionFactory redisConnectionFactory() {
         // Redis connection factory for Lettuce
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName("localhost");
-        config.setPort(6379);
+        config.setHostName(host);
+        config.setPort(port);
         return new LettuceConnectionFactory(config);
     }
 

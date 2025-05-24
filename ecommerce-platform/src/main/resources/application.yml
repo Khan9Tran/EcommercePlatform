@@ -10,7 +10,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-      dialect: org.hibernate.dialect.PostgreSQLDialect
+      dialect: org.hibernate.dialect.PostgresSQLDialect
     show-sql: true
   servlet:
     multipart:
@@ -19,22 +19,24 @@ spring:
       max-request-size: 200MB
 
   rabbitmq:
-    host: localhost
-    port: 5672
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_DEFAULT_USER}
     password: ${RABBITMQ_DEFAULT_PASS}
 
   data:
     elasticsearch:
-      cluster-nodes: localhost:9200
+      host: ${ES_HOST}
+      port: ${ES_PORT}
+      cluster-nodes: ${ES_HOST}:${ES_PORT}
       cluster-name: docker-cluster
       repositories:
         enabled: true
 
   spring:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
       password: null
 
 
@@ -89,3 +91,10 @@ payment:
     version: ${VN_PAY_VERSION}
     command: ${VN_PAY_COMMAND}
     orderType: ${VN_PAY_ORDER_TYPE}
+
+# application.properties
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  backend-url: ${BACKEND_URL:http://localhost:8080}
+  open-api-url: ${OPEN_API_URL:http://localhost:8080/api/v1}
