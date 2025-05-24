@@ -61,6 +61,9 @@ public class EcommercePlatformApplication {
         //REDIS
         final String REDIS_HOST = "REDIS_HOST";
         final String REDIS_PORT = "REDIS_PORT";
+        final String REDIS_PASSWORD = "REDIS_PASSWORD";
+        final String REDIS_DB = "REDIS_DB";
+        final String REDIS_USERNAME = "REDIS_USERNAME";
 
         //ES
         final String ES_HOST = "ES_HOST";
@@ -118,6 +121,9 @@ public class EcommercePlatformApplication {
         System.setProperty(OPEN_API_URL, Objects.requireNonNull(dotenv.get(OPEN_API_URL)));
         System.setProperty(BACKEND_URL, Objects.requireNonNull(dotenv.get(BACKEND_URL)));
         System.setProperty(RABBITMQ_VHOST, Objects.requireNonNull(dotenv.get(RABBITMQ_VHOST)));
+        System.setProperty(REDIS_PASSWORD, Objects.requireNonNull(dotenv.get(REDIS_PASSWORD)));
+        System.setProperty(REDIS_DB, Objects.requireNonNull(dotenv.get(REDIS_DB)));
+        System.setProperty(REDIS_USERNAME, Objects.requireNonNull(dotenv.get(REDIS_USERNAME)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }

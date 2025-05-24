@@ -30,6 +30,16 @@ public class RedisConfig {
     @Value("${spring.spring.redis.port:6379}") // default 6379 if env variable not set
     int port;
 
+    @Value("${spring.spring.redis.password:}") // default empty if env variable not set
+    String password;
+
+    @Value("${spring.spring.redis.database:0}") // default 0 if env variable not set
+    Integer database;
+
+    @Value("${spring.spring.redis.username:}") // default empty if env variable not set
+    String username;
+
+
     @Bean
     public RedisCacheConfiguration defaultCacheConfiguration() {
         // Config for the default cache behavior
@@ -46,6 +56,9 @@ public class RedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(host);
         config.setPort(port);
+        config.setUsername(username);
+        config.setPassword(password);
+        config.setDatabase(database);
         return new LettuceConnectionFactory(config);
     }
 
