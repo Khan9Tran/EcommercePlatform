@@ -68,6 +68,8 @@ public class EcommercePlatformApplication {
         //ES
         final String ES_HOST = "ES_HOST";
         final String ES_PORT = "ES_PORT";
+        final String ES_USERNAME = "ES_USERNAME";
+        final String ES_PASSWORD = "ES_PASSWORD";
 
         //RABBITMQ
         final String RABBITMQ_HOST = "RABBITMQ_HOST";
@@ -124,6 +126,8 @@ public class EcommercePlatformApplication {
         System.setProperty(REDIS_PASSWORD, Objects.requireNonNull(dotenv.get(REDIS_PASSWORD)));
         System.setProperty(REDIS_DB, Objects.requireNonNull(dotenv.get(REDIS_DB)));
         System.setProperty(REDIS_USERNAME, Objects.requireNonNull(dotenv.get(REDIS_USERNAME)));
+        System.setProperty(ES_USERNAME, Objects.requireNonNull(dotenv.get(ES_USERNAME)));
+        System.setProperty(ES_PASSWORD, Objects.requireNonNull(dotenv.get(ES_PASSWORD)));
         SpringApplication.run(EcommercePlatformApplication.class, args);
     }
 }

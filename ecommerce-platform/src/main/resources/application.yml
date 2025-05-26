@@ -32,6 +32,8 @@ spring:
     elasticsearch:
       host: ${ES_HOST}
       port: ${ES_PORT}
+      username: ${ES_USERNAME}
+      password: ${ES_PASSWORD}
       cluster-nodes: ${ES_HOST}:${ES_PORT}
       cluster-name: docker-cluster
       repositories:
