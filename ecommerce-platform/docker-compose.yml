@@ -7,9 +7,9 @@ services:
       - .env
     depends_on:
       - db
-      - rabbitmq
+#      - rabbitmq
       - elasticsearch
-      - redis
+#      - redis
 
   db:
     image: postgres:16.3
