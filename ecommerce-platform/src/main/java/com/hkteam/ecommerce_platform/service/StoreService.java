@@ -179,6 +179,7 @@ public class StoreService {
         Store store = storeMapper.toStore(request);
         store.setSlug(SlugUtils.getSlug(request.getName(), TypeSlug.STORE));
         store.setUser(user);
+        store.setCurrentBalance(BigDecimal.valueOf(0));
 
         try {
             storeRepository.save(store);
