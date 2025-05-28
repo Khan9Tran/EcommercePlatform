@@ -86,6 +86,7 @@ public class EmailSender {
         }
     }
 
+
     private void sendMailAfterOrder(
             String name, String email, Transaction transaction, PaymentMethod paymentMethod, String paymentId)
             throws MessagingException {
