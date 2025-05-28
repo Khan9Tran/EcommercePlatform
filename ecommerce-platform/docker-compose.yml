@@ -10,6 +10,7 @@ services:
 #      - rabbitmq
       - elasticsearch
 #      - redis
+    restart: always
 
   db:
     image: postgres:16.3
@@ -17,6 +18,7 @@ services:
       - .env
     ports:
       - "5432:5432"
+    restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -39,6 +41,7 @@ services:
       - xpack.security.enabled=false
     ports:
       - "9200:9200"
+    restart: always
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
 #  redis:
