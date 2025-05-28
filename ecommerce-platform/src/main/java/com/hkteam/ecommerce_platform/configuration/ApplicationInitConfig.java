@@ -80,7 +80,7 @@ public class ApplicationInitConfig {
                 }
             }
 
-            if (userRepository.findByUsername(RoleName.ADMIN.name()).isEmpty()) {
+            if (userRepository.findByUsername("ADMIN@123").isEmpty()) {
                 log.info("Creating admin user");
                 User adminUser = User.builder()
                         .username("ADMIN@123")
