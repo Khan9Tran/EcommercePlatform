@@ -447,6 +447,47 @@ public class ReviewService {
                     .build();
         }
 
+        if (type.equals("PRODUCT_SOLD")) {
+
+            List<Object[]> results = orderRepository.getProductSoldStatisticsNative(
+                    from,
+                    to,
+                    groupBy,
+                    storeId,
+                    productId,
+                    request.getOffset(),
+                    request.getLimit()
+            );
+
+            List<Object[]> rs = orderRepository.getProductSoldStatisticsNativeNoPage(
+                    from,
+                    to,
+                    groupBy,
+                    storeId,
+                    productId
+            );
+
+            Integer count = rs.size();
+
+            List<StatisticItem> items = results.stream().map(row -> new StatisticItem(
+                    row[0], // groupKey (String)
+                    row[1] != null ? row[1].toString() : "", // entityId
+                    "product sold",     // entityName
+                    row[3] != null ? row[3].toString() : "", // slug
+                    row[4] != null ? row[4].toString() : "", // imageUrl
+                    row[5] != null ? Integer.parseInt(row[5].toString()) : 0, // quantity
+                    "Sản phẩm",     // currency
+                    BigDecimal.ZERO // amount
+            )).toList();
+
+            return StatisticResponse.builder()
+                    .data(items)
+                    .totalCount(0)
+                    .totalItems(count)
+                    .totalAmount(BigDecimal.ZERO)
+                    .build();
+        }
+
         return null;
     }
 
