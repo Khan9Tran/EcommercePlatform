@@ -17,8 +17,10 @@ services:
       - .env
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-#  rabbitmq:
+  #  rabbitmq:
 #    image: rabbitmq:management
 #    container_name: rabbitmq
 #    ports:
@@ -35,13 +37,10 @@ services:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.security.enabled=false
-    ulimits:
-        memlock:
-            soft: -1
-            hard: -1
     ports:
       - "9200:9200"
-
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
 #  redis:
 #    image: redis:latest
 #    container_name: redis
@@ -50,3 +49,6 @@ services:
 #    volumes:
 #      - redis_data:/data
 
+volumes:
+  postgres_data:
+  elastic_data:

@@ -88,7 +88,7 @@ public class ApplicationInitConfig {
                         .bio("Default admin user, please config")
                         .gender(Gender.OTHER)
                         .phone("00000000000")
-                        .email("")
+                        .email("admin123@gmail.com")
                         .roles(new HashSet<>(roleRepository
                                 .findByName(RoleName.ADMIN)
                                 .map(role -> {
