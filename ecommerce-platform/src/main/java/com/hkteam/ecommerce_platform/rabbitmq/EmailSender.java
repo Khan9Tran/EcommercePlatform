@@ -77,12 +77,15 @@ public class EmailSender {
     @RabbitListener(queues = RabbitMQConfig.SEND_MAIL_AFTER_ORDER_QUEUE)
     @Transactional
     public void sendMailAfterOrder(SendMailAfterOrderRequest request) throws MessagingException {
-        Payment payment = paymentRepository.findById(request.getPaymentId()).orElseThrow(
-                () -> new IllegalArgumentException("Payment not found with id: " + request.getPaymentId())
-        );
-        for (Transaction transaction : payment.getTransactions()) {
+        var payment = paymentRepository.findById(request.getPaymentId());
+        if (!payment.isPresent()) {
+            log.error("Payment with ID {} not found", request.getPaymentId());
+            return;
+        }
+
+        for (Transaction transaction : payment.get().getTransactions()) {
             sendMailAfterOrder(
-                    request.getName(), request.getEmail(), transaction, payment.getPaymentMethod(), payment.getId());
+                    request.getName(), request.getEmail(), transaction, payment.get().getPaymentMethod(), payment.get().getId());
         }
     }
 
