@@ -8,6 +8,8 @@ import java.util.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+import lombok.NoArgsConstructor;
+import lombok.experimental.NonFinal;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -35,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EmailSender {
 
     JavaMailSender emailSender;
@@ -42,6 +45,7 @@ public class EmailSender {
     private final PaymentRepository paymentRepository;
 
     @Value("${cors.frontend-url}")
+    @NonFinal
     String frontendUrl;
 
     @RabbitListener(queues = RabbitMQConfig.EMAIL_QUEUE)
