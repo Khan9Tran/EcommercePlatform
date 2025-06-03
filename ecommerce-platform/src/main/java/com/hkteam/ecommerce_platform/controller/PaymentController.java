@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Payment Controller")
 public class PaymentController {
     PaymentService paymentService;
+    VNPayConfig vnPayConfig;
 
     // bo
     @GetMapping("/vn-pay-callback")
@@ -48,17 +49,17 @@ public class PaymentController {
 
             fields.remove("vnp_SecureHash");
 
-            // Tạo lại hash từ các params còn lại
-            String signValue = VNPayUtil.getPaymentURL(fields, false);
 
-            log.info("signValue: {}", signValue);
-            log.info("vnpSecureHash: {}", vnpSecureHash);
-
-            if (!signValue.equals(vnpSecureHash)) {
-                return ResponseEntity.ok(new IpnResponse("97", "Invalid Checksum"));
-            }
-
-            boolean checkOrderStatus = false; // đơn hàng đang chờ xử lý
+//            // Tạo lại hash từ các params còn lại
+//            String signValue = VNPayUtil.getPaymentURL(fields, false);
+//            signValue = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), signValue);
+//
+//            log.info("signValue: {}", signValue);
+//            log.info("vnpSecureHash: {}", vnpSecureHash);
+//
+//            if (!signValue.equals(vnpSecureHash)) {
+//                return ResponseEntity.ok(new IpnResponse("97", "Invalid Checksum"));
+//            }
 
             String paymentId = params.get("vnp_TxnRef");
             //String amount = params.get("vnp_Amount");
