@@ -37,7 +37,7 @@ public class SecurityConfig {
     @Value("${cors.allowed-origins}")
     private String[] allowedOrigins;
 
-    private static final String[] VN_PAY_ENDPOINTS = {"payments/vn-pay-callback", "payments/IPN"};
+    private static final String[] VN_PAY_ENDPOINTS = {"/payments/vn-pay-callback", "/payments/IPN"};
 
     private static final String[] SEARCH_ENDPOINTS = {
         "/search",
