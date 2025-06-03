@@ -93,6 +93,7 @@ public class PaymentService {
 
                     TransactionStatusHistory transactionStatusHistory = TransactionStatusHistory.builder()
                             .transactionStatus(success)
+                            .transaction(transaction)
                             .remarks("Update status from VNPay")
                             .build();
 
