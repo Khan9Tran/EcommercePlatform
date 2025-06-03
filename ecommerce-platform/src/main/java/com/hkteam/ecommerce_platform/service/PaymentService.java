@@ -2,8 +2,15 @@ package com.hkteam.ecommerce_platform.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
+import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
+import com.hkteam.ecommerce_platform.repository.TransactionRepository;
+import com.hkteam.ecommerce_platform.repository.TransactionStatusRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Service;
@@ -20,6 +27,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentService {
     VNPayConfig vnPayConfig;
     PaymentRepository paymentRepository;
+    TransactionStatusRepository transactionStatusRepository;
 
     public String createVnPayPayment(BigDecimal totalPrice, HttpServletRequest request, String code) {
         BigDecimal amount = totalPrice.multiply(new BigDecimal("100")).setScale(0, RoundingMode.DOWN);
@@ -71,5 +80,26 @@ public class PaymentService {
                 .amount(payment.getAmount().toString())
                 .status(hasPay ? "SUCCESS" : "WAITING")
                 .build();
+    }
+
+    @Transactional
+    public void updateStatus(String paymentId) {
+        var payment = paymentRepository.findById(paymentId).orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_FOUND));
+        payment.getTransactions().forEach(
+                transaction -> {
+                    TransactionStatus success = transactionStatusRepository
+                            .findById(TransactionStatusName.SUCCESS.name())
+                            .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
+
+                    TransactionStatusHistory transactionStatusHistory = TransactionStatusHistory.builder()
+                            .transactionStatus(success)
+                            .remarks("Update status from VNPay")
+                            .build();
+
+                    transaction.getTransactionStatusHistories().add(transactionStatusHistory);
+                }
+        );
+
+        paymentRepository.save(payment);
     }
 }

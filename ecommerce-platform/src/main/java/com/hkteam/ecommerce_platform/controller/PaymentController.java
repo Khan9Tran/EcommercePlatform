@@ -56,32 +56,35 @@ public class PaymentController {
                 return ResponseEntity.ok(new IpnResponse("97", "Invalid Checksum"));
             }
 
-            String paymentId = params.get("vnp_TxnRef");
-            String amount = params.get("vnp_Amount");
-            // Giả lập kiểm tra trong DB
-            boolean checkOrderId = true; // kiểm tra vnp_TxnRef có trong DB
-            boolean checkAmount = true; // kiểm tra số tiền có khớp không
-            boolean checkOrderStatus = true; // đơn hàng đang chờ xử lý
+            boolean checkOrderStatus = false; // đơn hàng đang chờ xử lý
 
-            if (!checkOrderId) {
+            String paymentId = params.get("vnp_TxnRef");
+            //String amount = params.get("vnp_Amount");
+
+            PaymentDetailResponse paymentDetail;
+            // Giả lập kiểm tra trong DB
+            try {
+                paymentDetail = paymentService.getPayment(paymentId);
+            } catch (Exception e) {
+                log.error("Payment not found: {}", paymentId, e);
                 return ResponseEntity.ok(new IpnResponse("01", "Order not Found"));
             }
 
-            if (!checkAmount) {
-                return ResponseEntity.ok(new IpnResponse("04", "Invalid Amount"));
-            }
+//            if (paymentDetail.getAmount().equals(amount) == false) {
+//                return ResponseEntity.ok(new IpnResponse("04", "Invalid Amount"));
+//            }
 
-            if (!checkOrderStatus) {
+
+            if (paymentDetail.getStatus().equals("SUCCESS")) {
                 return ResponseEntity.ok(new IpnResponse("02", "Order already confirmed"));
             }
 
             String responseCode = params.get("vnp_ResponseCode");
             if ("00".equals(responseCode)) {
-                // Cập nhật trạng thái đơn hàng = 1 (thành công)
-                // orderService.updateStatus(orderId, 1);
+                paymentService.updateStatus(paymentId);
             } else {
-                // Cập nhật trạng thái đơn hàng = 2 (thất bại)
-                // orderService.updateStatus(orderId, 2);
+                log.warn("Payment failed with response code: {}", responseCode);
+                return ResponseEntity.ok(new IpnResponse("99", "Unknow error"));
             }
 
             return ResponseEntity.ok(new IpnResponse("00", "Confirm Success"));
@@ -99,4 +102,5 @@ public class PaymentController {
                 .result(paymentService.getPayment(id))
                 .build();
     }
+
 }
