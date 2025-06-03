@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.hkteam.ecommerce_platform.entity.order.OrderStatusHistory;
 import com.hkteam.ecommerce_platform.entity.payment.TransactionStatusHistory;
 import com.hkteam.ecommerce_platform.entity.status.TransactionStatus;
+import com.hkteam.ecommerce_platform.enums.OrderStatusName;
 import com.hkteam.ecommerce_platform.enums.TransactionStatusName;
+import com.hkteam.ecommerce_platform.repository.OrderStatusRepository;
 import com.hkteam.ecommerce_platform.repository.TransactionRepository;
 import com.hkteam.ecommerce_platform.repository.TransactionStatusRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +40,7 @@ public class PaymentService {
     VNPayConfig vnPayConfig;
     PaymentRepository paymentRepository;
     TransactionStatusRepository transactionStatusRepository;
+    OrderStatusRepository orderStatusRepository;
 
     public String createVnPayPayment(BigDecimal totalPrice, HttpServletRequest request, String code) {
         BigDecimal amount = totalPrice.multiply(new BigDecimal("100")).setScale(0, RoundingMode.DOWN);
@@ -91,6 +95,18 @@ public class PaymentService {
                             .findById(TransactionStatusName.SUCCESS.name())
                             .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
 
+                    if (transaction.getOrder() == null) {
+                        throw new AppException(ErrorCode.ORDER_NOT_FOUND);
+                    }
+
+                    transaction.getOrder().getOrderStatusHistories().forEach(
+                            orderStatusHistory -> {
+                                if (orderStatusHistory.getOrderStatus().getName().equals(OrderStatusName.ON_HOLD.name()) == false) {
+                                    throw new AppException(ErrorCode.ORDER_NOT_FOUND);
+                                }
+                            }
+                    );
+
                     TransactionStatusHistory transactionStatusHistory = TransactionStatusHistory.builder()
                             .transactionStatus(success)
                             .transaction(transaction)
@@ -98,6 +114,18 @@ public class PaymentService {
                             .build();
 
                     transaction.getTransactionStatusHistories().add(transactionStatusHistory);
+
+                    var orderStatus = orderStatusRepository.findByName(OrderStatusName.PENDING.name())
+                            .orElseThrow(() -> new AppException(ErrorCode.UNKNOWN_ERROR));
+
+
+                    OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
+                            .orderStatus(orderStatus)
+                            .order(transaction.getOrder())
+                            .remarks("Update status from VNPay")
+                            .build();
+
+                    transaction.getOrder().getOrderStatusHistories().add(orderStatusHistory);
                 }
         );
 
