@@ -32,6 +32,7 @@ public class SecurityConfig {
         "/external-auths/authentication/facebook",
         "/emails/reset-request",
         "/emails/reset-password",
+            "/payments/IPN"
     };
 
     @Value("${cors.allowed-origins}")
