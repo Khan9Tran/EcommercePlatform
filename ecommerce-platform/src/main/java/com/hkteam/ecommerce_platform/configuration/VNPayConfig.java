@@ -19,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class VNPayConfig {
 
-    @Value(("${payment.vnPay.url}"))
+    @Value("${payment.vnPay.url}")
     String vnp_PayUrl;
 
     @Value("${payment.vnPay.returnUrl}")

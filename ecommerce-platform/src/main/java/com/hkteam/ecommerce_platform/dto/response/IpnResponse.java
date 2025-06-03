@@ -1,3 +1,14 @@
 package com.hkteam.ecommerce_platform.dto.response;
 
-public class IpnResponse {}
+import lombok.*;
+
+@Getter
+@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class IpnResponse {
+    String RspCode;
+    String Message;
+}
+

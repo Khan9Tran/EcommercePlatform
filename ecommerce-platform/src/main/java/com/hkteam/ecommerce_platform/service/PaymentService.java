@@ -40,6 +40,7 @@ public class PaymentService {
         String vnpSecureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
         queryUrl += "&vnp_SecureHash=" + vnpSecureHash;
         String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
+        log.info("VNPay payment URL: {}", paymentUrl);
         return paymentUrl;
     }
 
