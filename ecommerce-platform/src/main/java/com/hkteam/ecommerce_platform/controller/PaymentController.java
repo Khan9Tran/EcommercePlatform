@@ -50,7 +50,10 @@ public class PaymentController {
             fields.remove("vnp_SecureHash");
 
             // Tạo lại hash từ các params còn lại
-            String signValue = VNPayUtil.getPaymentURL(fields, true);
+            String signValue = VNPayUtil.getPaymentURL(fields, false);
+
+            log.info("signValue: {}", signValue);
+            log.info("vnpSecureHash: {}", vnpSecureHash);
 
             if (!signValue.equals(vnpSecureHash)) {
                 return ResponseEntity.ok(new IpnResponse("97", "Invalid Checksum"));
