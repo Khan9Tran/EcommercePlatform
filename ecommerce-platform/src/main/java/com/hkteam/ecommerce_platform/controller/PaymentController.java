@@ -45,8 +45,7 @@ public class PaymentController {
             String vnpSecureHash = params.get("vnp_SecureHash");
             Map<String, String> fields = new HashMap<>(params);
 
-            // Xoá 2 trường không dùng khi tạo hash
-            fields.remove("vnp_SecureHashType");
+
             fields.remove("vnp_SecureHash");
 
             // Tạo lại hash từ các params còn lại
