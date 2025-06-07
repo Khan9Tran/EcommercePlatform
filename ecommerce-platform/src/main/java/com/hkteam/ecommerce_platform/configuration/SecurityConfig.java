@@ -31,13 +31,13 @@ public class SecurityConfig {
         "/external-auths/authentication/google",
         "/external-auths/authentication/facebook",
         "/emails/reset-request",
-        "/emails/reset-password",
+        "/emails/reset-password"
     };
 
     @Value("${cors.allowed-origins}")
     private String[] allowedOrigins;
 
-    private static final String[] VN_PAY_ENDPOINTS = {"payments/vn-pay-callback"};
+    private static final String[] VN_PAY_ENDPOINTS = {"/payments/vn-pay-callback", "/payments/IPN"};
 
     private static final String[] SEARCH_ENDPOINTS = {
         "/search",
