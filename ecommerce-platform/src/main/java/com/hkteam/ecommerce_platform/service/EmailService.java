@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
+import lombok.experimental.NonFinal;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,9 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailService {
     @Value("${cors.frontend-url}")
+    @NonFinal
     String frontendUrl;
 
     @Value("${cors.backend-url}")
+    @NonFinal
     String backendUrl;
     RabbitTemplate rabbitTemplate;
 
