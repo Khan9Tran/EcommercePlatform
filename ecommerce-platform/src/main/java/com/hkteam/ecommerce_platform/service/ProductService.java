@@ -9,6 +9,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -590,5 +591,44 @@ public class ProductService {
                 .nextPage(pageEnd < listProductSorted.size() ? pageNumber + 1 : null)
                 .previousPage(pageStart > 0 ? pageNumber - 1 : null)
                 .build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Async
+    public void SyncProduct() {
+         List<Product> products = productRepository.findAll();
+         for (Product product : products) {
+             try {
+                 var productElasticsearch = ProductElasticsearch.builder()
+                         .id(product.getId())
+                         .name(product.getName())
+                         .slug(product.getSlug())
+                         .description(product.getDescription())
+                         .details(product.getDetails())
+                         .originalPrice(product.getOriginalPrice())
+                         .salePrice(product.getSalePrice())
+                         .isAvailable(product.isAvailable())
+                         .quantity(product.getQuantity())
+                         .rating(product.getRating())
+                         .brandName(product.getBrand().getName())
+                         .brandId(product.getBrand().getId())
+                         .categoryName(product.getCategory().getName())
+                         .categoryId(product.getCategory().getId())
+                         .storeName(product.getStore().getName())
+                         .storeId(product.getStore().getId())
+                         .createdAt(product.getCreatedAt())
+                         .lastUpdatedAt(product.getLastUpdatedAt())
+                         .isBlocked(product.isBlocked())
+                         .sold(product.getSold())
+                         .productComponentValues(product.getProductComponentValues().stream()
+                                 .map(pc -> new EsProComponentValue(pc.getId(), pc.getValue()))
+                                 .toList())
+                         .build();
+                 productElasticsearchRepository.save(productElasticsearch);
+             } catch (Exception e) {
+                 log.error("Error syncing product with id {}: {}", product.getId(), e.getMessage());
+             }
+         }
+            log.info("Product sync completed successfully.");
     }
 }
