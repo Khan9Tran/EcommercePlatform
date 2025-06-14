@@ -593,6 +593,7 @@ public class ProductService {
                 .build();
     }
 
+    @Transactional
     @Async
     public void SyncProduct() {
          List<Product> products = productRepository.findAll();
