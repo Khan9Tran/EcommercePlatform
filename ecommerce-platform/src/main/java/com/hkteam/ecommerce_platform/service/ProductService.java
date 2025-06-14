@@ -620,6 +620,8 @@ public class ProductService {
                          .lastUpdatedAt(product.getLastUpdatedAt())
                          .isBlocked(product.isBlocked())
                          .sold(product.getSold())
+                         .mainImageUrl(product.getMainImageUrl())
+                         .videoUrl(product.getVideoUrl())
                          .productComponentValues(product.getProductComponentValues().stream()
                                  .map(pc -> new EsProComponentValue(pc.getId(), pc.getValue()))
                                  .toList())
