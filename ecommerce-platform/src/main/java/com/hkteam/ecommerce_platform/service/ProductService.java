@@ -593,7 +593,6 @@ public class ProductService {
                 .build();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Async
     public void SyncProduct() {
          List<Product> products = productRepository.findAll();
