@@ -45,6 +45,7 @@ public class SecurityConfig {
         "/brands/all",
         "/categories/tree-view",
         "/categories/with-id/{id}",
+        "/categories/all",
         "/categories/detail-component",
         "/products/slug/{slug}",
         "/stores/{storeId}",
