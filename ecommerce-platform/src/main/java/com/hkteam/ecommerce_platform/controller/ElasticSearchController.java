@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.service.ProductService;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.hkteam.ecommerce_platform.dto.response.ApiResponse;
 import com.hkteam.ecommerce_platform.dto.response.PaginationResponse;
@@ -29,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Search Controller")
 public class ElasticSearchController {
     ElasticSearchService elasticSearchService;
+    ProductService productService;
 
     @Cacheable(value = "autoSuggestCache", key = "#text", unless = "#result == null || #result.result.isEmpty()")
     @GetMapping("/auto-suggest")
@@ -84,6 +83,14 @@ public class ElasticSearchController {
                         minPrice,
                         maxPrice,
                         minRate))
+                .build();
+    }
+
+    @PostMapping("/sync-products")
+    public ApiResponse<Void> syncProducts() {
+        productService.SyncProduct();
+        return ApiResponse.<Void>builder()
+                .result(null)
                 .build();
     }
 }
