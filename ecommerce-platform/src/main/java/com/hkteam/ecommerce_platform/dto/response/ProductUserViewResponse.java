@@ -25,6 +25,8 @@ public class ProductUserViewResponse {
     BigDecimal salePrice;
     boolean isAvailable;
     int quantity;
+    int sold;
+    int ratingCount;
     Float rating;
     Set<VariantOfProductUserViewResponse> variants;
     List<AttributeOfProductResponse> attributes;

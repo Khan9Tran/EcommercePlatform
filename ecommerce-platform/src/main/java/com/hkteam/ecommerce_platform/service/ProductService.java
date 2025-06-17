@@ -295,7 +295,12 @@ public class ProductService {
             throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
         }
 
-        return map(product);
+        var rs = map(product);
+        if (product.getReviews() != null && !product.getReviews().isEmpty()) {
+            rs.setRatingCount(product.getReviews().size());
+        }
+
+        return rs;
     }
 
     public ProductUserViewResponse getProduct(String id) {
