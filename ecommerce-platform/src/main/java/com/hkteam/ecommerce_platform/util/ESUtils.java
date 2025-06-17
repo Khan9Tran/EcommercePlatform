@@ -56,7 +56,7 @@ public class ESUtils {
         }
 
         if (storeId != null) {
-            queries.add(Query.of(q -> q.term(t -> t.field("storeId").value(storeId))));
+            queries.add(Query.of(q -> q.term(t -> t.field("storeId.keyword").value(storeId))));
         }
         if (minPrice != null) {
             queries.add(Query.of(q -> q.range(r -> r.field("salePrice").gte(JsonData.of(minPrice)))));
