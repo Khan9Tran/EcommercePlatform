@@ -57,7 +57,3 @@ Tạo file `.env` ở thư mục gốc (nếu chưa có) để cấu hình các 
 
 ```bash
 docker-compose up --build
-
-### 4. Truy cập swagger docs
-http://localhost:8080/swagger-ui/index.html
-
