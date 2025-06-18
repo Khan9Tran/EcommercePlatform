@@ -4,23 +4,22 @@
 
 ---
 
-## 📂 Cấu trúc thư mục
-
-com.hkteam.ecommerce_platform
-├── configuration # Cấu hình Spring (CORS, Swagger, Security,...)
-├── constant # Các hằng số dùng chung
-├── controller # REST API controllers (User, Product, Order,...)
-├── dto # DTO (Data Transfer Object)
-├── entity # Các entity tương ứng với bảng DB
-├── enums # Các kiểu enum (Role, OrderStatus,...)
-├── exception # Xử lý exception toàn cục và custom
-├── mapper # MapStruct để chuyển đổi giữa DTO và Entity
-├── rabbitmq # Cấu hình và sử dụng RabbitMQ
-├── repository # Spring Data JPA repositories
-├── service # Chứa business logic
-├── util # Các hàm tiện ích (Utils)
-├── validator # Custom validators (VD: Email, Phone,...)
-└── EcommercePlatformApplication.java # Điểm bắt đầu chạy ứng dụng
+```plaintext
+src/main/java/com/hkteam/ecommerce_platform
+├── configuration       # Cấu hình Spring (CORS, Swagger, Security,...)
+├── constant            # Các hằng số dùng chung
+├── controller          # REST API controllers (User, Product, Order,...)
+├── dto                 # DTO (Data Transfer Object)
+├── entity              # Các entity tương ứng với bảng DB
+├── enums               # Các kiểu enum (Role, OrderStatus,...)
+├── exception           # Xử lý exception toàn cục và custom
+├── mapper              # MapStruct để chuyển đổi giữa DTO và Entity
+├── rabbitmq            # Cấu hình và sử dụng RabbitMQ
+├── repository          # Spring Data JPA repositories
+├── service             # Chứa business logic
+├── util                # Các hàm tiện ích (Utils)
+├── validator           # Custom validators (VD: Email, Phone,...)
+└── EcommercePlatformApplication.java  # Điểm bắt đầu chạy ứng dụng
 
 
 ---
