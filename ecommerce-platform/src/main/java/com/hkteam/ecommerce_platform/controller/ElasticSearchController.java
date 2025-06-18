@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.hkteam.ecommerce_platform.exception.AppException;
+import com.hkteam.ecommerce_platform.exception.ErrorCode;
 import com.hkteam.ecommerce_platform.service.ProductService;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,10 @@ public class ElasticSearchController {
     @GetMapping("/auto-suggest")
     public ApiResponse<List<String>> getAutoSuggestProduct(
             @RequestParam(value = "keyword", required = false, defaultValue = "") String text) throws IOException {
+        if (text.length() > 1000) {
+            throw new AppException(ErrorCode.SEARCH_TOO_LONG);
+        }
+
         log.info("Auto suggest product with keyword: {}", text);
         return ApiResponse.<List<String>>builder()
                 .result(elasticSearchService.autoSuggestionProduct(text))
@@ -57,19 +63,24 @@ public class ElasticSearchController {
             @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
             @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
             @RequestParam(value = "rating", required = false, defaultValue = "0") int minRate) {
+
+        if (search.length() > 1000) {
+            throw new AppException(ErrorCode.SEARCH_TOO_LONG);
+        }
+
         log.info(
-                "Search product with categories: {}, brands: {}, store: {}, sortBy: {}, order: {}, page: {}, limit: {}, search: {}, minPrice: {}, maxPrice: {}, minRate: {}",
-                categoryIds,
-                brandIds,
-                storeId,
-                sortBy,
-                order,
-                page,
-                limit,
-                search,
-                minPrice,
-                maxPrice,
-                minRate);
+            "Search product with categories: {}, brands: {}, store: {}, sortBy: {}, order: {}, page: {}, limit: {}, search: {}, minPrice: {}, maxPrice: {}, minRate: {}",
+            categoryIds,
+            brandIds,
+            storeId,
+            sortBy,
+            order,
+            page,
+            limit,
+            search,
+            minPrice,
+            maxPrice,
+            minRate);
         return ApiResponse.<PaginationResponse<ProductResponse>>builder()
                 .result(elasticSearchService.getAllProducts(
                         categoryIds,

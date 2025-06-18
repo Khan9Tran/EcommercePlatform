@@ -158,7 +158,8 @@ public enum ErrorCode {
     VIEW_PRODUCT_ALREADY_EXIST(1735, "View Product already exist", HttpStatus.BAD_REQUEST),
     ROOM_ALREADY_EXISTED(1736, "room already existed", HttpStatus.BAD_REQUEST),
     ROOM_NOT_FOUND(1737, "room not found", HttpStatus.NOT_FOUND),
-    MESSAGE_EMPTY(1738, "mesage empty", HttpStatus.BAD_REQUEST);
+    MESSAGE_EMPTY(1738, "mesage empty", HttpStatus.BAD_REQUEST),
+    SEARCH_TOO_LONG(1739, "Search too long, max length is 1000 characters", HttpStatus.BAD_REQUEST);
 
     int code;
     String message;
