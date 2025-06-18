@@ -20,7 +20,7 @@ src/main/java/com/hkteam/ecommerce_platform
 ├── util                # Các hàm tiện ích (Utils)
 ├── validator           # Custom validators (VD: Email, Phone,...)
 └── EcommercePlatformApplication.java  # Điểm bắt đầu chạy ứng dụng
-
+```
 
 ---
 
