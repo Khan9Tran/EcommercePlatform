@@ -154,16 +154,15 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             to_char(o.created_at, :groupFormat) AS group_key,
             o.grand_total
         FROM orders o
-        JOIN order_item oi ON o.id = oi.order_id AND oi.is_deleted = false
         WHERE o.is_deleted = false
           AND o.created_at BETWEEN :from AND :to
           AND (:storeId IS NULL OR o.store_id = :storeId)
-          AND (:productId IS NULL OR oi.product_id = :productId)
 			AND EXISTS (
-						  SELECT 1 FROM order_status_history osh
-						  WHERE osh.order_id = o.id
-							AND osh.order_status_name = 'DELIVERED'
-                      )
+			                        SELECT 1 FROM (
+			                            SELECT DISTINCT order_id FROM order_status_history
+			                            WHERE order_status_name = 'DELIVERED'
+			                        ) osh WHERE osh.order_id = o.id
+			                    )
     ) grouped
     GROUP BY grouped.group_key
     ORDER BY grouped.group_key
@@ -177,7 +176,6 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			@Param("to") Instant to,
 			@Param("groupFormat") String groupFormat,
 			@Param("storeId") String storeId,
-			@Param("productId") String productId,
 			@Param("offset") int offset,
 			@Param("limit") int limit
 	);
@@ -197,16 +195,15 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             to_char(o.created_at, :groupFormat) AS group_key,
             o.grand_total
         FROM orders o
-        JOIN order_item oi ON o.id = oi.order_id AND oi.is_deleted = false
         WHERE o.is_deleted = false
           AND o.created_at BETWEEN :from AND :to
           AND (:storeId IS NULL OR o.store_id = :storeId)
-          AND (:productId IS NULL OR oi.product_id = :productId)
 			AND EXISTS (
-						  SELECT 1 FROM order_status_history osh
-						  WHERE osh.order_id = o.id
-							AND osh.order_status_name = 'DELIVERED'
-                      )
+			                        SELECT 1 FROM (
+			                            SELECT DISTINCT order_id FROM order_status_history
+			                            WHERE order_status_name = 'DELIVERED'
+			                        ) osh WHERE osh.order_id = o.id
+			                    )
     ) grouped
     GROUP BY grouped.group_key
     ORDER BY grouped.group_key
@@ -217,8 +214,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			@Param("from") Instant from,
 			@Param("to") Instant to,
 			@Param("groupFormat") String groupFormat,
-			@Param("storeId") String storeId,
-			@Param("productId") String productId
+			@Param("storeId") String storeId
 	);
 
 	@Query(value = """
