@@ -1,4 +1,4 @@
-# 🛒 Ecommerce Platform - Backend
+# 🛒 HKK-Uptech Ecommerce Platform - Backend
 
 Đây là dự án backend cho hệ thống thương mại điện tử, sử dụng **Spring Boot** và các công nghệ hiện đại như RabbitMQ, Docker, JWT...
 
