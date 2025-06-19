@@ -408,7 +408,6 @@ public class ReviewService {
                     to,
                     groupBy,
                     storeId,
-                    productId,
                     request.getOffset(),
                     request.getLimit()
 
@@ -418,8 +417,7 @@ public class ReviewService {
                     from,
                     to,
                     groupBy,
-                    storeId,
-                    productId
+                    storeId
             );
 
             Integer count = rs.size();
