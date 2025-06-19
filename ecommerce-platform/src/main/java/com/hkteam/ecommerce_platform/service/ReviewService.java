@@ -376,7 +376,7 @@ public class ReviewService {
         return listReviewOrderItemResponse;
     }
 
-    public StatisticResponse getStatistics(StatisticRequest request) {
+    public StatisticResponse getStatistics(StatisticRequest request, Boolean isStore) {
         log.info("Get statistics: {}", request);
         LocalDate[] resolvedRange = DateRangeUtil.resolveFromTo(
                 request.getRangeType(),
@@ -395,7 +395,17 @@ public class ReviewService {
             throw new AppException(ErrorCode.TAB_INVALID);
         }
 
-        String storeId = request.getStoreId();
+
+        String storeId;
+        if (isStore) {
+            User user = authenticatedUserUtil.getAuthenticatedUser();
+            Store store = storeRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.STORE_NOT_FOUND));
+            storeId = store.getId();
+        } else {
+            storeId = request.getStoreId();
+        }
+
         String productId = request.getProductId();
         String groupBy = request.getGroupBy().getPostgresFormat();
         String type = request.getType();
