@@ -96,7 +96,14 @@ public class ReviewController {
     @GetMapping("/statistics")
     public ApiResponse<StatisticResponse> getStatistics(@ModelAttribute StatisticRequest request) {
         return ApiResponse.<StatisticResponse>builder()
-                .result(reviewService.getStatistics(request))
+                .result(reviewService.getStatistics(request, false))
+                .build();
+    }
+
+    @GetMapping("/statistics-store")
+    public ApiResponse<StatisticResponse> getStatisticsStore(@ModelAttribute StatisticRequest request) {
+        return ApiResponse.<StatisticResponse>builder()
+                .result(reviewService.getStatistics(request, true))
                 .build();
     }
 

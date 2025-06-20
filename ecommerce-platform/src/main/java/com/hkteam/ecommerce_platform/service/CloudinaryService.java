@@ -89,7 +89,7 @@ public class CloudinaryService {
             log.info("Video successfully deleted: {}", publicId);
         } else {
             log.warn("Failed to delete video with publicId: {}", publicId);
-            throw new AppException(ErrorCode.DELETE_FILE_FAILED);
+            //throw new AppException(ErrorCode.DELETE_FILE_FAILED);
         }
     }
 
