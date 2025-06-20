@@ -28,5 +28,6 @@ public interface VariantMapper {
     VariantDetailResponse toVariantDetailResponse(Variant variant);
 
     @Mapping(target = "values", ignore = true)
+    @Mapping(target = "isAvailable", source = "available")
     VariantOfProductUserViewResponse toVariantOfProductUserViewResponse(Variant variant);
 }

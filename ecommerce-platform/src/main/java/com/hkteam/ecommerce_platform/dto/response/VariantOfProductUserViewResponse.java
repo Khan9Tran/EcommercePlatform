@@ -17,5 +17,6 @@ public class VariantOfProductUserViewResponse {
     BigDecimal originalPrice;
     BigDecimal salePrice;
     int quantity;
+    boolean isAvailable;
     List<ValueOfVariantResponse> values;
 }
